@@ -484,6 +484,60 @@ to users.
 
 User-facing errors should explain what the user can do next.
 
+## 17.1 Error monitoring
+
+Sentry is the default unexpected-error monitoring provider for the Next.js
+application. Keep framework-specific Sentry setup inside `apps/web`; do not
+introduce Sentry, Next.js, or React dependencies into shared domain packages.
+
+Use Sentry for unexpected exceptions that require investigation. Expected
+validation and domain failures should remain typed, handled deliberately, and
+must not create noisy monitoring events merely because a user entered invalid
+data.
+
+The default Sentry configuration must remain privacy-preserving and
+error-focused. Unless a separately approved change documents the need and has
+received privacy review, do not enable:
+
+- automatic console-log capture
+- performance tracing
+- session replay
+- user identity collection
+- cookies
+- request or response headers
+- HTTP request or response bodies
+- URL query parameters
+- GraphQL documents or variables
+- AI inputs or outputs
+- database query data
+- local variables from stack frames
+
+Do not attach health conversations, credentials, payment details, or
+unnecessary personal information to Sentry events, breadcrumbs, tags, or
+contexts.
+
+Use distinct environment names for development, preview/staging, and
+production so events can be filtered reliably.
+
+Sentry environment variables are:
+
+- `NEXT_PUBLIC_SENTRY_DSN` — public browser project identifier
+- `SENTRY_DSN` — server project identifier
+- `SENTRY_AUTH_TOKEN` — secret build credential for source-map uploads
+
+A Sentry DSN is not a secret, but it must still be configured through local or
+deployment environment settings rather than duplicated throughout source code.
+`SENTRY_AUTH_TOKEN` is a secret. Never commit it, log it, expose it to browser
+code, or prefix it with `NEXT_PUBLIC_`.
+
+Source maps may be uploaded during trusted deployment builds. They should not
+be publicly served after upload where the build tooling supports deletion.
+Monitoring or source-map upload failure must not expose credentials in build
+output.
+
+When verifying monitoring, prefer a temporary synthetic event. Do not leave a
+public crash route or test-error button enabled in the shipped application.
+
 ---
 
 # 18. Logging
@@ -503,6 +557,34 @@ Avoid logging full health conversations unless specifically required
 and privacy-reviewed.
 
 Prefer structured logs.
+
+During local development, concise browser and terminal console output is
+appropriate for diagnostics, subject to the same privacy and secret-handling
+rules as production.
+
+In preview/staging and production:
+
+- use Sentry Issues for unexpected application exceptions
+- use Vercel runtime logs for deployment and server diagnostics
+- include useful non-sensitive context such as environment, operation, status,
+  timestamp, and a correlation identifier where available
+- avoid arbitrary debug logs and remove temporary diagnostics before merging
+- write messages that help an engineer identify the failing operation without
+  reproducing sensitive payloads
+
+Do not use Supabase PostgreSQL as the default store for operational application
+logs. Monitoring data has different volume, retention, privacy, and access
+requirements from product data.
+
+Purpose-specific audit, security, cost, or usage events may be stored in
+Supabase only when the product requires them. Such records need an explicit
+schema, authorization and RLS model, retention policy, documented purpose, and
+privacy review. They are application records, not a substitute for Sentry or
+Vercel logs.
+
+Monitoring access should be limited to team members who need it. Enable
+multi-factor authentication and periodically review Sentry access and data
+retention settings.
 
 ---
 
@@ -574,6 +656,10 @@ A feature is DONE only when:
 - mobile behaviour has been checked
 - failure states exist
 - monitoring is present where relevant
+- unexpected failures are observable without collecting unnecessary sensitive
+  data
+- monitoring configuration changes have been tested and an ingestion check has
+  been performed where practical
 - analytics are present where relevant
 - migration exists where required
 - environment variables are documented
@@ -750,3 +836,48 @@ Examples:
 - changing payment provider
 
 Do not introduce major architecture changes silently.
+
+---
+
+# 29. SEO and discoverability
+
+SEO requirements apply to public, indexable pages.
+
+Private application pages, authenticated routes, health records, and private
+user-generated content must not be indexed.
+
+Public pages should consider:
+
+- descriptive and unique page titles and metadata
+- canonical URLs
+- Open Graph and social preview metadata
+- sitemap and robots configuration
+- semantic heading structure
+- crawlable navigation
+- accurate structured data where appropriate
+- mobile performance and Core Web Vitals
+- accessible content and meaningful image alt text
+
+Do not expose private or sensitive information in:
+
+- URLs
+- page metadata
+- structured data
+- social previews
+- sitemaps
+- analytics events
+
+Do not create misleading veterinary or medical claims for search traffic.
+
+Do not use fabricated reviews, ratings, authorship, or structured data.
+
+Authenticated product screens should normally use `noindex` and must not be
+included in public sitemaps.
+
+Use Next.js metadata APIs and shared metadata helpers where appropriate.
+
+Public content intended for indexing should render meaningful HTML without
+requiring client-side JavaScript.
+
+Material changes to public URLs require redirects and a review of canonical
+URLs, sitemap entries, and existing external links.

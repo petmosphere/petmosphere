@@ -67,6 +67,16 @@ cp .env.example apps/web/.env.local
 
 Next.js loads local application variables from `apps/web/.env.local`. Never commit secrets. Public variables prefixed with `NEXT_PUBLIC_` are exposed to the browser and must not contain secrets.
 
+## Error monitoring
+
+Sentry error monitoring is integrated but remains disabled when no DSN is configured, so it is not required for local development. The default configuration captures unexpected errors only; tracing, replay, automatic console capture, and sensitive request or application payload collection are disabled.
+
+To test Sentry locally, use the project's **Copy DSN** value for both `NEXT_PUBLIC_SENTRY_DSN` and `SENTRY_DSN` in `apps/web/.env.local`. A Sentry DSN identifies the destination project and is intentionally available to browser code. Do not put private credentials in a `NEXT_PUBLIC_` variable.
+
+For staging and production, configure those DSN variables in Vercel for the appropriate environment. Add `SENTRY_AUTH_TOKEN` as a secret Vercel build variable if readable production source maps are required; it is used only to upload source maps and must never be committed or exposed to the browser. The Sentry organisation and project slugs are the non-secret values `petmosphere` and `petmosphere-pwa`.
+
+Inspect application exceptions in Sentry Issues and deployment/runtime output in Vercel Logs. Do not log health conversations, credentials, access tokens, or unnecessary personal information. See [the observability policy](docs/security/OBSERVABILITY.md) for the repository defaults.
+
 ## Vercel
 
 Deploy the monorepo with the Vercel project root set to `apps/web`. Vercel can detect Next.js and use the workspace lockfile from the repository root.
