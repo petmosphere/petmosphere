@@ -1,0 +1,1 @@
+-- Intentionally empty. Application seed data will be added with future features.

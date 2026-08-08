@@ -1,0 +1,752 @@
+# Petmosphere — AGENTS.md
+
+## 1. Purpose
+
+This file defines the engineering rules that all humans and AI coding agents
+must follow when modifying the Petmosphere repository.
+
+Petmosphere is an Australian pet health and management platform.
+
+The initial product is a mobile-first Progressive Web App (PWA).
+
+Long term, Petmosphere may expand into native iOS/Android applications,
+local pet-owner community features, pet-service discovery, marketplaces,
+veterinary partnerships, pet-friendly venue discovery, and commerce.
+
+The current architecture must support future evolution without prematurely
+building those future products.
+
+---
+
+# 2. Product principles
+
+When making implementation decisions, prioritise in this order:
+
+1. User and animal safety
+2. Security and privacy
+3. Correctness
+4. Maintainability
+5. Simple architecture
+6. Development velocity
+7. UI polish
+8. Premature optimisation
+
+Do not sacrifice safety, data isolation, or maintainability merely to ship
+a feature faster.
+
+Prefer the simplest architecture that preserves reasonable future options.
+
+Do not build infrastructure for hypothetical future requirements unless
+a clear architectural seam is inexpensive to preserve today.
+
+---
+
+# 3. Technology stack
+
+Primary language:
+
+- TypeScript
+
+Repository:
+
+- pnpm workspace
+- Turborepo
+
+Web application:
+
+- Next.js App Router
+- React
+- Tailwind CSS
+- shadcn/ui
+
+Backend:
+
+- Next.js Route Handlers
+- REST API under `/api/v1`
+- Business logic must NOT live in route handlers
+
+Database and infrastructure:
+
+- Supabase PostgreSQL
+- Supabase Auth
+- Supabase Storage
+- PostgreSQL Row Level Security
+
+Validation:
+
+- Zod
+
+Forms:
+
+- React Hook Form
+- Zod
+
+Testing:
+
+- Vitest
+- React Testing Library
+- Playwright
+
+Production hosting:
+
+- Vercel
+
+Future native app:
+
+- Expo
+- React Native
+- Expo Router
+
+Do not introduce alternative major frameworks without explicit approval.
+
+---
+
+# 4. Repository architecture
+
+The repository uses the following high-level structure:
+
+apps/
+web/
+
+packages/
+domain/
+api-contracts/
+services/
+database/
+integrations/
+config/
+test-utils/
+
+supabase/
+migrations/
+tests/
+
+docs/
+architecture/
+adr/
+product/
+security/
+
+Application dependency direction:
+
+apps/web
+↓
+services
+↓
+domain
+↙ ↘
+database integrations
+
+Dependencies must flow inward.
+
+Domain code must not depend on Next.js, React, Supabase clients,
+Vercel APIs, Stripe SDKs, or AI-provider SDKs.
+
+---
+
+# 5. Architecture rules
+
+## 5.1 Route handlers
+
+Route handlers are transport adapters.
+
+They may:
+
+- authenticate requests
+- parse requests
+- call application services
+- map known errors to HTTP responses
+- return responses
+
+They must NOT contain substantial business logic.
+
+Bad:
+
+route.ts
+→ subscription rule
+→ AI prompt construction
+→ database writes
+→ health logic
+→ provider calls
+
+Good:
+
+route.ts
+→ validate
+→ call service
+→ return result
+
+---
+
+## 5.2 Domain logic
+
+Business rules belong in domain or service modules.
+
+Examples:
+
+- whether a user can create another pet
+- whether an AI session may start
+- reminder completion behaviour
+- entitlement calculation
+- health-log constraints
+
+Business rules must be independently testable.
+
+---
+
+## 5.3 External providers
+
+External providers must be isolated behind adapters/interfaces.
+
+Examples:
+
+AIProvider
+EmailProvider
+PaymentProvider
+StorageProvider
+AnalyticsProvider
+
+Never call AI providers, Stripe, Resend, or privileged Supabase APIs directly
+from UI components.
+
+Avoid provider-specific concepts leaking into domain models.
+
+---
+
+# 6. API rules
+
+All product APIs must live under:
+
+/api/v1/
+
+Requests and responses must use shared schemas from:
+
+packages/api-contracts
+
+All externally supplied input must be validated.
+
+Do not trust:
+
+- browser validation
+- TypeScript types
+- URL parameters
+- AI output
+
+Validation must occur at runtime.
+
+Breaking API changes require explicit approval and verbose explanation.
+
+---
+
+# 7. Database rules
+
+All database schema changes MUST use Supabase migrations.
+
+Never manually change production schema.
+
+Never edit an already-applied shared migration to change its meaning.
+
+Create a new migration instead.
+
+Every user-owned record must have a clear authorization model.
+
+Use database constraints where appropriate.
+
+Examples:
+
+- foreign keys
+- uniqueness
+- NOT NULL
+- CHECK constraints
+
+Do not rely solely on application code for data integrity.
+
+---
+
+# 8. Row Level Security
+
+RLS is mandatory for user-owned data.
+
+Before marking a feature complete, verify:
+
+1. Owner can access their own data.
+2. Owner cannot access another user's data.
+3. Unauthenticated users cannot access private data.
+4. INSERT permissions are correct.
+5. UPDATE permissions are correct.
+6. DELETE permissions are correct.
+
+Never solve an RLS problem by exposing or using the service-role key
+in client code.
+
+---
+
+# 9. Privacy
+
+Petmosphere should follow privacy-by-design principles.
+
+Collect only data required for a defined product purpose.
+
+Do not send unnecessary personal information to AI providers.
+
+AI requests should normally exclude:
+
+- owner full name
+- email
+- phone number
+- street address
+- payment information
+- microchip number
+
+Use the minimum pet context required for the feature.
+
+Private health records must never automatically become community/social data.
+
+Future public community profiles must be a separate permission domain.
+
+---
+
+# 10. AI health guidance
+
+Petmosphere does not provide veterinary diagnosis or treatment.
+
+AI features provide general information and help owners prepare observations
+for professional veterinary care.
+
+AI must not be marketed or implemented as a replacement for a veterinarian.
+
+A deterministic emergency screening layer must run independently of the LLM.
+
+The model may increase urgency.
+
+The model must never reduce urgency assigned by deterministic safety rules.
+
+AI output must use structured validated responses before being rendered.
+
+Do not use arbitrary free-form model text to control emergency UI.
+
+Safety rules and prompts should be versioned.
+
+AI failures must fail safely.
+
+The health log, reminders, and non-AI product functionality must continue
+working when AI is unavailable.
+
+---
+
+# 11. AI cost control
+
+All AI calls must pass through the Petmosphere server.
+
+Never call an AI provider directly from the browser.
+
+Every request must be:
+
+- authenticated
+- authorised
+- rate limited
+- metered
+- logged for cost
+- bounded by input size
+- bounded by output tokens
+
+AI usage events should record at minimum:
+
+- user
+- feature
+- model
+- input tokens
+- output tokens
+- estimated cost
+- request status
+- timestamp
+
+Support:
+
+- per-user limits
+- per-session limits
+- global daily budget
+- global monthly budget
+- emergency feature kill switch
+
+Do not implement truly unlimited AI usage.
+
+---
+
+# 12. Feature flags
+
+Risky or incomplete functionality must be feature-flagged.
+
+Examples:
+
+- AI guidance
+- payments
+- weekly AI reports
+- experimental recommendations
+
+A feature flag must allow the feature to be disabled without redeploying
+the entire application where practical.
+
+The application should degrade gracefully if a feature is disabled.
+
+---
+
+# 13. Frontend rules
+
+Build mobile-first.
+
+Every user-facing feature must consider:
+
+- loading state
+- empty state
+- success state
+- validation state
+- error state
+- network/provider failure
+- disabled state where applicable
+
+Do not create a new UI primitive if shadcn/ui or an existing project primitive
+already solves the requirement.
+
+Feature-specific UI belongs under:
+
+components/features/<feature>
+
+Generic reusable primitives belong under:
+
+components/ui
+
+Avoid giant components.
+
+Extract meaningful feature units rather than arbitrary tiny components.
+
+---
+
+# 14. Accessibility
+
+Interactive controls must be keyboard accessible where applicable.
+
+Use semantic HTML.
+
+Forms must have labels.
+
+Do not communicate state using colour alone.
+
+Maintain appropriate touch targets for mobile use.
+
+Images require suitable alt text where meaningful.
+
+---
+
+# 15. PWA rules
+
+The web application is a mobile-first PWA.
+
+Do not assume a native app exists.
+
+Do not build native-specific abstractions prematurely.
+
+Avoid introducing complex offline synchronisation unless explicitly requested.
+
+PWA failure/offline states must be graceful.
+
+---
+
+# 16. Future native compatibility
+
+Future iOS/Android applications will use Expo/React Native.
+
+Share:
+
+- domain models
+- API contracts
+- validation
+- API client logic
+- formatting utilities
+- business rules
+
+Do NOT force sharing of web UI with native UI.
+
+Web-only packages must not leak into shared domain packages.
+
+---
+
+# 17. Error handling
+
+Do not silently swallow errors.
+
+Expected domain failures should use typed/known errors.
+
+Unexpected errors should be sent to monitoring.
+
+Do not expose stack traces, secret values, SQL details, or provider internals
+to users.
+
+User-facing errors should explain what the user can do next.
+
+---
+
+# 18. Logging
+
+Never log secrets.
+
+Never log:
+
+- passwords
+- access tokens
+- refresh tokens
+- Stripe secrets
+- Supabase service keys
+- AI API keys
+
+Avoid logging full health conversations unless specifically required
+and privacy-reviewed.
+
+Prefer structured logs.
+
+---
+
+# 19. Testing requirements
+
+A feature is not complete because the happy path works.
+
+At minimum verify:
+
+## Functional
+
+- happy path
+- invalid input
+- empty state
+- overflow
+- duplicate submission where relevant
+- provider failure where relevant
+
+## Authentication
+
+- logged-out access
+- logged-in access
+
+## Authorization
+
+- own resource access
+- another user's resource access
+
+## Data
+
+- create
+- read
+- update
+- delete where supported
+- database constraint behaviour
+
+## UI
+
+- mobile viewport (iPhone, iPad, Macbook sizes)
+- loading
+- errors
+- accessibility basics
+
+## AI features
+
+Additionally verify:
+
+- usage allowance
+- rate limiting
+- token/input limits
+- provider failure
+- malformed provider output
+- emergency escalation
+- AI kill switch
+- cost event recording
+
+---
+
+# 20. Definition of Done
+
+A feature is DONE only when:
+
+- implementation is complete
+- TypeScript passes
+- lint passes
+- relevant tests pass
+- authorization has been checked
+- RLS has been checked where applicable
+- mobile behaviour has been checked
+- failure states exist
+- monitoring is present where relevant
+- analytics are present where relevant
+- migration exists where required
+- environment variables are documented
+- no secret is committed
+- feature flag exists where required
+- documentation is updated where architectural behaviour changed
+
+Do not mark a feature complete solely because the UI renders.
+
+---
+
+# 21. Package dependencies
+
+Before installing a new package:
+
+1. Check whether the repository already provides the capability.
+2. Prefer well-maintained dependencies.
+3. Avoid large dependencies for trivial utilities.
+4. Do not introduce competing libraries for the same responsibility.
+5. Explain non-obvious dependencies in the PR.
+
+Never replace a major framework/library without explicit approval.
+
+---
+
+# 22. Parallel development rules
+
+Multiple developers and coding agents may work simultaneously.
+
+Keep changes narrow.
+
+Do not refactor unrelated files while implementing a feature.
+
+Avoid drive-by formatting changes.
+
+Do not rename or relocate shared modules without coordination.
+
+Prefer small commits with a single purpose.
+
+If another branch introduces a conflicting migration, create a new migration
+rather than rewriting shared history.
+
+Never force-push shared branches.
+
+---
+
+# 23. Git workflow
+
+Never develop directly on main.
+
+Branch naming:
+
+feature/<ticket>-<description>
+fix/<ticket>-<description>
+chore/<ticket>-<description>
+
+Examples:
+
+feature/PET-101-health-log
+fix/PET-142-reminder-timezone
+chore/PET-180-sentry
+
+All production changes arrive through reviewed pull requests.
+
+Production deployment comes from main.
+
+---
+
+# 24. Pull request expectations
+
+A PR should explain:
+
+- What changed?
+- Why?
+- How was it verified?
+- Database changes?
+- New environment variables?
+- Security/privacy implications?
+- Screenshots for UI changes?
+- Known limitations?
+- Rollback approach if material?
+
+Avoid mixing unrelated work into one PR.
+
+---
+
+# 25. Agent behaviour
+
+Before modifying code:
+
+1. Read this AGENTS.md.
+2. Inspect existing implementation.
+3. Identify the relevant module.
+4. Search for existing patterns.
+5. State the planned files to change.
+6. Identify security/privacy implications.
+
+During implementation:
+
+- follow existing conventions
+- minimise unrelated changes
+- preserve architecture boundaries
+- write tests with the implementation
+- do not suppress TypeScript errors without justification
+
+After implementation:
+
+1. Run formatting.
+2. Run lint.
+3. Run type checking.
+4. Run relevant unit tests.
+5. Run relevant integration/E2E tests.
+6. Review the diff.
+7. Check for secrets.
+8. Report what was changed and how it was verified.
+
+---
+
+# 26. Do not do these things
+
+An agent must NOT:
+
+- bypass RLS to make a feature work
+- expose service-role credentials
+- commit secrets
+- place business logic inside React components
+- call AI providers directly from the browser
+- change production schema manually
+- invent medical guidance rules
+- silently add dependencies
+- remove tests merely because they fail
+- use `any` to avoid understanding a type problem
+- suppress lint/type errors without explanation
+- rewrite unrelated code while implementing a feature
+- claim a test passed without running it
+- claim a feature is production-ready without checking failure paths
+
+---
+
+# 27. Health/safety change rule
+
+Any change affecting:
+
+- emergency classification
+- medical wording
+- veterinary recommendation logic
+- AI health system prompts
+- weight health interpretation
+- medication guidance
+- toxic substances
+- symptom urgency rules
+
+must be explicitly identified as a HEALTH-SAFETY CHANGE.
+
+Do not invent or materially modify clinical rules without approved
+source material or appropriate veterinary review.
+
+---
+
+# 28. Architectural decisions
+
+Significant architecture changes should create an ADR under:
+
+docs/adr/
+
+Examples:
+
+- changing authentication provider
+- introducing a queue
+- changing AI provider architecture
+- introducing a dedicated backend application
+- changing database platform
+- introducing native shared UI
+- changing payment provider
+
+Do not introduce major architecture changes silently.

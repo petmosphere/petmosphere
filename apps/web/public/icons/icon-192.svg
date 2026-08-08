@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192" role="img" aria-label="Petmosphere paw icon">
+  <rect width="192" height="192" rx="40" fill="#155e75"/>
+  <circle cx="61" cy="66" r="17" fill="#fff"/>
+  <circle cx="99" cy="51" r="17" fill="#fff"/>
+  <circle cx="135" cy="70" r="17" fill="#fff"/>
+  <path d="M48 128c0-29 22-49 48-49s48 20 48 49c0 18-12 27-27 19-14-7-28-7-42 0-15 8-27-1-27-19Z" fill="#fff"/>
+</svg>
