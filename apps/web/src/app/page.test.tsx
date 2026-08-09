@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import HomePage from "./page";
 
 describe("HomePage", () => {
-  it("renders the Petmosphere PWA foundation message", () => {
+  it("renders the Petmosphere first-value entry points", () => {
     render(<HomePage />);
 
     expect(
@@ -13,7 +13,11 @@ describe("HomePage", () => {
       }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText("PWA foundation is running successfully."),
-    ).toBeInTheDocument();
+      screen.getByRole("link", { name: "Create account" }),
+    ).toHaveAttribute("href", "/auth/sign-up");
+    expect(screen.getByRole("link", { name: "Sign in" })).toHaveAttribute(
+      "href",
+      "/auth/sign-in",
+    );
   });
 });

@@ -1,1 +1,1 @@
-export const servicesPackage = "@petmosphere/services" as const;
+export * from "./auth/safe-next-path";
