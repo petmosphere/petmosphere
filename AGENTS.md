@@ -450,6 +450,98 @@ Avoid introducing complex offline synchronisation unless explicitly requested.
 
 PWA failure/offline states must be graceful.
 
+## 15.1 Manifest and install assets
+
+Use the Next.js App Router manifest convention (`app/manifest.ts`) as the
+manifest source of truth. Keep it typed and review changes to names, URLs,
+display mode, theme colours, icon purposes, and scope.
+
+Generate repetitive raster icon, favicon, and splash-screen variants from one
+approved high-resolution source asset. Prefer a documented, reproducible CLI
+workflow such as `pwa-asset-generator` over resizing many files manually.
+Pin or review the tool version before using it, inspect generated output, and
+do not accept generated manifest snippets blindly.
+
+Icons must include the sizes and formats needed by supported browsers. Provide
+and visually verify a maskable icon whose important content stays within the
+maskable safe zone. Generated assets must be committed only when they are
+intentional, optimised, and referenced by the manifest or metadata.
+
+Do not replace the typed Next.js manifest with an automatically rewritten
+static manifest merely to accommodate an asset-generation tool.
+
+## 15.2 Service workers and caching
+
+Keep the service worker as small as the required offline behavior permits. A
+simple, well-tested offline navigation fallback may use the native Service
+Worker and Cache APIs. When requirements expand to multiple runtime routes,
+precache manifests, expiration policies, background sync, or coordinated
+updates, prefer Workbox recipes and abstractions instead of hand-writing that
+complex lifecycle and caching boilerplate.
+
+Every cached route must be explicitly allowlisted and assigned a strategy based
+on freshness, privacy, and failure requirements. Do not apply a broad caching
+rule to all requests.
+
+Default strategy guidance:
+
+- immutable, content-hashed public assets may use precaching or Cache First
+- public, non-sensitive content that tolerates staleness may use Network First
+  or Stale While Revalidate with documented expiry behavior
+- navigations may use Network First with a static offline fallback
+- authenticated APIs and pet, health, profile, account, authentication,
+  payment, or entitlement data must be Network Only by default
+- mutation requests must never be cached as ordinary responses
+- third-party and opaque responses must not be cached without explicit review
+
+Before caching any private response, obtain explicit approval and document the
+user benefit, device-sharing risk, cache partitioning, expiration, logout
+cleanup, storage limits, invalidation, and deletion behavior. Browser Cache
+Storage is not an appropriate general-purpose store for private health data.
+
+Background sync is not enabled by default. Queuing or replaying mutations
+requires explicit product and security review, idempotency protection,
+authorization revalidation, bounded retention, conflict semantics, and a clear
+user-visible pending or failed state. Never assume a failed mutation is safe to
+replay.
+
+Cache only successful responses that are safe for the selected strategy. Use
+versioned cache names, remove obsolete caches, apply bounded expiration where
+appropriate, and test service-worker upgrades with existing controlled tabs.
+Avoid update behavior that can mix incompatible application shells and data.
+
+## 15.3 Installation experience
+
+Browser-provided installation remains the baseline. A custom install action is
+optional and must be contextual, accessible, dismissible, and shown only after
+the user has received enough value to understand the benefit.
+
+Do not repeatedly prompt, block content, or use manipulative installation UX.
+Feature-detect installation APIs, hide custom controls when already installed,
+and provide platform-appropriate instructions where `beforeinstallprompt` is
+not supported, including Safari on iOS. Do not assume one install flow works
+across all browsers and platforms.
+
+## 15.4 PWA verification
+
+Use the Chrome DevTools Application panel to inspect the manifest, icon
+warnings, service-worker scope and lifecycle, Cache Storage, storage usage, and
+offline behavior. Test install, first load, repeat load, offline navigation,
+reconnection, service-worker update, cache cleanup, and uninstall/reinstall
+behavior on a production build.
+
+Use Lighthouse for performance, accessibility, best-practices, and SEO signals.
+Do not treat Lighthouse as the sole PWA compliance test because its dedicated
+PWA testing is deprecated. Verify installability and offline behavior directly
+in supported desktop and mobile browsers, including Safari/iOS and
+Chrome/Android where relevant, and automate stable smoke checks with
+Playwright where practical.
+
+External PWA showcases, including Hacker News implementations, may provide
+examples but are not architectural standards. Petmosphere's Next.js App Router,
+package boundaries, privacy rules, and tested product requirements remain the
+source of truth.
+
 ---
 
 # 16. Future native compatibility
