@@ -856,6 +856,9 @@ During implementation:
 - preserve architecture boundaries
 - write tests with the implementation
 - do not suppress TypeScript errors without justification
+- treat repository-scoped agent and skill files as maintained repository
+  content: inspect them before use and keep them within formatting and validation
+  checks unless a documented tool requirement makes that impossible
 
 After implementation:
 
