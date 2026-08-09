@@ -1,0 +1,33 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build output
+.next/
+out/
+dist/
+.turbo/
+*.tsbuildinfo
+coverage/
+playwright-report/
+test-results/
+
+# local environment files
+.env
+.env.*
+!.env.example
+.env.sentry-build-plugin
+
+# Supabase local state
+supabase/.branches/
+supabase/.temp/
+
+# editor and operating system
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# logs
+*.log
+pnpm-debug.log*
