@@ -31,3 +31,4 @@ supabase/.temp/
 # logs
 *.log
 pnpm-debug.log*
+.vercel/

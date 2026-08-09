@@ -42,6 +42,9 @@ supabase stop
 
 No application tables or migrations exist yet.
 
+Before creating or promoting database changes, follow the
+[database development and release runbook](docs/architecture/DATABASE_RUNBOOK.md).
+
 ## Repository structure
 
 - `apps/web` — the Next.js App Router PWA and its browser-facing tests.

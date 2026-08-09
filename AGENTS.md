@@ -240,6 +240,10 @@ Breaking API changes require explicit approval and verbose explanation.
 
 # 7. Database rules
 
+Before creating, applying, or reviewing a database change, follow:
+
+docs/architecture/DATABASE_RUNBOOK.md
+
 All database schema changes MUST use Supabase migrations.
 
 Never manually change production schema.
