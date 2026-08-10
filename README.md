@@ -1,6 +1,6 @@
 # Petmosphere
 
-Petmosphere is an Australian pet health and management platform. This repository currently contains the mobile-first Hello World PWA and the modular-monolith foundations for future product work.
+Petmosphere is an Australian pet health and management platform. This repository contains the mobile-first PWA and modular-monolith foundations, including email/password account access through Supabase Auth.
 
 ## Prerequisites
 
@@ -31,16 +31,22 @@ pnpm build
 pnpm test:e2e
 ```
 
-## Optional local Supabase
+## Local Supabase
 
-Supabase is prepared for future database, authentication, and storage work. It is not needed by the Hello World app.
+Supabase is required to exercise account creation and sign-in locally. The public landing page still renders without it.
 
 ```bash
 supabase start
+supabase status
 supabase stop
 ```
 
-No application tables or migrations exist yet.
+After `supabase start`, copy the local API URL and publishable/anon key into `apps/web/.env.local` as `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Local confirmation and reset emails are captured by Mailpit; open the Mailpit URL shown by `supabase status`. Apply and test migrations with:
+
+```bash
+supabase db reset --local
+supabase test db
+```
 
 Before creating or promoting database changes, follow the
 [database development and release runbook](docs/architecture/DATABASE_RUNBOOK.md).
@@ -62,13 +68,15 @@ See [the architecture overview](docs/architecture/ARCHITECTURE.md) for dependenc
 
 ## Environment variables
 
-The Hello World app has no required environment variables. When later work needs them, copy the example file and populate only the values required for local development:
+The landing page has no required environment variables. Account flows require the local Supabase public values. Copy the example file and populate only the values required for local development:
 
 ```bash
 cp .env.example apps/web/.env.local
 ```
 
 Next.js loads local application variables from `apps/web/.env.local`. Never commit secrets. Public variables prefixed with `NEXT_PUBLIC_` are exposed to the browser and must not contain secrets.
+
+For hosted Supabase projects, enable email confirmation and allowlist the exact callback URLs for each Vercel environment, ending in `/auth/callback`. The production callback should use the canonical HTTPS domain. Never expose a Supabase service-role key to the web application.
 
 ## Error monitoring
 
