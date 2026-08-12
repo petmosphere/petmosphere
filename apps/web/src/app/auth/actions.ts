@@ -1,6 +1,7 @@
 "use server";
 
 import {
+  CURRENT_TERMS_VERSION,
   forgotPasswordSchema,
   resetPasswordSchema,
   signInSchema,
@@ -49,6 +50,11 @@ export async function signUpAction(
       email: parsed.data.email,
       password: parsed.data.password,
       options: {
+        data: {
+          display_name: parsed.data.displayName,
+          terms_accepted: true,
+          terms_version: CURRENT_TERMS_VERSION,
+        },
         emailRedirectTo: `${getAppUrl()}/auth/callback?next=/onboarding`,
       },
     });

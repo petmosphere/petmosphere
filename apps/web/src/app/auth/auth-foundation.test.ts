@@ -1,4 +1,7 @@
-import { signUpSchema } from "@petmosphere/api-contracts";
+import {
+  CURRENT_TERMS_VERSION,
+  signUpSchema,
+} from "@petmosphere/api-contracts";
 import { getSafeNextPath } from "@petmosphere/services";
 import { describe, expect, it } from "vitest";
 
@@ -6,11 +9,28 @@ describe("authentication foundation", () => {
   it("rejects weak and mismatched sign-up credentials", () => {
     expect(
       signUpSchema.safeParse({
+        acceptedTerms: "on",
+        displayName: "Alex",
         email: "owner@example.com",
         password: "short",
         confirmPassword: "different",
       }).success,
     ).toBe(false);
+  });
+
+  it("requires explicit acceptance of the current Terms", () => {
+    const credentials = {
+      displayName: "Alex",
+      email: "owner@example.com",
+      password: "a-secure-password",
+      confirmPassword: "a-secure-password",
+    };
+
+    expect(signUpSchema.safeParse(credentials).success).toBe(false);
+    expect(
+      signUpSchema.safeParse({ ...credentials, acceptedTerms: true }).success,
+    ).toBe(true);
+    expect(CURRENT_TERMS_VERSION).toBe("2026-08-12");
   });
 
   it("allows only local post-auth destinations", () => {
