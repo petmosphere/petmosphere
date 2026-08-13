@@ -57,7 +57,20 @@ test("opens the email account journey", async ({ page }) => {
     .fill("valid-password");
   await page
     .getByRole("textbox", { name: "Confirm password" })
+    .fill("different-password");
+
+  await expect(page.getByText("Passwords do not match.")).toBeVisible();
+  await expect(
+    page.getByRole("textbox", { name: "Confirm password" }),
+  ).toHaveAttribute("aria-invalid", "true");
+  await expect(
+    page.getByRole("button", { name: "Create account" }),
+  ).toBeDisabled();
+
+  await page
+    .getByRole("textbox", { name: "Confirm password" })
     .fill("valid-password");
+  await expect(page.getByText("Passwords do not match.")).toBeHidden();
 
   await expect(
     page.getByRole("button", { name: "Create account" }),
@@ -169,4 +182,14 @@ test("creates and verifies an account against local Supabase", async ({
     page.getByRole("heading", { name: "Welcome to Petmosphere!" }),
   ).toBeVisible();
   await expect(page.getByRole("link", { name: "Get started" })).toBeVisible();
+
+  await page.getByRole("link", { name: "Get started" }).click();
+  await expect(page).toHaveURL(/\/onboarding$/);
+  await page.getByRole("button", { name: "Sign out" }).click();
+  await expect(page).toHaveURL(/\/auth\/sign-in$/);
+
+  await page.getByLabel("Email address").fill(email);
+  await page.getByLabel("Password").fill("test-only-password");
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page).toHaveURL(/\/onboarding$/);
 });

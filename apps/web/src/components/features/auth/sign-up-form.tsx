@@ -101,6 +101,8 @@ export function SignUpForm() {
     password.length >= 10 &&
     password === confirmPassword &&
     (acceptedTerms === true || acceptedTerms === "on");
+  const passwordsMismatch =
+    Boolean(confirmPassword) && password !== confirmPassword;
 
   const submit = handleSubmit((values) => {
     const formData = new FormData();
@@ -118,6 +120,11 @@ export function SignUpForm() {
         const Icon = field.icon;
         const isPassword = field.type === "password";
         const isVisible = Boolean(visiblePasswords[field.name]);
+        const errorMessage =
+          errors[field.name]?.message ??
+          (field.name === "confirmPassword" && passwordsMismatch
+            ? "Passwords do not match."
+            : undefined);
         return (
           <div key={field.name}>
             <label
@@ -138,9 +145,9 @@ export function SignUpForm() {
               <input
                 {...register(field.name)}
                 aria-describedby={
-                  errors[field.name] ? `${field.name}-error` : undefined
+                  errorMessage ? `${field.name}-error` : undefined
                 }
-                aria-invalid={Boolean(errors[field.name])}
+                aria-invalid={Boolean(errorMessage)}
                 aria-required="true"
                 autoComplete={field.autoComplete}
                 className="min-h-13 w-full rounded-xl border border-[#ead9c7] bg-[#fffaf5] py-3 pr-12 pl-12 text-base text-stone-900 transition outline-none focus:border-[#cd9255] focus:ring-4 focus:ring-[#cd9255]/15"
@@ -169,13 +176,13 @@ export function SignUpForm() {
                 </button>
               ) : null}
             </div>
-            {errors[field.name]?.message ? (
+            {errorMessage ? (
               <p
                 className="mt-1.5 text-sm text-red-600"
                 id={`${field.name}-error`}
                 role="alert"
               >
-                {errors[field.name]?.message}
+                {errorMessage}
               </p>
             ) : null}
           </div>
