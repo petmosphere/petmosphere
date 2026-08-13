@@ -1,23 +1,36 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import HomePage from "./page";
 
 describe("HomePage", () => {
-  it("renders the Petmosphere first-value entry points", () => {
+  it("guides visitors through the product introduction to sign-up", () => {
     render(<HomePage />);
 
     expect(
       screen.getByRole("heading", {
-        name: "Your pet's health, organised.",
+        name: "Track your pet’s wellness in 10 seconds a day",
       }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: "Create account" }),
-    ).toHaveAttribute("href", "/auth/sign-up");
-    expect(screen.getByRole("link", { name: "Sign in" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Skip" })).toHaveAttribute(
       "href",
-      "/auth/sign-in",
+      "/auth/sign-up",
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    expect(
+      screen.getByRole("heading", {
+        name: "Never miss a vaccination or vet visit",
+      }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    expect(
+      screen.getByRole("heading", { name: "Made for Aussie pets" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Get Started" })).toHaveAttribute(
+      "href",
+      "/auth/sign-up",
     );
   });
 });

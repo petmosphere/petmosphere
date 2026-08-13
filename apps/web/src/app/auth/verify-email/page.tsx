@@ -1,22 +1,31 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { AuthShell } from "@/components/features/auth/auth-shell";
+import { VerifyEmailCodeForm } from "@/components/features/auth/verify-email-code-form";
+import {
+  getPendingSignUp,
+  getResendWaitSeconds,
+  maskEmail,
+  resendCooldownSeconds,
+} from "@/lib/auth/pending-sign-up";
 
 export const metadata: Metadata = { title: "Check your email" };
 
-export default function VerifyEmailPage() {
+export default async function VerifyEmailPage() {
+  const pendingSignUp = await getPendingSignUp();
+  if (!pendingSignUp.email) redirect("/auth/sign-up");
+
   return (
     <AuthShell
-      description="Open the verification link we sent to finish creating your private account. Check your spam folder if it doesn’t arrive."
+      description="Enter the code from your email to finish creating your private account."
       title="Check your email"
     >
-      <Link
-        className="mt-8 flex min-h-12 items-center justify-center rounded-2xl border border-[#cd9255] px-5 font-bold text-[#8b5b30]"
-        href="/auth/sign-in"
-      >
-        Return to sign in
-      </Link>
+      <VerifyEmailCodeForm
+        initialResendWait={getResendWaitSeconds(pendingSignUp.sentAt)}
+        maskedEmail={maskEmail(pendingSignUp.email)}
+        resendCooldown={resendCooldownSeconds}
+      />
     </AuthShell>
   );
 }

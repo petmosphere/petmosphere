@@ -20,4 +20,11 @@ The web app is a mobile-first PWA. A future Expo/React Native application may co
 
 Supabase is the initial database, authentication, and storage platform. Schema changes will use migrations, and user-owned data will require Row Level Security. No application schema exists in this bootstrap.
 
+Email/password registration uses Supabase email confirmation with a six-digit
+one-time code. The web delivery layer keeps the pending email in a short-lived,
+HTTP-only cookie so it is not exposed in URLs or browser JavaScript. Supabase
+remains responsible for code generation, expiry, attempt validation, resend
+rate limiting, and session creation. Staging and production must use a Confirm
+Signup template containing `{{ .Token }}`.
+
 External providers will be isolated behind adapter interfaces so provider-specific SDKs and concepts do not leak into the domain.
