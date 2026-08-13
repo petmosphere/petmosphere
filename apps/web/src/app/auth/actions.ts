@@ -6,10 +6,18 @@ import {
   resetPasswordSchema,
   signInSchema,
   signUpSchema,
+  verifyEmailCodeSchema,
 } from "@petmosphere/api-contracts";
 import { getSafeNextPath } from "@petmosphere/services";
 import { redirect } from "next/navigation";
 
+import {
+  clearPendingSignUp,
+  getPendingSignUp,
+  getResendWaitSeconds,
+  markVerificationCodeSent,
+  rememberPendingSignUp,
+} from "@/lib/auth/pending-sign-up";
 import { getAppUrl, getPublicConfigurationError } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 
@@ -71,8 +79,100 @@ export async function signUpAction(
     return { status: "error", message: publicError(error) };
   }
 
-  if (hasSession) redirect("/onboarding");
+  await rememberPendingSignUp(parsed.data.email);
+
+  if (hasSession) {
+    await clearPendingSignUp();
+    redirect("/auth/welcome");
+  }
   redirect("/auth/verify-email");
+}
+
+export async function verifyEmailCodeAction(
+  _previousState: AuthActionState,
+  formData: FormData,
+): Promise<AuthActionState> {
+  const parsed = verifyEmailCodeSchema.safeParse(readForm(formData));
+  if (!parsed.success) {
+    return {
+      status: "error",
+      message:
+        parsed.error.issues[0]?.message ?? "Enter the verification code.",
+    };
+  }
+
+  const { email } = await getPendingSignUp();
+  if (!email) {
+    return {
+      status: "error",
+      message:
+        "Your verification session has expired. Create your account again.",
+    };
+  }
+
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.auth.verifyOtp({
+      email,
+      token: parsed.data.code,
+      type: "signup",
+    });
+
+    if (error || !data.session) {
+      return {
+        status: "error",
+        message:
+          "That code is incorrect or has expired. Check it and try again.",
+      };
+    }
+  } catch (error) {
+    return { status: "error", message: publicError(error) };
+  }
+
+  await clearPendingSignUp();
+  redirect("/auth/welcome");
+}
+
+export async function resendVerificationCodeAction(): Promise<AuthActionState> {
+  const pendingSignUp = await getPendingSignUp();
+  if (!pendingSignUp.email) {
+    return {
+      status: "error",
+      message:
+        "Your verification session has expired. Create your account again.",
+    };
+  }
+
+  const waitSeconds = getResendWaitSeconds(pendingSignUp.sentAt);
+  if (waitSeconds > 0) {
+    return {
+      status: "error",
+      message: `Wait ${waitSeconds} seconds before requesting another code.`,
+    };
+  }
+
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.resend({
+      email: pendingSignUp.email,
+      type: "signup",
+    });
+
+    if (error) {
+      return {
+        status: "error",
+        message: "We could not send another code. Wait a moment and try again.",
+      };
+    }
+  } catch (error) {
+    return { status: "error", message: publicError(error) };
+  }
+
+  await markVerificationCodeSent();
+  return {
+    status: "success",
+    message: "A new verification code has been sent.",
+  };
 }
 
 export async function signInAction(

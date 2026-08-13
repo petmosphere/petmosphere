@@ -1,3 +1,4 @@
+import { PawPrint } from "lucide-react";
 import Link from "next/link";
 
 export function AuthShell({
@@ -17,9 +18,7 @@ export function AuthShell({
           className="mx-auto flex h-13 w-13 items-center justify-center rounded-full bg-[#fffaf5] font-bold text-[#dd792d] shadow-sm"
           href="/"
         >
-          <span aria-hidden="true" className="text-2xl">
-            ♧
-          </span>
+          <PawPrint aria-hidden="true" className="size-6" strokeWidth={1.8} />
         </Link>
         <h1 className="mt-6 text-center text-3xl font-bold tracking-tight text-balance">
           {title}

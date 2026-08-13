@@ -40,6 +40,13 @@ export const signUpSchema = z
 
 export const signInSchema = z.object({ email, password: z.string().min(1) });
 
+export const verifyEmailCodeSchema = z.object({
+  code: z
+    .string()
+    .trim()
+    .regex(/^\d{6}$/, "Enter the six-digit verification code."),
+});
+
 export const forgotPasswordSchema = z.object({ email });
 
 export const resetPasswordSchema = z
@@ -55,5 +62,6 @@ export const resetPasswordSchema = z
 export type SignUpInput = z.infer<typeof signUpSchema>;
 export type SignUpFormInput = z.input<typeof signUpSchema>;
 export type SignInInput = z.infer<typeof signInSchema>;
+export type VerifyEmailCodeInput = z.infer<typeof verifyEmailCodeSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;

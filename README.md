@@ -41,7 +41,14 @@ supabase status
 supabase stop
 ```
 
-After `supabase start`, copy the local API URL and publishable/anon key into `apps/web/.env.local` as `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Local confirmation and reset emails are captured by Mailpit; open the Mailpit URL shown by `supabase status`. Apply and test migrations with:
+After `supabase start`, copy the local API URL and publishable/anon key into `apps/web/.env.local` as `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Local confirmation and reset emails are captured by Mailpit; open the Mailpit URL shown by `supabase status`. New accounts receive a six-digit verification code. The local confirmation template is configured in `supabase/config.toml` and stored at `supabase/templates/confirmation.html`. Restart the local stack after changing authentication templates:
+
+```bash
+supabase stop
+supabase start
+```
+
+Apply and test migrations with:
 
 ```bash
 supabase db reset --local
@@ -76,7 +83,7 @@ cp .env.example apps/web/.env.local
 
 Next.js loads local application variables from `apps/web/.env.local`. Never commit secrets. Public variables prefixed with `NEXT_PUBLIC_` are exposed to the browser and must not contain secrets.
 
-For hosted Supabase projects, enable email confirmation and allowlist the exact callback URLs for each Vercel environment, ending in `/auth/callback`. The production callback should use the canonical HTTPS domain. Never expose a Supabase service-role key to the web application.
+For hosted Supabase projects, enable email confirmation and allowlist the exact callback URLs for each Vercel environment, ending in `/auth/callback`. The production callback should use the canonical HTTPS domain. In both staging and production, set the Confirm Signup email template to use `{{ .Token }}` rather than `{{ .ConfirmationURL }}`, matching `supabase/templates/confirmation.html`. Configure a six-digit OTP with an expiry of no more than one hour. Deploy the hosted template before deploying this code so users do not receive a link that the verification screen cannot accept. Never expose a Supabase service-role key to the web application.
 
 ## Error monitoring
 

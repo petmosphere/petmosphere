@@ -1,6 +1,7 @@
 import {
   CURRENT_TERMS_VERSION,
   signUpSchema,
+  verifyEmailCodeSchema,
 } from "@petmosphere/api-contracts";
 import { getSafeNextPath } from "@petmosphere/services";
 import { describe, expect, it } from "vitest";
@@ -41,5 +42,17 @@ describe("authentication foundation", () => {
       "/onboarding",
     );
     expect(getSafeNextPath("//malicious.example/collect")).toBe("/onboarding");
+  });
+
+  it("accepts only a six-digit email verification code", () => {
+    expect(verifyEmailCodeSchema.safeParse({ code: "123456" }).success).toBe(
+      true,
+    );
+    expect(verifyEmailCodeSchema.safeParse({ code: "12345" }).success).toBe(
+      false,
+    );
+    expect(verifyEmailCodeSchema.safeParse({ code: "12345a" }).success).toBe(
+      false,
+    );
   });
 });

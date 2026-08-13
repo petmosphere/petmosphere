@@ -40,8 +40,30 @@ values
     now()
   );
 
-select is((select count(*) from public.profiles), 2::bigint, 'profiles are created for auth users');
-select is((select count(*) from public.policy_acceptances), 2::bigint, 'terms acceptances are recorded for auth users');
+select is(
+  (
+    select count(*)
+    from public.profiles
+    where id in (
+      '10000000-0000-0000-0000-000000000001',
+      '20000000-0000-0000-0000-000000000002'
+    )
+  ),
+  2::bigint,
+  'profiles are created for auth users'
+);
+select is(
+  (
+    select count(*)
+    from public.policy_acceptances
+    where user_id in (
+      '10000000-0000-0000-0000-000000000001',
+      '20000000-0000-0000-0000-000000000002'
+    )
+  ),
+  2::bigint,
+  'terms acceptances are recorded for auth users'
+);
 select is(
   (select display_name from public.profiles where id = '10000000-0000-0000-0000-000000000001'),
   'Owner',

@@ -25,3 +25,27 @@ body {
     "Segoe UI",
     sans-serif;
 }
+
+@keyframes petmosphere-splash-exit {
+  0%,
+  72% {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+.petmosphere-splash {
+  animation: petmosphere-splash-exit 1.4s ease-out forwards;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .petmosphere-splash {
+    animation-duration: 0.01ms;
+  }
+}

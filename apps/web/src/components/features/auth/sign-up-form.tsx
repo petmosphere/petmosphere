@@ -6,6 +6,14 @@ import {
   type SignUpFormInput,
   type SignUpInput,
 } from "@petmosphere/api-contracts";
+import {
+  Eye,
+  EyeOff,
+  LockKeyhole,
+  Mail,
+  UserRound,
+  type LucideIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useForm, useWatch } from "react-hook-form";
@@ -18,41 +26,40 @@ type FieldName = "displayName" | "email" | "password" | "confirmPassword";
 
 const fields: Array<{
   autoComplete: string;
+  icon: LucideIcon;
   label: string;
   name: FieldName;
   type: "email" | "password" | "text";
 }> = [
-  { autoComplete: "name", label: "Name", name: "displayName", type: "text" },
+  {
+    autoComplete: "name",
+    icon: UserRound,
+    label: "Name",
+    name: "displayName",
+    type: "text",
+  },
   {
     autoComplete: "email",
+    icon: Mail,
     label: "Email address",
     name: "email",
     type: "email",
   },
   {
     autoComplete: "new-password",
+    icon: LockKeyhole,
     label: "Password",
     name: "password",
     type: "password",
   },
   {
     autoComplete: "new-password",
+    icon: LockKeyhole,
     label: "Confirm password",
     name: "confirmPassword",
     type: "password",
   },
 ];
-
-function FieldIcon({ name }: { name: FieldName }) {
-  return (
-    <span
-      aria-hidden="true"
-      className="pointer-events-none absolute top-4 left-4 text-stone-500"
-    >
-      {name === "displayName" ? "♙" : name === "email" ? "✉" : "▢"}
-    </span>
-  );
-}
 
 export function SignUpForm() {
   const [state, setState] = useState(initialState);
@@ -66,9 +73,34 @@ export function SignUpForm() {
     handleSubmit,
     register,
   } = useForm<SignUpFormInput, unknown, SignUpInput>({
+    defaultValues: {
+      acceptedTerms: false,
+      confirmPassword: "",
+      displayName: "",
+      email: "",
+      password: "",
+    },
+    mode: "onChange",
     resolver: zodResolver(signUpSchema),
   });
-  const acceptedTerms = useWatch({ control, name: "acceptedTerms" });
+  const [displayName, email, password, confirmPassword, acceptedTerms] =
+    useWatch({
+      control,
+      name: [
+        "displayName",
+        "email",
+        "password",
+        "confirmPassword",
+        "acceptedTerms",
+      ],
+    });
+  const canSubmit =
+    Boolean(displayName?.trim()) &&
+    Boolean(email?.trim()) &&
+    Boolean(password) &&
+    password.length >= 10 &&
+    password === confirmPassword &&
+    (acceptedTerms === true || acceptedTerms === "on");
 
   const submit = handleSubmit((values) => {
     const formData = new FormData();
@@ -83,22 +115,38 @@ export function SignUpForm() {
   return (
     <form className="mt-7 space-y-3" noValidate onSubmit={submit}>
       {fields.map((field) => {
+        const Icon = field.icon;
         const isPassword = field.type === "password";
         const isVisible = Boolean(visiblePasswords[field.name]);
         return (
           <div key={field.name}>
-            <label className="sr-only" htmlFor={field.name}>
+            <label
+              className="mb-1.5 block text-sm font-medium text-stone-700"
+              htmlFor={field.name}
+            >
               {field.label}
+              <span aria-hidden="true" className="ml-1 text-red-600">
+                *
+              </span>
             </label>
             <div className="relative">
-              <FieldIcon name={field.name} />
+              <Icon
+                aria-hidden="true"
+                className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-stone-500"
+                strokeWidth={1.8}
+              />
               <input
                 {...register(field.name)}
+                aria-describedby={
+                  errors[field.name] ? `${field.name}-error` : undefined
+                }
                 aria-invalid={Boolean(errors[field.name])}
+                aria-required="true"
                 autoComplete={field.autoComplete}
                 className="min-h-13 w-full rounded-xl border border-[#ead9c7] bg-[#fffaf5] py-3 pr-12 pl-12 text-base text-stone-900 transition outline-none focus:border-[#cd9255] focus:ring-4 focus:ring-[#cd9255]/15"
                 id={field.name}
                 placeholder={field.label}
+                required
                 type={isPassword && isVisible ? "text" : field.type}
               />
               {isPassword ? (
@@ -113,12 +161,20 @@ export function SignUpForm() {
                   }
                   type="button"
                 >
-                  <span aria-hidden="true">◉</span>
+                  {isVisible ? (
+                    <EyeOff aria-hidden="true" className="size-5" />
+                  ) : (
+                    <Eye aria-hidden="true" className="size-5" />
+                  )}
                 </button>
               ) : null}
             </div>
             {errors[field.name]?.message ? (
-              <p className="mt-1.5 text-sm text-red-600" role="alert">
+              <p
+                className="mt-1.5 text-sm text-red-600"
+                id={`${field.name}-error`}
+                role="alert"
+              >
                 {errors[field.name]?.message}
               </p>
             ) : null}
@@ -130,7 +186,9 @@ export function SignUpForm() {
         <label className="flex cursor-pointer items-start gap-3 text-sm leading-5 text-stone-600">
           <input
             {...register("acceptedTerms")}
+            aria-required="true"
             className="mt-0.5 h-5 w-5 shrink-0 accent-[#cd9255]"
+            required
             type="checkbox"
           />
           <span>
@@ -143,6 +201,9 @@ export function SignUpForm() {
               Terms of Service
             </Link>
             .
+            <span aria-hidden="true" className="ml-1 text-red-600">
+              *
+            </span>
           </span>
         </label>
         {errors.acceptedTerms?.message ? (
@@ -162,8 +223,8 @@ export function SignUpForm() {
       ) : null}
 
       <button
-        className="mt-3 min-h-13 w-full rounded-xl bg-[#efb985] px-5 text-base font-bold text-white transition hover:bg-[#e5a86e] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a96527] disabled:cursor-not-allowed disabled:opacity-55"
-        disabled={pending || acceptedTerms !== true}
+        className="mt-3 min-h-13 w-full rounded-xl bg-[#cd9255] px-5 text-base font-bold text-white transition hover:bg-[#b97f45] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a96527] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-500"
+        disabled={pending || !canSubmit}
         type="submit"
       >
         {pending ? "Creating account…" : "Create account"}
