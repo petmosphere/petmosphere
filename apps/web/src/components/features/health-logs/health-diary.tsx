@@ -1,0 +1,182 @@
+"use client";
+
+import type {
+  HealthLogResponse,
+  HealthLogSummary,
+} from "@petmosphere/api-contracts";
+import { deriveLocalDate, type Pet } from "@petmosphere/domain";
+import { ArrowLeft, RefreshCw } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+import { AppNav } from "@/components/features/pets/app-nav";
+import { PetAvatar } from "@/components/features/pets/pet-avatar";
+import { HealthDiaryCalendar } from "./health-diary-calendar";
+import { HealthLogDetail } from "./health-log-detail";
+import { HealthLogForm } from "./health-log-form";
+import { HealthLogReminderSettings } from "./health-log-reminder-settings";
+import { HealthLogSaved } from "./health-log-saved";
+
+type View = "calendar" | "detail" | "form" | "saved";
+
+export function HealthDiary({
+  initialView = "calendar",
+  pet,
+  photoUrl,
+}: {
+  initialView?: "calendar" | "today";
+  pet: Pet;
+  photoUrl: string | null;
+}) {
+  const router = useRouter();
+  const timezone =
+    Intl.DateTimeFormat().resolvedOptions().timeZone || "Australia/Melbourne";
+  const today = deriveLocalDate(new Date(), timezone);
+  const [month, setMonth] = useState(today.slice(0, 7));
+  const [summaries, setSummaries] = useState<HealthLogSummary[]>();
+  const [view, setView] = useState<View>("calendar");
+  const [selectedDate, setSelectedDate] = useState(today);
+  const [selectedLog, setSelectedLog] = useState<HealthLogResponse | null>(null);
+  const [loadingEntry, setLoadingEntry] = useState(false);
+  const [loadError, setLoadError] = useState<string>();
+  const initialised = useRef(false);
+
+  const query = useCallback(async (body: object) => {
+    const response = await fetch("/api/v1/health-logs/query", {
+      body: JSON.stringify(body),
+      cache: "no-store",
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    });
+    if (response.status === 401) {
+      window.location.assign("/auth/sign-in?next=/home");
+      throw new Error("signed out");
+    }
+    if (!response.ok) throw new Error("health diary query failed");
+    return response.json() as Promise<unknown>;
+  }, []);
+
+  const loadMonth = useCallback(async () => {
+    setLoadError(undefined);
+    try {
+      setSummaries(
+        (await query({ month, petId: pet.id, scope: "month" })) as HealthLogSummary[],
+      );
+    } catch {
+      setLoadError(
+        navigator.onLine
+          ? "We could not load this month. Try again."
+          : "You’re offline. Reconnect to load the diary.",
+      );
+    }
+  }, [month, pet.id, query]);
+
+  const openDate = useCallback(
+    async (date: string) => {
+      setSelectedDate(date);
+      setLoadingEntry(true);
+      setLoadError(undefined);
+      try {
+        const healthLog = (await query({
+          localDate: date,
+          petId: pet.id,
+          scope: "date",
+        })) as HealthLogResponse | null;
+        setSelectedLog(healthLog);
+        setView(healthLog ? "detail" : "form");
+      } catch {
+        setLoadError("We could not load this entry. Try again.");
+      } finally {
+        setLoadingEntry(false);
+      }
+    },
+    [pet.id, query],
+  );
+
+  useEffect(() => {
+    void loadMonth();
+  }, [loadMonth]);
+
+  useEffect(() => {
+    if (initialised.current) return;
+    initialised.current = true;
+    if (initialView === "today") void openDate(today);
+  }, [initialView, openDate, today]);
+
+  function showCalendar() {
+    if (initialView === "today") {
+      router.push(`/pets/${pet.id}/health-logs`);
+      return;
+    }
+    setView("calendar");
+    setSelectedLog(null);
+    setMonth(selectedDate.slice(0, 7));
+    void loadMonth();
+  }
+
+  async function removeSelectedLog() {
+    if (!selectedLog) return;
+    const response = await fetch("/api/v1/health-logs", {
+      body: JSON.stringify({ healthLogId: selectedLog.id, petId: pet.id }),
+      headers: { "Content-Type": "application/json" },
+      method: "DELETE",
+    });
+    if (!response.ok) throw new Error("health log delete failed");
+    setSelectedLog(null);
+    if (initialView === "today") {
+      router.push(`/pets/${pet.id}/health-logs`);
+    } else {
+      setView("calendar");
+      await loadMonth();
+    }
+  }
+
+  if (loadingEntry) {
+    return (
+      <main className="mx-auto min-h-dvh w-full max-w-md bg-[#fdf8f2] px-6 py-8 text-[#2d2d2d]">
+        <div aria-label="Loading health log" className="animate-pulse space-y-5" role="status"><div className="size-11 rounded-full bg-white" /><div className="h-10 w-56 rounded-full bg-[#ead9c7]" /><div className="h-40 rounded-3xl bg-white" /><div className="h-28 rounded-3xl bg-white" /></div>
+      </main>
+    );
+  }
+
+  if (view === "saved" && selectedLog) {
+    return <main className="mx-auto min-h-dvh w-full max-w-md bg-[#fdf8f2] px-6 py-8 text-[#2d2d2d]"><HealthLogSaved healthLog={selectedLog} onEdit={() => setView("form")} onViewDiary={showCalendar} pet={pet} /></main>;
+  }
+
+  if (view === "detail" && selectedLog) {
+    return <main className="mx-auto min-h-dvh w-full max-w-md bg-[#fdf8f2] px-6 py-8 text-[#2d2d2d]"><HealthLogDetail healthLog={selectedLog} onBack={showCalendar} onDelete={removeSelectedLog} onEdit={() => setView("form")} pet={pet} photoUrl={photoUrl} /></main>;
+  }
+
+  if (view === "form") {
+    return (
+      <main className="mx-auto min-h-dvh w-full max-w-md bg-[#fdf8f2] px-6 py-8 text-[#2d2d2d]">
+        <header>
+          <button aria-label="Cancel health log" className="grid size-11 place-items-center rounded-full bg-white active:scale-[0.97]" onClick={() => selectedLog ? setView("detail") : showCalendar()} type="button"><ArrowLeft aria-hidden="true" /></button>
+          <p className="mt-7 text-sm font-medium text-[#a96225]">{selectedLog ? "Update entry" : "Daily check-in"}</p>
+          <h1 className="mt-1 text-3xl font-bold">{selectedLog ? "Edit health log" : "Anything special?"}</h1>
+          <p className="mt-2 text-stone-500">Record what you observed—no diagnosis needed.</p>
+          <div className="mt-5 flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm"><PetAvatar className="size-14" name={pet.name} photoUrl={photoUrl} species={pet.species} /><div><p className="font-semibold">{pet.name}</p><p className="text-sm text-stone-500">Private observation</p></div></div>
+        </header>
+        <section className="mt-7">
+          <HealthLogForm existing={selectedLog} initialDate={selectedDate} onCancel={() => selectedLog ? setView("detail") : showCalendar()} onConflict={(date) => void openDate(date)} onSaved={(saved) => { setSelectedDate(saved.localDate); setSelectedLog(saved); setView("saved"); window.scrollTo({ top: 0 }); }} petId={pet.id} petName={pet.name} />
+        </section>
+      </main>
+    );
+  }
+
+  return (
+    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-[#fdf8f2] px-6 pt-8 pb-3 text-[#2d2d2d] shadow-xl shadow-stone-900/5">
+      <Link aria-label="Back to Home" className="mb-5 grid size-11 place-items-center rounded-full bg-white active:scale-[0.97]" href="/home"><ArrowLeft aria-hidden="true" /></Link>
+      {loadError ? (
+        <div className="rounded-3xl border border-[#efb3ae] bg-[#fff0ef] p-6 text-center" role="alert"><p className="text-[#9f342d]">{loadError}</p><button className="mt-4 inline-flex min-h-12 items-center gap-2 rounded-2xl bg-white px-5 font-semibold text-[#a96225]" onClick={() => void loadMonth()} type="button"><RefreshCw aria-hidden="true" className="size-4" />Try again</button></div>
+      ) : summaries ? (
+        <><HealthDiaryCalendar logs={summaries} month={month} onAddToday={() => void openDate(today)} onMonthChange={setMonth} onSelectDate={(date) => void openDate(date)} today={today} /><HealthLogReminderSettings petId={pet.id} /></>
+      ) : (
+        <div aria-label="Loading health diary" className="animate-pulse space-y-5" role="status"><div className="h-12 w-64 rounded-full bg-[#ead9c7]" /><div className="h-96 rounded-3xl bg-white" /></div>
+      )}
+      <div className="min-h-8 flex-1" />
+      <AppNav active="diary" diaryHref={`/pets/${pet.id}/health-logs`} />
+    </main>
+  );
+}

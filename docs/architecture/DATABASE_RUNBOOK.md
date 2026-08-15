@@ -119,7 +119,16 @@ Open local Supabase Studio at <http://127.0.0.1:54323>. Useful locations are:
 - **Table Editor → profiles** for private application profiles
 - **Table Editor → policy_acceptances** for recorded policy versions
 - **Table Editor → pets** for owner-scoped pet records
+- **Table Editor → health_logs** for private dated pet observations, selected
+  emotions/descriptions, notes and private image paths
+- **Table Editor → health_log_reminders** for per-pet daily reminder preferences;
+  this table stores time and timezone only and does not itself deliver a
+  notification
+- **Table Editor → health_log_analytics_events** for privacy-minimised,
+  write-only Journey A event counts; it intentionally stores no user, pet,
+  note, filename, media or request identifiers
 - **Storage → pet-photos** for private pet profile images
+- **Storage → health-log-images** for private health-log images
 
 The Studio SQL Editor can also inspect local development records:
 
@@ -131,6 +140,9 @@ order by created_at desc;
 select * from public.profiles;
 select * from public.policy_acceptances;
 select * from public.pets order by created_at desc;
+select * from public.health_logs order by created_at desc;
+select * from public.health_log_reminders order by updated_at desc;
+select * from public.health_log_analytics_events order by created_at desc;
 ```
 
 Studio uses administrative access and can see through RLS. Seeing a row in

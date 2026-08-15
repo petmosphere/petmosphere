@@ -15,6 +15,9 @@ export function PetsHome({
   displayName: string;
   pets: PetWithPhoto[];
 }) {
+  const currentPet = pets[0];
+  if (!currentPet) return null;
+
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-[#fdf8f2] pb-3 text-[#2d2d2d] shadow-xl shadow-stone-900/5">
       <header className="flex items-center justify-between px-6 pt-8">
@@ -68,21 +71,23 @@ export function PetsHome({
         <div className="mx-auto grid size-12 place-items-center rounded-full bg-[#d4f0ec] text-[#58bdb7]">
           <ClipboardPlus aria-hidden="true" className="size-6" />
         </div>
-        <h2 className="mt-4 text-lg font-bold">No health logs yet</h2>
+        <h2 className="mt-4 text-lg font-bold">
+          How is {currentPet.pet.name} today?
+        </h2>
         <p className="mt-2 text-sm leading-6 text-stone-500">
-          When health logging is available, you’ll be able to record your pet’s
-          daily wellbeing here.
+          Record a quick, private observation to start building their health
+          history.
         </p>
-        <span
-          aria-disabled="true"
-          className="mt-5 flex min-h-12 items-center justify-center rounded-2xl bg-stone-200 font-semibold text-stone-500"
+        <Link
+          className="mt-5 flex min-h-12 items-center justify-center rounded-2xl bg-[#f47b20] font-semibold text-white transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b45309] active:scale-[0.98]"
+          href={`/pets/${currentPet.pet.id}/health-logs/today`}
         >
-          Create your first health log
-        </span>
+          Record today’s health
+        </Link>
       </section>
 
       <div className="min-h-8 flex-1" />
-      <AppNav />
+      <AppNav diaryHref={`/pets/${currentPet.pet.id}/health-logs`} />
     </main>
   );
 }
