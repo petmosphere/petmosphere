@@ -1,4 +1,8 @@
-import { createHealthLogSchema } from "@petmosphere/api-contracts";
+import {
+  createHealthLogSchema,
+  healthLogReminderSchema,
+  webPushSubscriptionSchema,
+} from "@petmosphere/api-contracts";
 import { deriveLocalDate, type HealthLog } from "@petmosphere/domain";
 import {
   createHealthLog,
@@ -52,6 +56,24 @@ describe("health log contracts", () => {
     const instant = new Date("2026-08-15T14:30:00.000Z");
     expect(deriveLocalDate(instant, "Australia/Melbourne")).toBe("2026-08-16");
     expect(deriveLocalDate(instant, "Australia/Perth")).toBe("2026-08-15");
+  });
+
+  it("accepts Melbourne reminder time and rejects insecure push endpoints", () => {
+    expect(
+      healthLogReminderSchema.safeParse({
+        enabled: true,
+        localTime: "19:00",
+        petId: existingHealthLog.petId,
+        timezone: "Australia/Melbourne",
+      }).success,
+    ).toBe(true);
+    expect(
+      webPushSubscriptionSchema.safeParse({
+        auth: "auth",
+        endpoint: "http://push.example.test/subscription",
+        p256dh: "key",
+      }).success,
+    ).toBe(false);
   });
 });
 

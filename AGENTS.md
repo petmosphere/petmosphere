@@ -280,8 +280,8 @@ Before marking a feature complete, verify:
 5. UPDATE permissions are correct.
 6. DELETE permissions are correct.
 
-Never solve an RLS problem by exposing or using the service-role key
-in client code.
+Never solve an RLS problem by exposing or using a Supabase secret key or legacy
+service-role key in client code.
 
 ---
 

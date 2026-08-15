@@ -19,7 +19,8 @@ place to design schema changes.
   a migration. Do not manually change staging or production in the dashboard.
 - Never edit or reorder a migration after it has been applied to a shared
   environment. Correct it with a new migration.
-- Never place database passwords, service-role/secret keys, access tokens, or
+- Never place database passwords, secret or legacy service-role keys, access
+  tokens, or
   production data in Git, prompts, screenshots, logs, seed files, or PRs.
 - Browser code may use only the Supabase URL and publishable key. Privileged
   keys are server-only and must never use a `NEXT_PUBLIC_` name.
@@ -122,8 +123,10 @@ Open local Supabase Studio at <http://127.0.0.1:54323>. Useful locations are:
 - **Table Editor → health_logs** for private dated pet observations, selected
   emotions/descriptions, notes and private image paths
 - **Table Editor → health_log_reminders** for per-pet daily reminder preferences;
-  this table stores time and timezone only and does not itself deliver a
-  notification
+  the dispatcher records the last locally notified date here to prevent
+  duplicate reminders
+- **Table Editor → web_push_subscriptions** for private browser push endpoints
+  and encryption keys; never copy these values into logs or support tickets
 - **Table Editor → health_log_analytics_events** for privacy-minimised,
   write-only Journey A event counts; it intentionally stores no user, pet,
   note, filename, media or request identifiers
@@ -142,6 +145,9 @@ select * from public.policy_acceptances;
 select * from public.pets order by created_at desc;
 select * from public.health_logs order by created_at desc;
 select * from public.health_log_reminders order by updated_at desc;
+select id, owner_id, created_at, updated_at
+from public.web_push_subscriptions
+order by updated_at desc;
 select * from public.health_log_analytics_events order by created_at desc;
 ```
 
@@ -149,6 +155,91 @@ Studio uses administrative access and can see through RLS. Seeing a row in
 Studio proves that it exists; it does not prove that browser users are properly
 isolated. Use `supabase test db` to verify owner, other-user, and anonymous RLS
 behaviour.
+
+### PWA push reminder operations
+
+Health-log reminder delivery uses browser Web Push. The Next.js dispatcher is
+called every five minutes by Supabase Cron, claims each due pet/local-date at
+most once, and skips the notification when that date already has a health log.
+The stored timezone is `Australia/Melbourne`, so PostgreSQL applies AEDT or AEST
+automatically across daylight-saving boundaries.
+
+Generate one stable VAPID pair per environment. Run this locally and copy the
+output directly into the team password manager; do not paste the private key
+into Git, tickets, chat, or logs:
+
+```bash
+pnpm --filter @petmosphere/web exec web-push generate-vapid-keys --json
+```
+
+Configure these Vercel variables separately for Preview/staging and Production:
+
+```env
+NEXT_PUBLIC_WEB_PUSH_VAPID_PUBLIC_KEY=<environment public key>
+WEB_PUSH_VAPID_PRIVATE_KEY=<matching environment private key>
+WEB_PUSH_SUBJECT=mailto:info.petmosphere@gmail.com
+SUPABASE_SECRET_KEY=<matching environment secret API key>
+CRON_SECRET=<random value of at least 32 characters>
+```
+
+The public VAPID key is intentionally sent to browsers. The private VAPID key,
+Supabase secret key, and cron secret are server-only. The secret key is the
+recommended replacement for the legacy JWT-based `service_role` key. It still
+uses PostgreSQL's `service_role` role and bypasses RLS, which is why the
+dispatcher endpoint requires its separate cron-secret check. Keep each
+environment's values matched; changing a VAPID key pair requires users to
+subscribe again.
+
+After the corresponding Vercel deployment is live, configure each hosted
+Supabase project independently. Enable the `pg_cron` and `pg_net` extensions,
+then store two Vault secrets:
+
+- `petmosphere_app_url`: `https://staging.petmosphere.com.au` in staging and
+  `https://petmosphere.com.au` in production
+- `health_log_cron_secret`: the same `CRON_SECRET` configured for that Vercel
+  environment
+
+Create the job through **Integrations → Cron** or with reviewed SQL equivalent
+to the following. The job name must be unique within each project:
+
+```sql
+select cron.schedule(
+  'dispatch-health-log-reminders',
+  '*/5 * * * *',
+  $$
+  select net.http_post(
+    url := (
+      select decrypted_secret
+      from vault.decrypted_secrets
+      where name = 'petmosphere_app_url'
+    ) || '/api/v1/health-log-reminders/dispatch',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'Authorization', 'Bearer ' || (
+        select decrypted_secret
+        from vault.decrypted_secrets
+        where name = 'health_log_cron_secret'
+      )
+    ),
+    body := '{}'::jsonb,
+    timeout_milliseconds := 10000
+  );
+  $$
+);
+```
+
+Verify job runs in **Integrations → Cron** and confirm the dispatcher returns a
+successful count-only response in Vercel runtime logs. Never log subscription
+endpoints, encryption keys, pet identifiers, notes, filenames, or health data.
+An expired push endpoint is removed automatically. Other provider failures are
+reported only as aggregate counts and are not retried that day, which avoids
+duplicate notifications; the next day's reminder remains eligible.
+
+For a safe manual staging check, enable the reminder from an installed PWA,
+create no health log for that pet/date, and invoke the Cron job. Confirm one
+generic notification arrives, invoke it again to confirm no duplicate, then
+create today's log and confirm no reminder is claimed. Repeat the time-boundary
+database tests with `supabase test db` before promotion.
 
 ### 2. Create a migration
 

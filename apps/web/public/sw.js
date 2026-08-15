@@ -30,3 +30,26 @@ self.addEventListener("fetch", (event) => {
     fetch(event.request).catch(() => caches.match(OFFLINE_URL)),
   );
 });
+
+self.addEventListener("push", (event) => {
+  event.waitUntil(
+    self.registration.showNotification("Petmosphere", {
+      body: "It’s time for today’s pet check-in.",
+      data: { url: "/home" },
+      icon: "/icons/icon-192.svg",
+      tag: "petmosphere-daily-check-in",
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: "window" }).then((clients) => {
+      const existing = clients.find(
+        (client) => new URL(client.url).pathname === "/home",
+      );
+      return existing ? existing.focus() : self.clients.openWindow("/home");
+    }),
+  );
+});

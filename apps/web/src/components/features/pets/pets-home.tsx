@@ -2,7 +2,7 @@ import type { Pet } from "@petmosphere/domain";
 import { ChevronRight, ClipboardPlus } from "lucide-react";
 import Link from "next/link";
 
-import { signOutAction } from "@/app/auth/actions";
+import { SignOutButton } from "@/components/features/auth/sign-out-button";
 import { AppNav } from "./app-nav";
 import { PetAvatar } from "./pet-avatar";
 
@@ -25,14 +25,7 @@ export function PetsHome({
           <p className="text-sm text-stone-500">Welcome back</p>
           <h1 className="text-2xl font-bold">Hello, {displayName}</h1>
         </div>
-        <form action={signOutAction}>
-          <button
-            className="min-h-11 rounded-xl px-3 text-sm text-stone-500 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-[#ed802a]"
-            type="submit"
-          >
-            Sign out
-          </button>
-        </form>
+        <SignOutButton />
       </header>
 
       <section className="px-6 pt-10">

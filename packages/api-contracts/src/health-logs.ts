@@ -121,12 +121,36 @@ export const healthLogReminderSchema = z.object({
   enabled: z.boolean(),
   localTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
   petId: z.uuid(),
-  timezone: timezoneSchema,
+  timezone: z.literal("Australia/Melbourne"),
 });
 
 export const healthLogReminderResponseSchema = healthLogReminderSchema.extend({
   updatedAt: z.iso.datetime({ offset: true }),
 });
+
+export const webPushSubscriptionSchema = z
+  .object({
+    auth: z.string().min(1).max(512),
+    endpoint: z
+      .url()
+      .max(2_048)
+      .refine((value) => value.startsWith("https://"), "Use a secure push endpoint."),
+    p256dh: z.string().min(1).max(512),
+  })
+  .strict();
+
+export const webPushSubscriptionResponseSchema = z
+  .object({ subscribed: z.boolean() })
+  .strict();
+
+export const healthLogReminderDispatchResponseSchema = z
+  .object({
+    claimed: z.number().int().nonnegative(),
+    expired: z.number().int().nonnegative(),
+    failed: z.number().int().nonnegative(),
+    sent: z.number().int().nonnegative(),
+  })
+  .strict();
 
 export const healthLogAnalyticsEventSchema = z.discriminatedUnion("event", [
   z.object({ event: z.literal("health_log_started") }).strict(),
@@ -149,4 +173,10 @@ export type HealthLogAnalyticsEvent = z.infer<
 export type HealthLogResponse = z.infer<typeof healthLogResponseSchema>;
 export type HealthLogSummary = z.infer<typeof healthLogSummarySchema>;
 export type HealthLogReminder = z.infer<typeof healthLogReminderResponseSchema>;
+export type HealthLogReminderDispatchResponse = z.infer<
+  typeof healthLogReminderDispatchResponseSchema
+>;
 export type UpdateHealthLogInput = z.infer<typeof updateHealthLogSchema>;
+export type WebPushSubscriptionInput = z.infer<
+  typeof webPushSubscriptionSchema
+>;
