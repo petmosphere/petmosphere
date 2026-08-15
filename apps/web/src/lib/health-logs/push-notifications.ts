@@ -1,12 +1,7 @@
-type PushSetupFailure =
-  | "configuration"
-  | "denied"
-  | "save"
-  | "unsupported";
+type PushSetupFailure = "configuration" | "denied" | "save" | "unsupported";
 
 export type PushSetupResult =
-  | { ok: true }
-  | { ok: false; reason: PushSetupFailure };
+  { ok: true } | { ok: false; reason: PushSetupFailure };
 
 function decodeVapidPublicKey(value: string) {
   const padding = "=".repeat((4 - (value.length % 4)) % 4);
@@ -41,7 +36,11 @@ export async function enablePushNotifications(): Promise<PushSetupResult> {
         userVisibleOnly: true,
       }));
     const serialised = subscription.toJSON();
-    if (!serialised.endpoint || !serialised.keys?.auth || !serialised.keys.p256dh) {
+    if (
+      !serialised.endpoint ||
+      !serialised.keys?.auth ||
+      !serialised.keys.p256dh
+    ) {
       return { ok: false, reason: "save" };
     }
 

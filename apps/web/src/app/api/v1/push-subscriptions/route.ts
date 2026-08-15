@@ -80,10 +80,13 @@ export async function DELETE(request: Request) {
       webPushSubscriptionResponseSchema.parse({ subscribed: false }),
     );
   } catch {
-    Sentry.captureMessage("Web Push subscription removal failed unexpectedly.", {
-      level: "error",
-      tags: { operation: "web_push_subscription_remove" },
-    });
+    Sentry.captureMessage(
+      "Web Push subscription removal failed unexpectedly.",
+      {
+        level: "error",
+        tags: { operation: "web_push_subscription_remove" },
+      },
+    );
     return NextResponse.json(
       { message: "We could not disable notifications on this device." },
       { status: 500 },

@@ -40,49 +40,54 @@ const noteSchema = z
 
 const dateSchema = z.iso.date({ error: "Choose a valid date." });
 const observationsSchema = z.array(z.enum(healthLogObservations)).max(6);
+const healthLogBaseSchema = z.object({
+  localDate: dateSchema,
+  note: noteSchema,
+  observations: observationsSchema,
+  petId: z.uuid(),
+  status: z.enum(healthLogStatuses, {
+    error: "Choose how your pet was feeling.",
+  }),
+  timezone: timezoneSchema,
+});
 
-function healthLogFields<T extends z.ZodRawShape>(shape: T) {
-  return z
-    .object({
-      ...shape,
-      localDate: dateSchema,
-      note: noteSchema,
-      observations: observationsSchema,
-      petId: z.uuid(),
-      status: z.enum(healthLogStatuses, {
-        error: "Choose how your pet was feeling.",
-      }),
-      timezone: timezoneSchema,
-    })
-    .superRefine((value, context) => {
-      const invalid = value.observations.find(
-        (observation) =>
-          !isHealthLogObservationForStatus(observation, value.status),
-      );
-      if (invalid) {
-        context.addIssue({
-          code: "custom",
-          message: "Choose descriptions that match the selected emotion.",
-          path: ["observations"],
-        });
-      }
-    });
+function observationsMatchStatus(value: z.output<typeof healthLogBaseSchema>) {
+  return value.observations.every((observation) =>
+    isHealthLogObservationForStatus(observation, value.status),
+  );
 }
 
-export const createHealthLogSchema = healthLogFields({
-  creationRequestId: z.uuid(),
-});
+const matchingObservations = {
+  message: "Choose descriptions that match the selected emotion.",
+  path: ["observations"],
+};
 
-export const updateHealthLogSchema = healthLogFields({
-  healthLogId: z.uuid(),
-  retainedImageIndexes: z
-    .array(z.number().int().min(0).max(MAX_HEALTH_LOG_IMAGES - 1))
-    .max(MAX_HEALTH_LOG_IMAGES),
-});
+export const createHealthLogSchema = healthLogBaseSchema
+  .extend({ creationRequestId: z.uuid() })
+  .refine(observationsMatchStatus, matchingObservations);
+
+export const updateHealthLogSchema = healthLogBaseSchema
+  .extend({
+    healthLogId: z.uuid(),
+    retainedImageIndexes: z
+      .array(
+        z
+          .number()
+          .int()
+          .min(0)
+          .max(MAX_HEALTH_LOG_IMAGES - 1),
+      )
+      .max(MAX_HEALTH_LOG_IMAGES),
+  })
+  .refine(observationsMatchStatus, matchingObservations);
 
 export const healthLogQuerySchema = z.discriminatedUnion("scope", [
   z
-    .object({ localDate: dateSchema, petId: z.uuid(), scope: z.literal("date") })
+    .object({
+      localDate: dateSchema,
+      petId: z.uuid(),
+      scope: z.literal("date"),
+    })
     .strict(),
   z
     .object({
@@ -134,7 +139,10 @@ export const webPushSubscriptionSchema = z
     endpoint: z
       .url()
       .max(2_048)
-      .refine((value) => value.startsWith("https://"), "Use a secure push endpoint."),
+      .refine(
+        (value) => value.startsWith("https://"),
+        "Use a secure push endpoint.",
+      ),
     p256dh: z.string().min(1).max(512),
   })
   .strict();

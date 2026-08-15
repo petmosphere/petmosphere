@@ -3,8 +3,25 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
+      "env": [
+        "APP_ENV",
+        "NEXT_PUBLIC_APP_ENV",
+        "NEXT_PUBLIC_APP_URL",
+        "NEXT_PUBLIC_SENTRY_DSN",
+        "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_WEB_PUSH_VAPID_PUBLIC_KEY",
+        "SENTRY_DSN",
+        "WEB_PUSH_SUBJECT"
+      ],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+      "passThroughEnv": [
+        "CRON_SECRET",
+        "SENTRY_AUTH_TOKEN",
+        "SUPABASE_SECRET_KEY",
+        "WEB_PUSH_VAPID_PRIVATE_KEY"
+      ]
     },
     "dev": {
       "cache": false,

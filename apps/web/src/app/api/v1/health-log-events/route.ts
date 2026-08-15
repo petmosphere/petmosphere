@@ -7,14 +7,14 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 function toRow(event: HealthLogAnalyticsEvent) {
-  if (event.event !== "health_log_completed") {
-    return { event_name: event.event };
-  }
   return {
     event_name: event.event,
-    image_count: event.imageCount,
-    optional_field_count: event.optionalFieldCount,
-    time_to_complete_ms: event.timeToCompleteMs,
+    image_count:
+      event.event === "health_log_completed" ? event.imageCount : null,
+    optional_field_count:
+      event.event === "health_log_completed" ? event.optionalFieldCount : null,
+    time_to_complete_ms:
+      event.event === "health_log_completed" ? event.timeToCompleteMs : null,
   };
 }
 

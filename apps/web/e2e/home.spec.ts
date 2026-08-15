@@ -260,7 +260,9 @@ test("completes account and password recovery against local Supabase", async ({
   await page.getByRole("button", { name: "Save changes" }).click();
   await expect(page.getByRole("heading", { name: "Log saved!" })).toBeVisible();
   await page.getByRole("button", { name: "View health diary" }).click();
-  await expect(page.getByRole("heading", { name: "Health Diary" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Health Diary" }),
+  ).toBeVisible();
   await page.getByRole("link", { name: "Home" }).click();
   await page.reload();
   await expect(page.getByText("Max", { exact: true })).toBeVisible();

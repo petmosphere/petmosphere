@@ -13,7 +13,9 @@ export const runtime = "nodejs";
 
 function isAuthorised(request: Request) {
   const secret = process.env.CRON_SECRET;
-  const supplied = request.headers.get("authorization")?.replace(/^Bearer /, "");
+  const supplied = request.headers
+    .get("authorization")
+    ?.replace(/^Bearer /, "");
   if (!secret || !supplied) return false;
 
   const expectedBuffer = Buffer.from(secret);

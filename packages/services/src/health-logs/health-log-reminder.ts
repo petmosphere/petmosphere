@@ -1,6 +1,9 @@
 import type { HealthLogReminder } from "@petmosphere/domain";
 
-import { PetMembershipError, type HealthLogRepository } from "./save-health-log";
+import {
+  PetMembershipError,
+  type HealthLogRepository,
+} from "./save-health-log";
 
 export type HealthLogReminderRepository = {
   find(ownerId: string, petId: string): Promise<HealthLogReminder | null>;
@@ -21,7 +24,12 @@ export async function getHealthLogReminder(
 
 export async function saveHealthLogReminder(
   ownerId: string,
-  input: { enabled: boolean; localTime: string; petId: string; timezone: string },
+  input: {
+    enabled: boolean;
+    localTime: string;
+    petId: string;
+    timezone: string;
+  },
   healthLogs: HealthLogRepository,
   reminders: HealthLogReminderRepository,
 ) {

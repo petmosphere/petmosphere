@@ -72,7 +72,8 @@ function knownError(error: unknown) {
     return NextResponse.json(
       {
         code: "HEALTH_LOG_CONFLICT",
-        message: "A health log for this date already exists. Open it to continue.",
+        message:
+          "A health log for this date already exists. Open it to continue.",
       },
       { status: 409 },
     );
@@ -128,9 +129,12 @@ export async function POST(request: Request) {
       createHealthLogRepository(supabase),
       createHealthLogImageStorage(supabase),
     );
-    return NextResponse.json(await getHealthLogResponse(supabase, result.healthLog), {
-      status: result.created ? 201 : 200,
-    });
+    return NextResponse.json(
+      await getHealthLogResponse(supabase, result.healthLog),
+      {
+        status: result.created ? 201 : 200,
+      },
+    );
   } catch (error) {
     const response = knownError(error);
     if (response) return response;
@@ -209,7 +213,10 @@ export async function DELETE(request: Request) {
   try {
     const parsed = deleteHealthLogSchema.safeParse(await request.json());
     if (!parsed.success) {
-      return NextResponse.json({ message: "Check the health log details." }, { status: 400 });
+      return NextResponse.json(
+        { message: "Check the health log details." },
+        { status: 400 },
+      );
     }
     await deleteHealthLog(
       user.id,

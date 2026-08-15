@@ -14,9 +14,24 @@ describe("health log reminder delivery", () => {
           },
         ],
         listSubscriptions: async () => [
-          { auth: "a", endpoint: "https://push.test/1", id: "one", p256dh: "p" },
-          { auth: "a", endpoint: "https://push.test/2", id: "two", p256dh: "p" },
-          { auth: "a", endpoint: "https://push.test/3", id: "three", p256dh: "p" },
+          {
+            auth: "a",
+            endpoint: "https://push.test/1",
+            id: "one",
+            p256dh: "p",
+          },
+          {
+            auth: "a",
+            endpoint: "https://push.test/2",
+            id: "two",
+            p256dh: "p",
+          },
+          {
+            auth: "a",
+            endpoint: "https://push.test/3",
+            id: "three",
+            p256dh: "p",
+          },
         ],
         removeSubscription: async (id) => {
           removed.push(id);

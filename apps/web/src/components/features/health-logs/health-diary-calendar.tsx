@@ -62,18 +62,40 @@ export function HealthDiaryCalendar({
 
       <div className="mt-8 rounded-3xl bg-white p-4 shadow-sm">
         <div className="flex items-center justify-between">
-          <button aria-label="Previous month" className="grid size-11 place-items-center rounded-full text-stone-500 active:scale-[0.97]" onClick={() => onMonthChange(moveMonth(month, -1))} type="button"><ChevronLeft aria-hidden="true" /></button>
+          <button
+            aria-label="Previous month"
+            className="grid size-11 place-items-center rounded-full text-stone-500 active:scale-[0.97]"
+            onClick={() => onMonthChange(moveMonth(month, -1))}
+            type="button"
+          >
+            <ChevronLeft aria-hidden="true" />
+          </button>
           <h2 className="text-lg font-semibold">
-            {new Intl.DateTimeFormat("en-AU", { month: "long", timeZone: "UTC", year: "numeric" }).format(first)}
+            {new Intl.DateTimeFormat("en-AU", {
+              month: "long",
+              timeZone: "UTC",
+              year: "numeric",
+            }).format(first)}
           </h2>
-          <button aria-label="Next month" className="grid size-11 place-items-center rounded-full text-stone-500 disabled:opacity-30 active:scale-[0.97]" disabled={month >= today.slice(0, 7)} onClick={() => onMonthChange(moveMonth(month, 1))} type="button"><ChevronRight aria-hidden="true" /></button>
+          <button
+            aria-label="Next month"
+            className="grid size-11 place-items-center rounded-full text-stone-500 active:scale-[0.97] disabled:opacity-30"
+            disabled={month >= today.slice(0, 7)}
+            onClick={() => onMonthChange(moveMonth(month, 1))}
+            type="button"
+          >
+            <ChevronRight aria-hidden="true" />
+          </button>
         </div>
         <div className="mt-3 grid grid-cols-7 text-center text-xs font-medium text-stone-400">
-          {weekdays.map((day, index) => <span key={`${day}-${index}`}>{day}</span>)}
+          {weekdays.map((day, index) => (
+            <span key={`${day}-${index}`}>{day}</span>
+          ))}
         </div>
         <div className="mt-2 grid grid-cols-7 gap-y-1">
           {cells.map((date, index) => {
-            if (!date) return <span aria-hidden="true" key={`empty-${index}`} />;
+            if (!date)
+              return <span aria-hidden="true" key={`empty-${index}`} />;
             const log = byDate.get(date);
             const details = log ? healthLogStatusDetails[log.status] : null;
             const Icon = details?.icon;
@@ -88,7 +110,15 @@ export function HealthDiaryCalendar({
                 type="button"
               >
                 <span>{Number(date.slice(-2))}</span>
-                {Icon ? <Icon aria-hidden="true" className={`mt-0.5 size-4 ${details?.selectedClass.split(" ").at(-1)}`} strokeWidth={2} /> : <span className="mt-1 size-1 rounded-full bg-stone-200" />}
+                {Icon ? (
+                  <Icon
+                    aria-hidden="true"
+                    className={`mt-0.5 size-4 ${details?.selectedClass.split(" ").at(-1)}`}
+                    strokeWidth={2}
+                  />
+                ) : (
+                  <span className="mt-1 size-1 rounded-full bg-stone-200" />
+                )}
               </button>
             );
           })}

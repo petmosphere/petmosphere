@@ -96,10 +96,7 @@ export function createHealthLogRepository(
         };
       }
       if (error?.code === "23505") {
-        const retry = await findByRequest(
-          log.ownerId,
-          log.creationRequestId,
-        );
+        const retry = await findByRequest(log.ownerId, log.creationRequestId);
         if (retry) return { created: false, healthLog: retry };
         throw new HealthLogConflictError(
           "A health log already exists for this date.",

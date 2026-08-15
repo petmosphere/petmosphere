@@ -3,6 +3,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { HealthLogForm } from "./health-log-form";
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
+
 afterEach(() => {
   vi.unstubAllGlobals();
 });
@@ -52,7 +56,9 @@ describe("HealthLogForm", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "Okay" }));
     const note = screen.getByLabelText(/Add notes/);
-    fireEvent.change(note, { target: { value: "Max was quieter after lunch." } });
+    fireEvent.change(note, {
+      target: { value: "Max was quieter after lunch." },
+    });
     fireEvent.click(screen.getByRole("button", { name: "Save log" }));
 
     expect(

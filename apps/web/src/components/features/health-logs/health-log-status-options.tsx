@@ -54,9 +54,11 @@ export function HealthLogStatusOptions({
         </span>
       </legend>
       <div className="mt-3 grid grid-cols-3 gap-3">
-        {(Object.entries(healthLogStatusDetails) as Array<
-          [HealthLogStatus, (typeof healthLogStatusDetails)[HealthLogStatus]]
-        >).map(([status, details]) => {
+        {(
+          Object.entries(healthLogStatusDetails) as Array<
+            [HealthLogStatus, (typeof healthLogStatusDetails)[HealthLogStatus]]
+          >
+        ).map(([status, details]) => {
           const selected = value === status;
           const Icon = details.icon;
           return (
@@ -68,15 +70,25 @@ export function HealthLogStatusOptions({
               type="button"
             >
               <span>
-                <Icon aria-hidden="true" className="mx-auto size-9" strokeWidth={1.7} />
-                <span className="mt-2 block font-semibold">{details.label}</span>
+                <Icon
+                  aria-hidden="true"
+                  className="mx-auto size-9"
+                  strokeWidth={1.7}
+                />
+                <span className="mt-2 block font-semibold">
+                  {details.label}
+                </span>
               </span>
             </button>
           );
         })}
       </div>
       {error ? (
-        <p className="mt-2 text-sm text-red-600" id="health-status-error" role="alert">
+        <p
+          className="mt-2 text-sm text-red-600"
+          id="health-status-error"
+          role="alert"
+        >
           {error}
         </p>
       ) : null}

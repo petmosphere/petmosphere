@@ -28,10 +28,20 @@ function notFound(error: unknown) {
 
 export async function POST(request: Request) {
   const { supabase, user } = await requireUser();
-  if (!user) return NextResponse.json({ message: "Sign in to view reminders." }, { status: 401 });
+  if (!user)
+    return NextResponse.json(
+      { message: "Sign in to view reminders." },
+      { status: 401 },
+    );
   try {
-    const parsed = healthLogReminderSchema.pick({ petId: true }).safeParse(await request.json());
-    if (!parsed.success) return NextResponse.json({ message: "Check the reminder request." }, { status: 400 });
+    const parsed = healthLogReminderSchema
+      .pick({ petId: true })
+      .safeParse(await request.json());
+    if (!parsed.success)
+      return NextResponse.json(
+        { message: "Check the reminder request." },
+        { status: 400 },
+      );
     const reminder = await getHealthLogReminder(
       user.id,
       parsed.data.petId,
@@ -39,9 +49,7 @@ export async function POST(request: Request) {
       createHealthLogReminderRepository(supabase),
     );
     return NextResponse.json(
-      reminder
-        ? healthLogReminderResponseSchema.parse(reminder)
-        : null,
+      reminder ? healthLogReminderResponseSchema.parse(reminder) : null,
     );
   } catch (error) {
     const response = notFound(error);
@@ -50,16 +58,27 @@ export async function POST(request: Request) {
       level: "error",
       tags: { operation: "health_log_reminder_lookup" },
     });
-    return NextResponse.json({ message: "We could not load the reminder." }, { status: 500 });
+    return NextResponse.json(
+      { message: "We could not load the reminder." },
+      { status: 500 },
+    );
   }
 }
 
 export async function PUT(request: Request) {
   const { supabase, user } = await requireUser();
-  if (!user) return NextResponse.json({ message: "Sign in to save reminders." }, { status: 401 });
+  if (!user)
+    return NextResponse.json(
+      { message: "Sign in to save reminders." },
+      { status: 401 },
+    );
   try {
     const parsed = healthLogReminderSchema.safeParse(await request.json());
-    if (!parsed.success) return NextResponse.json({ message: parsed.error.issues[0]?.message ?? "Check the reminder." }, { status: 400 });
+    if (!parsed.success)
+      return NextResponse.json(
+        { message: parsed.error.issues[0]?.message ?? "Check the reminder." },
+        { status: 400 },
+      );
     const reminder = await saveHealthLogReminder(
       user.id,
       parsed.data,
@@ -74,6 +93,9 @@ export async function PUT(request: Request) {
       level: "error",
       tags: { operation: "health_log_reminder_save" },
     });
-    return NextResponse.json({ message: "We could not save the reminder. Try again." }, { status: 500 });
+    return NextResponse.json(
+      { message: "We could not save the reminder. Try again." },
+      { status: 500 },
+    );
   }
 }

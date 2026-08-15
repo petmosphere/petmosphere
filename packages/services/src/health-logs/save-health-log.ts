@@ -108,10 +108,14 @@ export async function createHealthLog(
 
   const localDate = input.localDate;
   if (localDate > deriveLocalDate(now, input.timezone)) {
-    throw new FutureHealthLogDateError("Health logs cannot be dated in the future.");
+    throw new FutureHealthLogDateError(
+      "Health logs cannot be dated in the future.",
+    );
   }
   if (await repository.findByPetAndDate(ownerId, input.petId, localDate)) {
-    throw new HealthLogConflictError("A health log already exists for this date.");
+    throw new HealthLogConflictError(
+      "A health log already exists for this date.",
+    );
   }
 
   const healthLogId = crypto.randomUUID();
@@ -170,16 +174,22 @@ export async function updateHealthLog(
     throw new PetMembershipError("Health log not found.");
   }
   if (input.localDate > deriveLocalDate(now, input.timezone)) {
-    throw new FutureHealthLogDateError("Health logs cannot be dated in the future.");
+    throw new FutureHealthLogDateError(
+      "Health logs cannot be dated in the future.",
+    );
   }
   const retainedPaths = input.retainedImageIndexes.map(
     (index) => existing.imagePaths[index],
   );
   if (retainedPaths.some((path) => !path)) {
-    throw new HealthLogImageLimitError("Reload the health log before changing photos.");
+    throw new HealthLogImageLimitError(
+      "Reload the health log before changing photos.",
+    );
   }
   if (new Set(retainedPaths).size !== retainedPaths.length) {
-    throw new HealthLogImageLimitError("Each retained photo can be selected once.");
+    throw new HealthLogImageLimitError(
+      "Each retained photo can be selected once.",
+    );
   }
   if (retainedPaths.length + input.images.length > maxHealthLogImages) {
     throw new HealthLogImageLimitError(

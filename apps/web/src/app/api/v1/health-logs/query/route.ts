@@ -24,7 +24,10 @@ export async function POST(request: Request) {
   try {
     const parsed = healthLogQuerySchema.safeParse(await request.json());
     if (!parsed.success) {
-      return NextResponse.json({ message: "Check the diary request." }, { status: 400 });
+      return NextResponse.json(
+        { message: "Check the diary request." },
+        { status: 400 },
+      );
     }
     const repository = createHealthLogRepository(supabase);
     if (!(await repository.ownerHasPet(data.user.id, parsed.data.petId))) {

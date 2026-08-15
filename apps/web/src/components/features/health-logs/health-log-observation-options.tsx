@@ -19,7 +19,9 @@ export function HealthLogObservationOptions({
   return (
     <fieldset className="mt-7">
       <legend className="text-lg font-bold">What did you notice?</legend>
-      <p className="mt-1 text-sm text-stone-500">Tap all that apply (optional)</p>
+      <p className="mt-1 text-sm text-stone-500">
+        Tap all that apply (optional)
+      </p>
       <div className="mt-3 grid grid-cols-2 gap-3">
         {healthLogObservationsByStatus[status].map((observation) => {
           const selected = value.includes(observation);
@@ -37,8 +39,12 @@ export function HealthLogObservationOptions({
               }
               type="button"
             >
-              <span className={`grid size-5 shrink-0 place-items-center rounded-md border ${selected ? "border-white bg-white text-[#a96225]" : "border-stone-300"}`}>
-                {selected ? <Check aria-hidden="true" className="size-3.5" /> : null}
+              <span
+                className={`grid size-5 shrink-0 place-items-center rounded-md border ${selected ? "border-white bg-white text-[#a96225]" : "border-stone-300"}`}
+              >
+                {selected ? (
+                  <Check aria-hidden="true" className="size-3.5" />
+                ) : null}
               </span>
               {healthLogObservationDetails[observation]}
             </button>

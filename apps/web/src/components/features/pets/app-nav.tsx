@@ -32,11 +32,25 @@ export function AppNav({
           className={`flex min-h-12 flex-col items-center justify-center rounded-full text-xs font-medium ${active === "diary" ? "bg-white text-[#ed802a]" : "text-stone-500"}`}
           href={diaryHref}
         >
-          <CalendarDays aria-hidden="true" className="mb-0.5 size-5" strokeWidth={1.8} />
+          <CalendarDays
+            aria-hidden="true"
+            className="mb-0.5 size-5"
+            strokeWidth={1.8}
+          />
           Diary
         </Link>
       ) : (
-        <span aria-disabled="true" className="flex min-h-12 flex-col items-center justify-center text-xs text-stone-500"><CalendarDays aria-hidden="true" className="mb-0.5 size-5" strokeWidth={1.7} />Diary</span>
+        <span
+          aria-disabled="true"
+          className="flex min-h-12 flex-col items-center justify-center text-xs text-stone-500"
+        >
+          <CalendarDays
+            aria-hidden="true"
+            className="mb-0.5 size-5"
+            strokeWidth={1.7}
+          />
+          Diary
+        </span>
       )}
       {unavailableItems.map(({ icon: Icon, label }) => (
         <span

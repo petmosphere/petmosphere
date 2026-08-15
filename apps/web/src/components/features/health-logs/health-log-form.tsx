@@ -11,15 +11,23 @@ import {
   type CreateHealthLogInput,
   type HealthLogResponse,
 } from "@petmosphere/api-contracts";
-import { deriveLocalDate, type HealthLogObservation } from "@petmosphere/domain";
+import {
+  deriveLocalDate,
+  type HealthLogObservation,
+} from "@petmosphere/domain";
 import { CalendarDays, Camera, LoaderCircle, WifiOff, X } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
 import { trackHealthLogEvent } from "@/lib/health-logs/analytics";
 import { HealthLogObservationOptions } from "./health-log-observation-options";
 import { HealthLogStatusOptions } from "./health-log-status-options";
+
+function elapsedMilliseconds(startedAt: number) {
+  return Math.min(Date.now() - startedAt, 86_400_000);
+}
 
 export function HealthLogForm({
   existing,
@@ -38,10 +46,11 @@ export function HealthLogForm({
   petId: string;
   petName: string;
 }) {
+  const router = useRouter();
   const [startedAt] = useState(() => Date.now());
   const [images, setImages] = useState<File[]>([]);
-  const [retainedImageIndexes, setRetainedImageIndexes] = useState(() =>
-    existing?.imageUrls.map((_, index) => index) ?? [],
+  const [retainedImageIndexes, setRetainedImageIndexes] = useState(
+    () => existing?.imageUrls.map((_, index) => index) ?? [],
   );
   const [imageError, setImageError] = useState<string>();
   const [serverError, setServerError] = useState<string>();
@@ -62,8 +71,8 @@ export function HealthLogForm({
       note: existing?.note ?? "",
       observations: existing?.observations ?? [],
       petId,
-      status: existing?.status,
       timezone,
+      ...(existing ? { status: existing.status } : {}),
     },
     mode: "onChange",
     resolver: zodResolver(createHealthLogSchema),
@@ -136,7 +145,10 @@ export function HealthLogForm({
     formData.set("timezone", values.timezone);
     if (existing) {
       formData.set("healthLogId", existing.id);
-      formData.set("retainedImageIndexes", JSON.stringify(retainedImageIndexes));
+      formData.set(
+        "retainedImageIndexes",
+        JSON.stringify(retainedImageIndexes),
+      );
     }
     images.forEach((image) => formData.append("images", image));
 
@@ -146,7 +158,7 @@ export function HealthLogForm({
         method: existing ? "PATCH" : "POST",
       });
       if (response.status === 401) {
-        window.location.assign("/auth/sign-in?next=/home");
+        router.push("/auth/sign-in?next=/home");
         return;
       }
       const body: unknown = await response.json();
@@ -176,7 +188,7 @@ export function HealthLogForm({
           Number(Boolean(values.note?.trim())) +
           Number(values.observations.length > 0) +
           Number(healthLog.imageUrls.length > 0),
-        timeToCompleteMs: Math.min(Date.now() - startedAt, 86_400_000),
+        timeToCompleteMs: elapsedMilliseconds(startedAt),
       });
       onSaved(healthLog);
     } catch {
@@ -191,10 +203,16 @@ export function HealthLogForm({
     <form className="pb-8" noValidate onSubmit={submit}>
       <div className="mb-7">
         <label className="text-lg font-bold" htmlFor="health-log-date">
-          Date <span aria-hidden="true" className="text-red-600">*</span>
+          Date{" "}
+          <span aria-hidden="true" className="text-red-600">
+            *
+          </span>
         </label>
         <div className="relative mt-3">
-          <CalendarDays aria-hidden="true" className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-[#ed802a]" />
+          <CalendarDays
+            aria-hidden="true"
+            className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-[#ed802a]"
+          />
           <input
             {...register("localDate")}
             aria-invalid={Boolean(errors.localDate)}
@@ -204,14 +222,21 @@ export function HealthLogForm({
             type="date"
           />
         </div>
-        {errors.localDate ? <p className="mt-2 text-sm text-red-600" role="alert">{errors.localDate.message}</p> : null}
+        {errors.localDate ? (
+          <p className="mt-2 text-sm text-red-600" role="alert">
+            {errors.localDate.message}
+          </p>
+        ) : null}
       </div>
 
       <HealthLogStatusOptions
-        error={errors.status?.message}
+        {...(errors.status?.message ? { error: errors.status.message } : {})}
         onChange={(value) => {
           if (value !== status) setValue("observations", []);
-          setValue("status", value, { shouldDirty: true, shouldValidate: true });
+          setValue("status", value, {
+            shouldDirty: true,
+            shouldValidate: true,
+          });
           clearErrors("status");
         }}
         petName={petName}
@@ -221,7 +246,10 @@ export function HealthLogForm({
       {status ? (
         <HealthLogObservationOptions
           onChange={(value: HealthLogObservation[]) =>
-            setValue("observations", value, { shouldDirty: true, shouldValidate: true })
+            setValue("observations", value, {
+              shouldDirty: true,
+              shouldValidate: true,
+            })
           }
           status={status}
           value={observations ?? []}
@@ -231,9 +259,12 @@ export function HealthLogForm({
       <div className="mt-7">
         <div className="flex items-end justify-between gap-3">
           <label className="text-lg font-bold" htmlFor="health-log-note">
-            Add notes <span className="font-normal text-stone-500">(optional)</span>
+            Add notes{" "}
+            <span className="font-normal text-stone-500">(optional)</span>
           </label>
-          <span className="text-xs text-stone-400">{note?.length ?? 0}/{MAX_HEALTH_LOG_NOTE_LENGTH}</span>
+          <span className="text-xs text-stone-400">
+            {note?.length ?? 0}/{MAX_HEALTH_LOG_NOTE_LENGTH}
+          </span>
         </div>
         <textarea
           {...register("note")}
@@ -246,43 +277,139 @@ export function HealthLogForm({
       </div>
 
       <fieldset className="mt-7">
-        <legend className="text-lg font-bold">Add photos <span className="font-normal text-stone-500">(optional)</span></legend>
-        <p className="mt-1 text-sm text-stone-500">Up to four private photos · 4 MB each</p>
+        <legend className="text-lg font-bold">
+          Add photos{" "}
+          <span className="font-normal text-stone-500">(optional)</span>
+        </legend>
+        <p className="mt-1 text-sm text-stone-500">
+          Up to four private photos · 4 MB each
+        </p>
         <div className="mt-3 grid grid-cols-3 gap-3">
           {existing?.imageUrls.map((url, index) =>
             retainedImageIndexes.includes(index) ? (
-              <div className="relative aspect-square overflow-hidden rounded-2xl" key={url}>
-                <Image alt={`Saved health log photo ${index + 1}`} className="object-cover" fill sizes="112px" src={url} unoptimized />
-                <button aria-label={`Remove saved photo ${index + 1}`} className="absolute top-1 right-1 grid size-9 place-items-center rounded-full bg-stone-950/70 text-white" onClick={() => setRetainedImageIndexes((current) => current.filter((item) => item !== index))} type="button"><X aria-hidden="true" className="size-4" /></button>
+              <div
+                className="relative aspect-square overflow-hidden rounded-2xl"
+                key={url}
+              >
+                <Image
+                  alt={`Saved health log photo ${index + 1}`}
+                  className="object-cover"
+                  fill
+                  sizes="112px"
+                  src={url}
+                  unoptimized
+                />
+                <button
+                  aria-label={`Remove saved photo ${index + 1}`}
+                  className="absolute top-1 right-1 grid size-9 place-items-center rounded-full bg-stone-950/70 text-white"
+                  onClick={() =>
+                    setRetainedImageIndexes((current) =>
+                      current.filter((item) => item !== index),
+                    )
+                  }
+                  type="button"
+                >
+                  <X aria-hidden="true" className="size-4" />
+                </button>
               </div>
             ) : null,
           )}
           {previews.map((url, index) => (
-            <div className="relative aspect-square overflow-hidden rounded-2xl" key={url}>
-              <Image alt={`Selected health log photo ${index + 1}`} className="object-cover" fill sizes="112px" src={url} unoptimized />
-              <button aria-label={`Remove selected photo ${index + 1}`} className="absolute top-1 right-1 grid size-9 place-items-center rounded-full bg-stone-950/70 text-white" onClick={() => setImages((current) => current.filter((_, imageIndex) => imageIndex !== index))} type="button"><X aria-hidden="true" className="size-4" /></button>
+            <div
+              className="relative aspect-square overflow-hidden rounded-2xl"
+              key={url}
+            >
+              <Image
+                alt={`Selected health log photo ${index + 1}`}
+                className="object-cover"
+                fill
+                sizes="112px"
+                src={url}
+                unoptimized
+              />
+              <button
+                aria-label={`Remove selected photo ${index + 1}`}
+                className="absolute top-1 right-1 grid size-9 place-items-center rounded-full bg-stone-950/70 text-white"
+                onClick={() =>
+                  setImages((current) =>
+                    current.filter((_, imageIndex) => imageIndex !== index),
+                  )
+                }
+                type="button"
+              >
+                <X aria-hidden="true" className="size-4" />
+              </button>
             </div>
           ))}
-          {retainedImageIndexes.length + images.length < MAX_HEALTH_LOG_IMAGES ? (
-            <label className="grid aspect-square min-h-24 cursor-pointer place-items-center rounded-2xl border-2 border-dashed border-[#d7b28b] bg-white text-center text-sm font-medium text-[#a96225] focus-within:outline-2 focus-within:outline-[#ed802a]" htmlFor="health-log-images">
-              <span><Camera aria-hidden="true" className="mx-auto mb-1 size-6" />Choose photos</span>
-              <input accept={HEALTH_LOG_IMAGE_TYPES.join(",")} className="sr-only" id="health-log-images" multiple onChange={(event) => { chooseImages(event.target.files); event.currentTarget.value = ""; }} type="file" />
+          {retainedImageIndexes.length + images.length <
+          MAX_HEALTH_LOG_IMAGES ? (
+            <label
+              className="grid aspect-square min-h-24 cursor-pointer place-items-center rounded-2xl border-2 border-dashed border-[#d7b28b] bg-white text-center text-sm font-medium text-[#a96225] focus-within:outline-2 focus-within:outline-[#ed802a]"
+              htmlFor="health-log-images"
+            >
+              <span>
+                <Camera aria-hidden="true" className="mx-auto mb-1 size-6" />
+                Choose photos
+              </span>
+              <input
+                accept={HEALTH_LOG_IMAGE_TYPES.join(",")}
+                className="sr-only"
+                id="health-log-images"
+                multiple
+                onChange={(event) => {
+                  chooseImages(event.target.files);
+                  event.currentTarget.value = "";
+                }}
+                type="file"
+              />
             </label>
           ) : null}
         </div>
-        {imageError ? <p className="mt-2 text-sm text-red-600" role="alert">{imageError}</p> : null}
+        {imageError ? (
+          <p className="mt-2 text-sm text-red-600" role="alert">
+            {imageError}
+          </p>
+        ) : null}
       </fieldset>
 
       {serverError ? (
-        <div className="mt-6 rounded-2xl border border-[#efb3ae] bg-[#fff0ef] p-4 text-sm text-[#9f342d]" role="alert">
-          <div className="flex gap-3"><WifiOff aria-hidden="true" className="mt-0.5 size-5 shrink-0" /><p>{serverError}</p></div>
+        <div
+          className="mt-6 rounded-2xl border border-[#efb3ae] bg-[#fff0ef] p-4 text-sm text-[#9f342d]"
+          role="alert"
+        >
+          <div className="flex gap-3">
+            <WifiOff aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
+            <p>{serverError}</p>
+          </div>
         </div>
       ) : null}
 
       <div className="mt-7 grid grid-cols-[1fr_2fr] gap-3">
-        <button className="min-h-14 rounded-2xl border border-[#e8d0b3] bg-white font-semibold text-stone-600 active:scale-[0.98]" onClick={onCancel} type="button">Cancel</button>
-        <button className="flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-[#f47b20] px-5 font-semibold text-white shadow-lg shadow-[#f47b20]/20 transition-transform duration-150 ease-out enabled:active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-500 disabled:shadow-none" disabled={!status || !localDate || isSubmitting} type="submit">
-          {isSubmitting ? <><LoaderCircle aria-hidden="true" className="size-5 animate-spin" />Saving…</> : existing ? "Save changes" : "Save log"}
+        <button
+          className="min-h-14 rounded-2xl border border-[#e8d0b3] bg-white font-semibold text-stone-600 active:scale-[0.98]"
+          onClick={onCancel}
+          type="button"
+        >
+          Cancel
+        </button>
+        <button
+          className="flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-[#f47b20] px-5 font-semibold text-white shadow-lg shadow-[#f47b20]/20 transition-transform duration-150 ease-out enabled:active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-500 disabled:shadow-none"
+          disabled={!status || !localDate || isSubmitting}
+          type="submit"
+        >
+          {isSubmitting ? (
+            <>
+              <LoaderCircle
+                aria-hidden="true"
+                className="size-5 animate-spin"
+              />
+              Saving…
+            </>
+          ) : existing ? (
+            "Save changes"
+          ) : (
+            "Save log"
+          )}
         </button>
       </div>
     </form>
