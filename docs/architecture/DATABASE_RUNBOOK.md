@@ -50,7 +50,7 @@ configure the web app.
 Use staging as the normal remote link:
 
 ```bash
-supabase link --project-ref STAGING_PROJECT_REF
+supabase link --project-ref voznszbrzjewutugewkt
 supabase migration list
 ```
 
@@ -139,7 +139,7 @@ staging.
 2. Confirm the CLI is linked to staging:
 
    ```bash
-   supabase link --project-ref STAGING_PROJECT_REF
+   supabase link --project-ref voznszbrzjewutugewkt
    supabase migration list
    ```
 
@@ -177,7 +177,7 @@ Apply production migrations separately from application deployment so failures
 are visible:
 
 ```bash
-supabase link --project-ref PRODUCTION_PROJECT_REF
+supabase link --project-ref cgrfodgltaliszixosiq
 supabase migration list
 supabase db push --dry-run
 supabase db push
@@ -190,7 +190,7 @@ Supabase, Vercel, and Sentry. Afterwards, immediately restore the safer default
 link:
 
 ```bash
-supabase link --project-ref STAGING_PROJECT_REF
+supabase link --project-ref voznszbrzjewutugewkt
 ```
 
 ## Safe schema evolution
