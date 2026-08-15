@@ -9,6 +9,7 @@ test("shows the Petmosphere homepage", async ({ page, request }) => {
       name: "Track your pet’s wellness in 10 seconds a day",
     }),
   ).toBeVisible();
+  await expect(page.getByRole("link", { name: "Log in" })).toBeVisible();
 
   const manifestResponse = await request.get("/manifest.webmanifest");
   expect(manifestResponse.ok()).toBe(true);
@@ -90,7 +91,7 @@ test("accepts a six-digit email verification code", async ({
 }) => {
   await context.addCookies([
     {
-      domain: "127.0.0.1",
+      domain: "localhost",
       httpOnly: true,
       name: "petmosphere_pending_sign_up_email",
       path: "/auth",
@@ -114,7 +115,53 @@ test("accepts a six-digit email verification code", async ({
   await expect(verifyButton).toBeEnabled();
 });
 
-test("creates and verifies an account against local Supabase", async ({
+test("guides users through password recovery states", async ({ page }) => {
+  await page.goto("/auth/sign-in");
+  await page.getByRole("link", { name: "Forgot password?" }).click();
+
+  await expect(
+    page.getByRole("heading", { name: "Reset password" }),
+  ).toBeVisible();
+  const email = page.getByLabel("Email address");
+  const sendReset = page.getByRole("button", { name: "Send Reset Link" });
+  await expect(sendReset).toBeDisabled();
+
+  await email.fill("not-an-email");
+  await expect(page.getByText("Enter a valid email address.")).toBeVisible();
+  await expect(email).toHaveAttribute("aria-invalid", "true");
+  await expect(sendReset).toBeDisabled();
+
+  await email.fill("owner@example.com");
+  await expect(sendReset).toBeEnabled();
+
+  await page.goto("/auth/reset-password");
+  const password = page.getByRole("textbox", {
+    name: "New password",
+    exact: true,
+  });
+  const confirmation = page.getByRole("textbox", {
+    name: "Confirm new password",
+  });
+  const updatePassword = page.getByRole("button", {
+    name: "Update password",
+  });
+  await password.fill("new-secure-password");
+  await confirmation.fill("different-password");
+  await expect(page.getByText("Passwords do not match.")).toBeVisible();
+  await expect(confirmation).toHaveAttribute("aria-invalid", "true");
+  await expect(updatePassword).toBeDisabled();
+
+  await confirmation.fill("new-secure-password");
+  await expect(page.getByText("Passwords do not match.")).toBeHidden();
+  await expect(updatePassword).toBeEnabled();
+
+  await page.goto("/auth/sign-in?notice=password-updated");
+  await expect(
+    page.getByText("Password updated. Sign in with your new password."),
+  ).toBeVisible();
+});
+
+test("completes account and password recovery against local Supabase", async ({
   page,
   request,
 }) => {
@@ -185,11 +232,113 @@ test("creates and verifies an account against local Supabase", async ({
 
   await page.getByRole("link", { name: "Get started" }).click();
   await expect(page).toHaveURL(/\/onboarding$/);
+  await expect(
+    page.getByRole("heading", { name: "No pets yet" }),
+  ).toBeVisible();
+  await page.getByRole("link", { name: "Add your pet" }).click();
+  await page.getByLabel(/Pet’s name/).fill("Max");
+  await page.getByRole("button", { name: "Dog" }).click();
+  await page.getByRole("button", { name: "Next" }).click();
+  await page.getByRole("button", { name: "Done" }).click();
+  await expect(page).toHaveURL(/\/home$/);
+  await expect(page.getByText("Max", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("Create your first health log", { exact: true }),
+  ).toBeVisible();
+  await page.reload();
+  await expect(page.getByText("Max", { exact: true })).toBeVisible();
+  await page.getByRole("link", { name: /Max/ }).click();
+  await expect(page.getByRole("heading", { name: "Max" })).toBeVisible();
+  await page.getByRole("link", { name: "Back to Home" }).click();
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page).toHaveURL(/\/auth\/sign-in$/);
 
   await page.getByLabel("Email address").fill(email);
-  await page.getByLabel("Password").fill("test-only-password");
-  await page.getByRole("button", { name: "Sign in" }).click();
+  await page
+    .getByRole("textbox", { name: "Password", exact: true })
+    .fill("test-only-password");
+  await page.getByRole("button", { name: "Log in" }).click();
+  await expect(page).toHaveURL(/\/onboarding$/);
+
+  await page.getByRole("button", { name: "Sign out" }).click();
+  await page.goto("/auth/forgot-password");
+  const recoveryEmail = page.getByLabel("Email address");
+  await recoveryEmail.fill(email);
+  await expect(
+    page.getByRole("button", { name: "Send Reset Link" }),
+  ).toBeEnabled();
+  await page.getByRole("button", { name: "Send Reset Link" }).click();
+  await expect(
+    page.getByText(
+      "If an account exists, a password reset link is on its way.",
+    ),
+  ).toBeVisible();
+
+  async function getPasswordResetLink() {
+    const response = await request.get(
+      "http://127.0.0.1:54324/api/v1/messages",
+    );
+    if (!response.ok()) return "";
+
+    const mailbox = (await response.json()) as {
+      messages: Array<{
+        ID: string;
+        Subject: string;
+        To: Array<{ Address: string }>;
+      }>;
+    };
+    const message = mailbox.messages.find(
+      (candidate) =>
+        candidate.Subject.toLowerCase().includes("reset") &&
+        candidate.To.some((recipient) => recipient.Address === email),
+    );
+    if (!message) return "";
+
+    const detailResponse = await request.get(
+      `http://127.0.0.1:54324/api/v1/message/${message.ID}`,
+    );
+    if (!detailResponse.ok()) return "";
+
+    const detail = (await detailResponse.json()) as {
+      HTML: string;
+      Text: string;
+    };
+    return (
+      `${detail.HTML}\n${detail.Text}`
+        .match(/https?:\/\/[^\s"'<>]+/)?.[0]
+        ?.replaceAll("&amp;", "&") ?? ""
+    );
+  }
+
+  await expect.poll(getPasswordResetLink).toMatch(/\/auth\/v1\/verify/);
+  const recoveryResponse = await request.get(await getPasswordResetLink(), {
+    maxRedirects: 0,
+  });
+  expect([302, 303]).toContain(recoveryResponse.status());
+  const redirectLocation = recoveryResponse.headers().location;
+  expect(redirectLocation).toBeTruthy();
+
+  const callbackUrl = new URL(redirectLocation!);
+  callbackUrl.port = "3100";
+  await page.goto(callbackUrl.toString());
+  await expect(page).toHaveURL(/\/auth\/reset-password$/);
+
+  await page
+    .getByRole("textbox", { name: "New password", exact: true })
+    .fill("new-test-only-password");
+  await page
+    .getByRole("textbox", { name: "Confirm new password" })
+    .fill("new-test-only-password");
+  await page.getByRole("button", { name: "Update password" }).click();
+  await expect(page).toHaveURL(/\/auth\/sign-in\?notice=password-updated$/);
+  await expect(
+    page.getByText("Password updated. Sign in with your new password."),
+  ).toBeVisible();
+
+  await page.getByLabel("Email address").fill(email);
+  await page
+    .getByRole("textbox", { name: "Password", exact: true })
+    .fill("new-test-only-password");
+  await page.getByRole("button", { name: "Log in" }).click();
   await expect(page).toHaveURL(/\/onboarding$/);
 });

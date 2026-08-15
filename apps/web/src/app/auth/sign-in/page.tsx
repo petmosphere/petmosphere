@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
 import { signInAction } from "@/app/auth/actions";
+import { AuthEntryShell } from "@/components/features/auth/auth-entry-shell";
 import { AuthForm } from "@/components/features/auth/auth-form";
-import { AuthShell } from "@/components/features/auth/auth-shell";
 
 export const metadata: Metadata = { title: "Sign in" };
 
@@ -14,9 +13,10 @@ export default async function SignInPage({
 }) {
   const params = await searchParams;
   return (
-    <AuthShell
-      description="Welcome back. Your pet’s information stays private to your account."
-      title="Sign in"
+    <AuthEntryShell
+      description="Log in to your account"
+      title="Welcome back"
+      variant="sign-in"
     >
       {params.notice === "expired-link" ? (
         <p
@@ -25,6 +25,14 @@ export default async function SignInPage({
         >
           That link is invalid or expired. Sign in or request a new password
           reset link.
+        </p>
+      ) : null}
+      {params.notice === "password-updated" ? (
+        <p
+          className="mt-5 rounded-2xl bg-[#87b35c]/15 px-4 py-3 text-sm text-green-900"
+          role="status"
+        >
+          Password updated. Sign in with your new password.
         </p>
       ) : null}
       <AuthForm
@@ -45,21 +53,13 @@ export default async function SignInPage({
         ]}
         footer={{
           href: "/auth/sign-up",
-          label: "Create one",
-          prompt: "Need an account?",
+          label: "Sign up",
+          prompt: "Don’t have an account?",
         }}
         hiddenNext={params.next}
-        submitLabel="Sign in"
+        submitLabel="Log in"
         variant="sign-in"
       />
-      <p className="mt-4 text-center text-sm">
-        <Link
-          className="font-semibold text-[#8b5b30] underline"
-          href="/auth/forgot-password"
-        >
-          Forgot password?
-        </Link>
-      </p>
-    </AuthShell>
+    </AuthEntryShell>
   );
 }

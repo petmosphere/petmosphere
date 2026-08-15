@@ -19,6 +19,7 @@
     "test:e2e": {
       "dependsOn": ["build"],
       "cache": false,
+      "passThroughEnv": ["E2E_LOCAL_AUTH"],
       "outputs": ["playwright-report/**", "test-results/**"]
     },
     "typecheck": {
