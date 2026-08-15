@@ -213,14 +213,20 @@ export async function forgotPasswordAction(
 
   try {
     const supabase = await createClient();
-    await supabase.auth.resetPasswordForEmail(parsed.data.email, {
-      redirectTo: `${getAppUrl()}/auth/callback?next=/auth/reset-password`,
-    });
-  } catch (error) {
-    const configurationError = getPublicConfigurationError(error);
-    if (configurationError) {
-      return { status: "error", message: configurationError };
+    const { error } = await supabase.auth.resetPasswordForEmail(
+      parsed.data.email,
+      {
+        redirectTo: `${getAppUrl()}/auth/callback?next=/auth/reset-password`,
+      },
+    );
+    if (error) {
+      return {
+        status: "error",
+        message: "We could not send the reset email. Wait and try again.",
+      };
     }
+  } catch (error) {
+    return { status: "error", message: publicError(error) };
   }
 
   return {
@@ -244,8 +250,8 @@ export async function resetPasswordAction(
 
   try {
     const supabase = await createClient();
-    const { data } = await supabase.auth.getUser();
-    if (!data.user) {
+    const { data, error: userError } = await supabase.auth.getUser();
+    if (userError || !data.user) {
       return {
         status: "error",
         message: "This reset link has expired. Request a new one.",
@@ -261,7 +267,7 @@ export async function resetPasswordAction(
     return { status: "error", message: publicError(error) };
   }
 
-  return { status: "success", message: "Password updated. You can continue." };
+  redirect("/auth/sign-in?notice=password-updated");
 }
 
 export async function signOutAction() {
