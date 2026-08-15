@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { EmptyPetsHome } from "@/components/features/pets/empty-pets-home";
+import { PetsHome } from "@/components/features/pets/pets-home";
 import { requireUser } from "@/lib/auth/require-user";
-import { listOwnedPets } from "@/lib/pets/supabase-pets";
+import { getPetPhotoUrl, listOwnedPets } from "@/lib/pets/supabase-pets";
 
 export const metadata: Metadata = {
-  title: "Add your first pet",
+  title: "Home",
   robots: { follow: false, index: false },
 };
 
-export default async function OnboardingPage() {
-  const { supabase, user } = await requireUser("/onboarding");
+export default async function AppHomePage() {
+  const { supabase, user } = await requireUser("/home");
   const pets = await listOwnedPets(supabase, user.id);
-  if (pets.length > 0) redirect("/home");
+  if (pets.length === 0) redirect("/onboarding");
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -24,6 +24,12 @@ export default async function OnboardingPage() {
     profile?.display_name?.trim().split(/\s+/)[0] ||
     user.user_metadata.display_name?.trim().split(/\s+/)[0] ||
     "there";
+  const petsWithPhotos = await Promise.all(
+    pets.map(async (pet) => ({
+      pet,
+      photoUrl: await getPetPhotoUrl(supabase, pet.photoPath),
+    })),
+  );
 
-  return <EmptyPetsHome displayName={displayName} />;
+  return <PetsHome displayName={displayName} pets={petsWithPhotos} />;
 }

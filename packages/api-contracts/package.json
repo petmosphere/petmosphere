@@ -11,6 +11,7 @@
     "typescript": "5.9.3"
   },
   "dependencies": {
+    "@petmosphere/domain": "workspace:*",
     "zod": "^4.4.3"
   }
 }

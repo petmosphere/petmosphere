@@ -232,6 +232,24 @@ test("completes account and password recovery against local Supabase", async ({
 
   await page.getByRole("link", { name: "Get started" }).click();
   await expect(page).toHaveURL(/\/onboarding$/);
+  await expect(
+    page.getByRole("heading", { name: "No pets yet" }),
+  ).toBeVisible();
+  await page.getByRole("link", { name: "Add your pet" }).click();
+  await page.getByLabel(/Pet’s name/).fill("Max");
+  await page.getByRole("button", { name: "Dog" }).click();
+  await page.getByRole("button", { name: "Next" }).click();
+  await page.getByRole("button", { name: "Done" }).click();
+  await expect(page).toHaveURL(/\/home$/);
+  await expect(page.getByText("Max", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("Create your first health log", { exact: true }),
+  ).toBeVisible();
+  await page.reload();
+  await expect(page.getByText("Max", { exact: true })).toBeVisible();
+  await page.getByRole("link", { name: /Max/ }).click();
+  await expect(page.getByRole("heading", { name: "Max" })).toBeVisible();
+  await page.getByRole("link", { name: "Back to Home" }).click();
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page).toHaveURL(/\/auth\/sign-in$/);
 
