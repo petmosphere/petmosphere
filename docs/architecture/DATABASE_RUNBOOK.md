@@ -71,7 +71,72 @@ supabase status
 
 Use the local URL and publishable key printed by `supabase status` in
 `apps/web/.env.local`. Local keys are development credentials and must remain
-uncommitted.
+uncommitted. Do not paste the complete `supabase status` output into tickets,
+prompts, logs, or documentation because it also contains privileged local
+credentials.
+
+Configure the web application with only the public local values:
+
+```env
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<PUBLISHABLE_KEY from supabase status>
+```
+
+Store these values in `apps/web/.env.local`, never in a committed environment
+file. Do not use the `SECRET_KEY` or `SERVICE_ROLE_KEY` as the browser
+publishable key. Restart `pnpm dev` after changing the environment file.
+
+Before exercising a feature, inspect local migration status and apply pending
+migrations without deleting existing local data:
+
+```bash
+supabase migration list --local
+supabase migration up --local
+```
+
+Use `supabase db reset --local` instead when deliberately testing a clean
+rebuild. A reset deletes all local users and application data.
+
+### Register and sign in locally
+
+With Supabase and the web application running, open:
+
+- application: <http://localhost:3000>
+- signup: <http://localhost:3000/auth/sign-up>
+- local email inbox: <http://127.0.0.1:54324>
+
+Create an account, open the verification message in the local email inbox, and
+enter its six-digit code in Petmosphere. Local email is captured by Mailpit and
+is not delivered to the real recipient. The verified account can then sign in
+through the normal local login page.
+
+### Inspect the local database
+
+Open local Supabase Studio at <http://127.0.0.1:54323>. Useful locations are:
+
+- **Authentication → Users** for registered authentication accounts
+- **Table Editor → profiles** for private application profiles
+- **Table Editor → policy_acceptances** for recorded policy versions
+- **Table Editor → pets** for owner-scoped pet records
+- **Storage → pet-photos** for private pet profile images
+
+The Studio SQL Editor can also inspect local development records:
+
+```sql
+select id, email, created_at
+from auth.users
+order by created_at desc;
+
+select * from public.profiles;
+select * from public.policy_acceptances;
+select * from public.pets order by created_at desc;
+```
+
+Studio uses administrative access and can see through RLS. Seeing a row in
+Studio proves that it exists; it does not prove that browser users are properly
+isolated. Use `supabase test db` to verify owner, other-user, and anonymous RLS
+behaviour.
 
 ### 2. Create a migration
 
