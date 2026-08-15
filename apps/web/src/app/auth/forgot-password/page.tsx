@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
 
 import { forgotPasswordAction } from "@/app/auth/actions";
+import { AuthEntryShell } from "@/components/features/auth/auth-entry-shell";
 import { AuthForm } from "@/components/features/auth/auth-form";
-import { AuthShell } from "@/components/features/auth/auth-shell";
 
 export const metadata: Metadata = { title: "Reset password" };
 
 export default function ForgotPasswordPage() {
   return (
-    <AuthShell
-      description="We’ll email a secure reset link if an account exists for this address."
-      title="Reset your password"
+    <AuthEntryShell
+      description="Enter your email and we'll send you a reset link."
+      title="Reset password"
+      variant="forgot"
     >
       <AuthForm
         action={forgotPasswordAction}
@@ -22,14 +23,9 @@ export default function ForgotPasswordPage() {
             type: "email",
           },
         ]}
-        footer={{
-          href: "/auth/sign-in",
-          label: "Back to sign in",
-          prompt: "Remembered it?",
-        }}
-        submitLabel="Send reset link"
+        submitLabel="Send Reset Link"
         variant="forgot"
       />
-    </AuthShell>
+    </AuthEntryShell>
   );
 }
