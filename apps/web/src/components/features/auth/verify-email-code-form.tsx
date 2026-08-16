@@ -95,9 +95,7 @@ export function VerifyEmailCodeForm({
         />
         <div
           className="flex justify-center gap-3"
-          onClick={() =>
-            document.getElementById("verificationCode")?.focus()
-          }
+          onClick={() => document.getElementById("verificationCode")?.focus()}
         >
           {Array.from({ length: 6 }, (_, index) => {
             const isCurrent = index === filledCount;
@@ -156,7 +154,9 @@ export function VerifyEmailCodeForm({
         {resendState.message ? (
           <p
             className={`text-xs ${
-              resendState.status === "success" ? "text-[#527d37]" : "text-[#e64033]"
+              resendState.status === "success"
+                ? "text-[#527d37]"
+                : "text-[#e64033]"
             }`}
             role="status"
           >

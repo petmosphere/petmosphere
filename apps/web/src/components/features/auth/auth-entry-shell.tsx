@@ -26,7 +26,11 @@ export function AuthEntryShell({
             className="grid size-10 place-items-center rounded-full border border-[#f0e6d8] bg-white text-[#2d2d2d] transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.97] motion-reduce:transform-none"
             href={isForgotPassword ? "/auth/sign-in" : "/auth/sign-up"}
           >
-            <ChevronLeft aria-hidden="true" className="size-5" strokeWidth={2} />
+            <ChevronLeft
+              aria-hidden="true"
+              className="size-5"
+              strokeWidth={2}
+            />
           </Link>
         ) : (
           <span aria-hidden="true" className="h-11" />

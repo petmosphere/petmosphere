@@ -440,7 +440,7 @@ export default function TermsPage() {
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-10 bg-gradient-to-t from-[#fdf8f2] via-[#fdf8f2]/95 to-transparent px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-6">
+      <div className="fixed inset-x-0 bottom-0 z-10 bg-gradient-to-t from-[#fdf8f2] via-[#fdf8f2]/95 to-transparent px-6 pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
         <div className="mx-auto w-full max-w-md">
           <Link
             className="block min-h-13 w-full rounded-xl bg-[#ED802A] px-5 py-3.5 text-center text-base font-semibold text-[#fdf8f2] shadow-[0_4px_16px_rgba(205,146,85,0.14)] transition hover:bg-[#df6d16] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a94e0c]"
