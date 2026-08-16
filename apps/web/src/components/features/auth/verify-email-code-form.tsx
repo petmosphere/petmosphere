@@ -1,5 +1,6 @@
 "use client";
 
+import { Clock } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 
@@ -57,18 +58,17 @@ export function VerifyEmailCodeForm({
     });
   }
 
+  const filledCount = code.length;
+
   return (
     <div className="mt-8">
-      <p className="text-center leading-6 text-stone-600">
+      <p className="text-center text-[15px] leading-[22px] text-[#7a7a7a]">
         We sent a six-digit code to{" "}
-        <strong className="font-semibold text-stone-800">{maskedEmail}</strong>
+        <span className="font-semibold text-[#2d2d2d]">{maskedEmail}</span>
       </p>
 
-      <form className="mt-6" noValidate onSubmit={submit}>
-        <label
-          className="block text-sm font-semibold text-stone-700"
-          htmlFor="verificationCode"
-        >
+      <form className="mt-8" noValidate onSubmit={submit}>
+        <label className="sr-only" htmlFor="verificationCode">
           Verification code
         </label>
         <input
@@ -80,7 +80,7 @@ export function VerifyEmailCodeForm({
           autoComplete="one-time-code"
           autoCorrect="off"
           autoFocus
-          className="mt-2 min-h-16 w-full rounded-2xl border border-[#e8d0b3] bg-[#fffaf5] px-4 text-center font-mono text-2xl font-semibold tracking-[0.38em] text-stone-900 transition outline-none focus:border-[#cd9255] focus:ring-4 focus:ring-[#cd9255]/15"
+          className="sr-only"
           id="verificationCode"
           inputMode="numeric"
           name="code"
@@ -93,10 +93,31 @@ export function VerifyEmailCodeForm({
           type="text"
           value={code}
         />
+        <div
+          className="flex justify-center gap-3"
+          onClick={() => document.getElementById("verificationCode")?.focus()}
+        >
+          {Array.from({ length: 6 }, (_, index) => {
+            const isCurrent = index === filledCount;
+            return (
+              <span
+                aria-hidden="true"
+                className={`grid size-16 place-items-center rounded-xl border text-2xl leading-8 font-bold text-[#2d2d2d] ${
+                  isCurrent
+                    ? "border-2 border-[#ed802a] bg-white shadow-[0_4px_12px_rgba(237,128,42,0.1)]"
+                    : "border border-[#f0e6d8] bg-[#faf3e8]"
+                }`}
+                key={index}
+              >
+                {code[index] ?? ""}
+              </span>
+            );
+          })}
+        </div>
 
         {verifyState.message ? (
           <p
-            className="mt-2 text-sm text-red-600"
+            className="mt-3 text-center text-xs leading-4 text-[#e64033]"
             id="verification-error"
             role="alert"
           >
@@ -105,7 +126,7 @@ export function VerifyEmailCodeForm({
         ) : null}
 
         <button
-          className="mt-5 min-h-13 w-full rounded-xl bg-[#cd9255] px-5 font-bold text-white transition hover:bg-[#b97f45] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a96527] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-500"
+          className="mt-8 min-h-13 w-full rounded-xl bg-[#ED802A] px-5 text-base font-semibold text-[#fdf8f2] shadow-[0_4px_16px_rgba(205,146,85,0.14)] transition hover:bg-[#df6d16] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a94e0c] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-500 disabled:shadow-none"
           disabled={code.length !== 6 || verifying}
           type="submit"
         >
@@ -113,26 +134,29 @@ export function VerifyEmailCodeForm({
         </button>
       </form>
 
-      <div className="mt-6 text-center text-sm text-stone-600">
+      <div className="mt-6 flex flex-col items-center gap-2 text-sm text-[#7a7a7a]">
         <p>Didn’t receive the email? Check your spam folder.</p>
-        <button
-          className="mt-2 min-h-11 px-3 font-semibold text-[#a96527] underline underline-offset-4 disabled:text-stone-400 disabled:no-underline"
-          disabled={resending || resendWait > 0}
-          onClick={resend}
-          type="button"
-        >
-          {resending
-            ? "Sending…"
-            : resendWait > 0
-              ? `Resend code in ${resendWait}s`
-              : "Resend code"}
-        </button>
+        {resendWait > 0 ? (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#fdefe2] px-3 py-1 text-xs leading-4 font-semibold text-[#ed802a]">
+            <Clock aria-hidden="true" className="size-3.5" strokeWidth={2.5} />
+            Resend available in {resendWait}s
+          </span>
+        ) : (
+          <button
+            className="min-h-11 px-3 font-semibold text-[#ED802A] underline underline-offset-4 disabled:text-stone-400 disabled:no-underline"
+            disabled={resending}
+            onClick={resend}
+            type="button"
+          >
+            {resending ? "Sending…" : "Resend code"}
+          </button>
+        )}
         {resendState.message ? (
           <p
-            className={`mt-2 ${
+            className={`text-xs ${
               resendState.status === "success"
                 ? "text-[#527d37]"
-                : "text-red-600"
+                : "text-[#e64033]"
             }`}
             role="status"
           >
@@ -142,7 +166,7 @@ export function VerifyEmailCodeForm({
       </div>
 
       <Link
-        className="mx-auto mt-5 flex min-h-11 w-fit items-center px-3 font-semibold text-stone-600 underline underline-offset-4"
+        className="mx-auto mt-6 flex min-h-11 w-fit items-center px-3 text-sm font-semibold text-[#7a7a7a] underline underline-offset-4"
         href="/auth/sign-up"
       >
         Use a different email

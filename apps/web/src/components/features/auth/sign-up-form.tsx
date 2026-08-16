@@ -115,7 +115,7 @@ export function SignUpForm() {
   });
 
   return (
-    <form className="mt-7 space-y-3" noValidate onSubmit={submit}>
+    <form className="mt-6 space-y-3" noValidate onSubmit={submit}>
       {fields.map((field) => {
         const Icon = field.icon;
         const isPassword = field.type === "password";
@@ -127,19 +127,13 @@ export function SignUpForm() {
             : undefined);
         return (
           <div key={field.name}>
-            <label
-              className="mb-1.5 block text-sm font-medium text-stone-700"
-              htmlFor={field.name}
-            >
+            <label className="sr-only" htmlFor={field.name}>
               {field.label}
-              <span aria-hidden="true" className="ml-1 text-red-600">
-                *
-              </span>
             </label>
             <div className="relative">
               <Icon
                 aria-hidden="true"
-                className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-stone-500"
+                className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-[#7a7a7a]"
                 strokeWidth={1.8}
               />
               <input
@@ -150,7 +144,7 @@ export function SignUpForm() {
                 aria-invalid={Boolean(errorMessage)}
                 aria-required="true"
                 autoComplete={field.autoComplete}
-                className="min-h-13 w-full rounded-xl border border-[#ead9c7] bg-[#fffaf5] py-3 pr-12 pl-12 text-base text-stone-900 transition outline-none focus:border-[#cd9255] focus:ring-4 focus:ring-[#cd9255]/15"
+                className="min-h-13 w-full rounded-xl border border-[#f0e6d8] bg-transparent py-3 pr-12 pl-12 text-base text-[#2d2d2d] transition-[border-color,box-shadow] duration-150 outline-none placeholder:text-[#aaaaaa] focus:border-[#ED802A] focus:ring-4 focus:ring-[#ED802A]/12"
                 id={field.name}
                 placeholder={field.label}
                 required
@@ -159,7 +153,7 @@ export function SignUpForm() {
               {isPassword ? (
                 <button
                   aria-label={`${isVisible ? "Hide" : "Show"} ${field.label.toLowerCase()}`}
-                  className="absolute top-1 right-1 grid min-h-11 min-w-11 place-items-center rounded-lg text-stone-500 focus-visible:outline-2 focus-visible:outline-[#cd9255]"
+                  className="absolute top-1 right-1 grid size-11 place-items-center rounded-lg text-[#7a7a7a] transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-[#ed802a] active:scale-[0.97] motion-reduce:transform-none"
                   onClick={() =>
                     setVisiblePasswords((current) => ({
                       ...current,
@@ -178,7 +172,7 @@ export function SignUpForm() {
             </div>
             {errorMessage ? (
               <p
-                className="mt-1.5 text-sm text-red-600"
+                className="mt-1.5 text-xs leading-4 text-[#e64033]"
                 id={`${field.name}-error`}
                 role="alert"
               >
@@ -190,31 +184,28 @@ export function SignUpForm() {
       })}
 
       <div className="pt-2">
-        <label className="flex cursor-pointer items-start gap-3 text-sm leading-5 text-stone-600">
+        <label className="flex cursor-pointer items-start gap-3 text-sm leading-5 text-[#7a7a7a]">
           <input
             {...register("acceptedTerms")}
             aria-required="true"
-            className="mt-0.5 h-5 w-5 shrink-0 accent-[#cd9255]"
+            className="mt-0.5 h-5 w-5 shrink-0 accent-[#ED802A]"
             required
             type="checkbox"
           />
           <span>
             I have read and agree to the{" "}
             <Link
-              className="font-semibold text-[#a96527] underline underline-offset-2"
+              className="font-semibold text-[#ED802A] underline underline-offset-2"
               href="/terms"
               target="_blank"
             >
               Terms of Service
             </Link>
             .
-            <span aria-hidden="true" className="ml-1 text-red-600">
-              *
-            </span>
           </span>
         </label>
         {errors.acceptedTerms?.message ? (
-          <p className="mt-1.5 text-sm text-red-600" role="alert">
+          <p className="mt-1.5 text-xs text-[#e64033]" role="alert">
             {errors.acceptedTerms.message}
           </p>
         ) : null}
@@ -230,16 +221,16 @@ export function SignUpForm() {
       ) : null}
 
       <button
-        className="mt-3 min-h-13 w-full rounded-xl bg-[#cd9255] px-5 text-base font-bold text-white transition hover:bg-[#b97f45] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a96527] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-500"
+        className="mt-3 min-h-13 w-full rounded-xl bg-[#ED802A] px-5 text-base font-semibold text-[#fdf8f2] shadow-[0_4px_16px_rgba(205,146,85,0.08)] transition hover:bg-[#df6d16] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a94e0c] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-500 disabled:shadow-none"
         disabled={pending || !canSubmit}
         type="submit"
       >
         {pending ? "Creating account…" : "Create account"}
       </button>
 
-      <p className="pt-5 text-center text-base text-stone-500">
+      <p className="pt-2 text-center text-sm text-[#7a7a7a]">
         Already have an account?{" "}
-        <Link className="font-semibold text-[#c87331]" href="/auth/sign-in">
+        <Link className="font-semibold text-[#ED802A]" href="/auth/sign-in">
           Log in
         </Link>
       </p>
