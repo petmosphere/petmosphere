@@ -1,6 +1,6 @@
 begin;
 
-select plan(12);
+select plan(15);
 
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password, raw_user_meta_data,
@@ -58,6 +58,33 @@ select lives_ok(
         local_date = '2026-08-14'
     where id = 'd1000000-0000-0000-0000-000000000001'$$,
   'owner updates date, emotion and matching observations'
+);
+
+select lives_ok(
+  $$update public.health_logs
+    set observations = array[
+      'ate_well', 'playful', 'good_poop', 'slept_well', 'friendly',
+      'good_energy', 'shiny_coat', 'calm_relaxed', 'drank_normally',
+      'enjoyed_walk'
+    ], status = 'doing_well'
+    where id = 'd1000000-0000-0000-0000-000000000001'$$,
+  'owner saves all doing-well observation presets'
+);
+
+select lives_ok(
+  $$update public.health_logs
+    set observations = array['soft_poop', 'scratching', 'slight_limp'],
+        status = 'something_different'
+    where id = 'd1000000-0000-0000-0000-000000000001'$$,
+  'owner saves expanded something-different observation presets'
+);
+
+select lives_ok(
+  $$update public.health_logs
+    set observations = array['coughing', 'blood_in_stool', 'swelling_lump'],
+        status = 'concerned'
+    where id = 'd1000000-0000-0000-0000-000000000001'$$,
+  'owner saves expanded concerned observation presets'
 );
 
 select throws_ok(

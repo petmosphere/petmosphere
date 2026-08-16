@@ -39,7 +39,7 @@ const noteSchema = z
   .transform((value) => value || undefined);
 
 const dateSchema = z.iso.date({ error: "Choose a valid date." });
-const observationsSchema = z.array(z.enum(healthLogObservations)).max(6);
+const observationsSchema = z.array(z.enum(healthLogObservations)).max(10);
 const healthLogBaseSchema = z.object({
   localDate: dateSchema,
   note: noteSchema,

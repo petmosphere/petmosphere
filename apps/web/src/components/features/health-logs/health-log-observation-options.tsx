@@ -5,7 +5,10 @@ import {
 } from "@petmosphere/domain";
 import { Check } from "lucide-react";
 
-import { healthLogObservationDetails } from "./health-log-status-options";
+import {
+  healthLogObservationDetails,
+  healthLogStatusDetails,
+} from "./health-log-status-options";
 
 export function HealthLogObservationOptions({
   onChange,
@@ -28,7 +31,7 @@ export function HealthLogObservationOptions({
           return (
             <button
               aria-pressed={selected}
-              className={`flex min-h-13 items-center gap-2 rounded-full border px-4 text-left font-medium transition-[border-color,background-color,transform] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.98] ${selected ? "border-[#cd9255] bg-[#cd9255] text-white" : "border-[#ead9c7] bg-white text-stone-600"}`}
+              className={`flex min-h-13 items-center gap-2 rounded-full border px-4 text-left font-medium transition-[border-color,background-color,transform] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.98] ${selected ? healthLogStatusDetails[status].pillClass : "border-[#ead9c7] bg-white text-stone-600"}`}
               key={observation}
               onClick={() =>
                 onChange(
@@ -39,6 +42,12 @@ export function HealthLogObservationOptions({
               }
               type="button"
             >
+              <span aria-hidden="true" className="text-lg leading-none">
+                {healthLogObservationDetails[observation].emoji}
+              </span>
+              <span className="min-w-0 flex-1">
+                {healthLogObservationDetails[observation].label}
+              </span>
               <span
                 className={`grid size-5 shrink-0 place-items-center rounded-md border ${selected ? "border-white bg-white text-[#a96225]" : "border-stone-300"}`}
               >
@@ -46,7 +55,6 @@ export function HealthLogObservationOptions({
                   <Check aria-hidden="true" className="size-3.5" />
                 ) : null}
               </span>
-              {healthLogObservationDetails[observation]}
             </button>
           );
         })}

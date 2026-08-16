@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { deriveLocalDate } from "@petmosphere/domain";
 
 import { PetsHome } from "@/components/features/pets/pets-home";
 import { requireUser } from "@/lib/auth/require-user";
+import { createHealthLogReminderRepository } from "@/lib/health-logs/supabase-health-log-reminders";
+import { listOwnedHealthLogSummaries } from "@/lib/health-logs/supabase-health-logs";
 import { getPetPhotoUrl, listOwnedPets } from "@/lib/pets/supabase-pets";
 
 export const metadata: Metadata = {
@@ -10,10 +13,18 @@ export const metadata: Metadata = {
   robots: { follow: false, index: false },
 };
 
+function localDateDaysAgo(localDate: string, days: number) {
+  const date = new Date(`${localDate}T12:00:00Z`);
+  date.setUTCDate(date.getUTCDate() - days);
+  return date.toISOString().slice(0, 10);
+}
+
 export default async function AppHomePage() {
   const { supabase, user } = await requireUser("/home");
   const pets = await listOwnedPets(supabase, user.id);
   if (pets.length === 0) redirect("/onboarding");
+  const currentPet = pets[0]!;
+  const today = deriveLocalDate(new Date(), "Australia/Melbourne");
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -24,12 +35,30 @@ export default async function AppHomePage() {
     profile?.display_name?.trim().split(/\s+/)[0] ||
     user.user_metadata.display_name?.trim().split(/\s+/)[0] ||
     "there";
-  const petsWithPhotos = await Promise.all(
-    pets.map(async (pet) => ({
-      pet,
-      photoUrl: await getPetPhotoUrl(supabase, pet.photoPath),
-    })),
-  );
+  const [petsWithPhotos, healthLogs, reminder] = await Promise.all([
+    Promise.all(
+      pets.map(async (pet) => ({
+        pet,
+        photoUrl: await getPetPhotoUrl(supabase, pet.photoPath),
+      })),
+    ),
+    listOwnedHealthLogSummaries(
+      supabase,
+      user.id,
+      currentPet.id,
+      localDateDaysAgo(today, 6),
+      today,
+    ),
+    createHealthLogReminderRepository(supabase).find(user.id, currentPet.id),
+  ]);
 
-  return <PetsHome displayName={displayName} pets={petsWithPhotos} />;
+  return (
+    <PetsHome
+      displayName={displayName}
+      healthLogs={healthLogs}
+      pets={petsWithPhotos}
+      reminder={reminder}
+      today={today}
+    />
+  );
 }

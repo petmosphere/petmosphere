@@ -29,7 +29,6 @@ export function HealthLogDetail({
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string>();
   const mood = healthLogStatusDetails[healthLog.status];
-  const MoodIcon = mood.icon;
 
   async function remove() {
     setDeleting(true);
@@ -95,7 +94,9 @@ export function HealthLogDetail({
         <span
           className={`grid size-16 place-items-center rounded-2xl ${mood.selectedClass}`}
         >
-          <MoodIcon aria-hidden="true" className="size-9" />
+          <span aria-hidden="true" className="text-4xl leading-none">
+            {mood.emoji}
+          </span>
         </span>
         <div>
           <p className="text-sm text-stone-500">Emotion</p>
@@ -112,7 +113,10 @@ export function HealthLogDetail({
                 className="rounded-full bg-[#cd9255] px-4 py-2 text-sm font-medium text-white"
                 key={observation}
               >
-                {healthLogObservationDetails[observation]}
+                <span aria-hidden="true" className="mr-1">
+                  {healthLogObservationDetails[observation].emoji}
+                </span>
+                {healthLogObservationDetails[observation].label}
               </span>
             ))}
           </div>

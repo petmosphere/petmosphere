@@ -31,6 +31,18 @@ type HealthLogRow = {
   updated_at: string;
 };
 
+export type HomeHealthLogSummary = Pick<
+  HealthLog,
+  "id" | "localDate" | "observations" | "status"
+>;
+
+type HomeHealthLogRow = {
+  id: string;
+  local_date: string;
+  observations: HealthLogObservation[];
+  status: HealthLogStatus;
+};
+
 function toHealthLog(row: HealthLogRow): HealthLog {
   return {
     createdAt: row.created_at,
@@ -46,6 +58,30 @@ function toHealthLog(row: HealthLogRow): HealthLog {
     status: row.status,
     updatedAt: row.updated_at,
   };
+}
+
+export async function listOwnedHealthLogSummaries(
+  supabase: SupabaseClient,
+  ownerId: string,
+  petId: string,
+  startDate: string,
+  endDate: string,
+): Promise<HomeHealthLogSummary[]> {
+  const { data, error } = await supabase
+    .from("health_logs")
+    .select("id, local_date, observations, status")
+    .eq("owner_id", ownerId)
+    .eq("pet_id", petId)
+    .gte("local_date", startDate)
+    .lte("local_date", endDate)
+    .order("local_date", { ascending: false });
+  if (error) throw error;
+  return (data as HomeHealthLogRow[]).map((row) => ({
+    id: row.id,
+    localDate: row.local_date,
+    observations: row.observations,
+    status: row.status,
+  }));
 }
 
 async function findOne(

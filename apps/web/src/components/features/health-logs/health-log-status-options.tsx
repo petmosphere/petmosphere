@@ -2,37 +2,68 @@ import type {
   HealthLogObservation,
   HealthLogStatus,
 } from "@petmosphere/domain";
-import { Frown, Laugh, Meh, type LucideIcon } from "lucide-react";
 
 export const healthLogStatusDetails = {
   doing_well: {
-    icon: Laugh,
+    emoji: "😊",
     label: "Great",
+    pillClass: "border-[#62bdb8] bg-[#62bdb8] text-white",
     selectedClass: "border-[#62bdb8] bg-[#e8f7f5] text-[#287f7b]",
   },
   something_different: {
-    icon: Meh,
+    emoji: "😐",
     label: "Okay",
+    pillClass: "border-[#d49a55] bg-[#d49a55] text-white",
     selectedClass: "border-[#d49a55] bg-[#fff3e4] text-[#a96225]",
   },
   concerned: {
-    icon: Frown,
+    emoji: "😟",
     label: "Not good",
+    pillClass: "border-[#f47b20] bg-[#f47b20] text-white",
     selectedClass: "border-[#e87474] bg-[#fff0ef] text-[#bd3f3f]",
   },
 } satisfies Record<
   HealthLogStatus,
-  { icon: LucideIcon; label: string; selectedClass: string }
+  {
+    emoji: string;
+    label: string;
+    pillClass: string;
+    selectedClass: string;
+  }
 >;
 
 export const healthLogObservationDetails = {
-  ate_less: "Ate less",
-  ate_well: "Ate well",
-  diarrhoea: "Diarrhoea",
-  low_energy: "Low energy",
-  playful: "Playful",
-  vomited: "Vomited",
-} satisfies Record<HealthLogObservation, string>;
+  ate_less: { emoji: "🍽️", label: "Ate less" },
+  ate_well: { emoji: "🍽️", label: "Ate well" },
+  bad_breath: { emoji: "🦷", label: "Bad breath" },
+  blood_in_stool: { emoji: "🩸", label: "Blood in stool" },
+  calm_relaxed: { emoji: "😌", label: "Calm & relaxed" },
+  clingy: { emoji: "🤗", label: "Clingy" },
+  coughing: { emoji: "😷", label: "Coughing" },
+  diarrhoea: { emoji: "💩", label: "Diarrhoea" },
+  drank_more: { emoji: "💧", label: "Drank more" },
+  drank_normally: { emoji: "💧", label: "Drank normally" },
+  enjoyed_walk: { emoji: "🐕", label: "Enjoyed walk" },
+  eye_nose_discharge: { emoji: "👁️", label: "Eye/nose discharge" },
+  friendly: { emoji: "🐾", label: "Friendly" },
+  good_energy: { emoji: "⚡", label: "Good energy" },
+  good_poop: { emoji: "💩", label: "Good poop" },
+  lethargic: { emoji: "😴", label: "Lethargic" },
+  limping: { emoji: "🦵", label: "Limping" },
+  low_energy: { emoji: "🪫", label: "Low energy" },
+  not_eating: { emoji: "🚫", label: "Not eating" },
+  playful: { emoji: "🎾", label: "Playful" },
+  restless: { emoji: "😣", label: "Restless" },
+  scratching: { emoji: "🐾", label: "Scratching" },
+  shaking: { emoji: "🫨", label: "Shaking" },
+  shiny_coat: { emoji: "✨", label: "Shiny coat" },
+  skipped_treat: { emoji: "🦴", label: "Skipped treat" },
+  slept_well: { emoji: "💤", label: "Slept well" },
+  slight_limp: { emoji: "🦵", label: "Slight limp" },
+  soft_poop: { emoji: "💩", label: "Soft poop" },
+  swelling_lump: { emoji: "🔎", label: "Swelling/lump" },
+  vomited: { emoji: "🤮", label: "Vomited" },
+} satisfies Record<HealthLogObservation, { emoji: string; label: string }>;
 
 export function HealthLogStatusOptions({
   error,
@@ -60,7 +91,6 @@ export function HealthLogStatusOptions({
           >
         ).map(([status, details]) => {
           const selected = value === status;
-          const Icon = details.icon;
           return (
             <button
               aria-pressed={selected}
@@ -70,11 +100,12 @@ export function HealthLogStatusOptions({
               type="button"
             >
               <span>
-                <Icon
+                <span
                   aria-hidden="true"
-                  className="mx-auto size-9"
-                  strokeWidth={1.7}
-                />
+                  className="block text-4xl leading-none"
+                >
+                  {details.emoji}
+                </span>
                 <span className="mt-2 block font-semibold">
                   {details.label}
                 </span>
