@@ -242,9 +242,28 @@ test("completes account and password recovery against local Supabase", async ({
   await page.getByRole("button", { name: "Done" }).click();
   await expect(page).toHaveURL(/\/home$/);
   await expect(page.getByText("Max", { exact: true })).toBeVisible();
+  await page.getByRole("link", { name: "Record today’s health" }).click();
   await expect(
-    page.getByText("Create your first health log", { exact: true }),
+    page.getByRole("heading", { name: "Anything special?" }),
   ).toBeVisible();
+  await page.getByRole("button", { name: "Great" }).click();
+  await page.getByRole("button", { name: "Playful" }).click();
+  await page.getByLabel(/Add notes/).fill("Max had a calm, playful morning.");
+  await page.getByRole("button", { name: "Save log" }).click();
+  await expect(page.getByRole("heading", { name: "Log saved!" })).toBeVisible();
+  await page.reload();
+  await expect(page.getByText("Emotion", { exact: true })).toBeVisible();
+  await expect(page.getByText("Great", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Edit health log" }).click();
+  await page.getByRole("button", { name: "Okay" }).click();
+  await page.getByRole("button", { name: "Low energy" }).click();
+  await page.getByRole("button", { name: "Save changes" }).click();
+  await expect(page.getByRole("heading", { name: "Log saved!" })).toBeVisible();
+  await page.getByRole("button", { name: "View health diary" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Health Diary" }),
+  ).toBeVisible();
+  await page.getByRole("link", { name: "Home" }).click();
   await page.reload();
   await expect(page.getByText("Max", { exact: true })).toBeVisible();
   await page.getByRole("link", { name: /Max/ }).click();

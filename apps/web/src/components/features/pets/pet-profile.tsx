@@ -100,10 +100,17 @@ export function PetProfile({
       )}
 
       <section className="mt-5 rounded-3xl bg-white p-6 text-center shadow-sm">
-        <h2 className="font-bold">No health logs yet</h2>
+        <h2 className="font-bold">Health diary</h2>
         <p className="mt-2 text-sm leading-6 text-stone-500">
-          Health logging is the next Journey A story.
+          Record observations and review how {pet.name} has been feeling over
+          time.
         </p>
+        <Link
+          className="mt-4 flex min-h-12 items-center justify-center rounded-2xl bg-[#f47b20] font-semibold text-white transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b45309] active:scale-[0.98]"
+          href={`/pets/${pet.id}/health-logs`}
+        >
+          Open health diary
+        </Link>
       </section>
     </main>
   );

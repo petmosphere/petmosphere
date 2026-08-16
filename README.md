@@ -83,7 +83,16 @@ cp .env.example apps/web/.env.local
 
 Next.js loads local application variables from `apps/web/.env.local`. Never commit secrets. Public variables prefixed with `NEXT_PUBLIC_` are exposed to the browser and must not contain secrets.
 
-For hosted Supabase projects, enable email confirmation and allowlist the exact callback URLs for each Vercel environment, ending in `/auth/callback`. The production callback should use the canonical HTTPS domain. In both staging and production, set the Confirm Signup email template to use `{{ .Token }}` rather than `{{ .ConfirmationURL }}`, matching `supabase/templates/confirmation.html`. Configure a six-digit OTP with an expiry of no more than one hour. Deploy the hosted template before deploying this code so users do not receive a link that the verification screen cannot accept. Never expose a Supabase service-role key to the web application.
+Daily PWA reminders additionally require a stable Web Push VAPID key pair,
+`SUPABASE_SECRET_KEY`, and `CRON_SECRET`. Only
+`NEXT_PUBLIC_WEB_PUSH_VAPID_PUBLIC_KEY` is exposed to the browser. Keep
+`WEB_PUSH_VAPID_PRIVATE_KEY`, `SUPABASE_SECRET_KEY`, and `CRON_SECRET`
+server-only. Generate the VAPID pair once per environment and retain it in the
+team password manager; rotating it invalidates existing browser subscriptions.
+Deployment and Supabase Cron setup are documented in the
+[database runbook](docs/architecture/DATABASE_RUNBOOK.md#pwa-push-reminder-operations).
+
+For hosted Supabase projects, enable email confirmation and allowlist the exact callback URLs for each Vercel environment, ending in `/auth/callback`. The production callback should use the canonical HTTPS domain. In both staging and production, set the Confirm Signup email template to use `{{ .Token }}` rather than `{{ .ConfirmationURL }}`, matching `supabase/templates/confirmation.html`. Configure a six-digit OTP with an expiry of no more than one hour. Deploy the hosted template before deploying this code so users do not receive a link that the verification screen cannot accept. Never expose a Supabase secret key or legacy service-role key to the web application.
 
 ## Error monitoring
 
