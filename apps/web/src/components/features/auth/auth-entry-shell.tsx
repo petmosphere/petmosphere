@@ -1,4 +1,4 @@
-import { ArrowLeft, MailCheck, PawPrint } from "lucide-react";
+import { ChevronLeft, MailCheck, PawPrint } from "lucide-react";
 import Link from "next/link";
 
 export function AuthEntryShell({
@@ -10,27 +10,30 @@ export function AuthEntryShell({
   children: React.ReactNode;
   description: string;
   title: string;
-  variant: "forgot" | "sign-in";
+  variant: "forgot" | "sign-in" | "verify";
 }>) {
   const isForgotPassword = variant === "forgot";
+  const showBack = variant !== "sign-in";
 
   return (
     <main className="min-h-dvh bg-[#fdf8f2] text-[#2d2d2d]">
       <section className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-6 pt-[max(2rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-        {isForgotPassword ? (
+        {showBack ? (
           <Link
-            aria-label="Back to sign in"
-            className="grid size-11 place-items-center rounded-full text-[#2d2d2d] transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.97] motion-reduce:transform-none"
-            href="/auth/sign-in"
+            aria-label={
+              isForgotPassword ? "Back to sign in" : "Back to create account"
+            }
+            className="grid size-10 place-items-center rounded-full border border-[#f0e6d8] bg-white text-[#2d2d2d] transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.97] motion-reduce:transform-none"
+            href={isForgotPassword ? "/auth/sign-in" : "/auth/sign-up"}
           >
-            <ArrowLeft aria-hidden="true" className="size-7" strokeWidth={2} />
+            <ChevronLeft aria-hidden="true" className="size-5" strokeWidth={2} />
           </Link>
         ) : (
           <span aria-hidden="true" className="h-11" />
         )}
 
         <header
-          className={isForgotPassword ? "mt-7 text-center" : "mt-5 text-center"}
+          className={`text-center ${isForgotPassword ? "mt-7" : variant === "verify" ? "mt-6" : "mt-5"}`}
         >
           {isForgotPassword ? (
             <div className="relative mx-auto grid size-32 place-items-center rounded-full bg-white/55 shadow-[0_14px_36px_rgba(116,77,41,0.05)]">
@@ -48,6 +51,14 @@ export function AuthEntryShell({
                 className="absolute top-10 right-5 h-5 w-2 rounded-full bg-[#f2b89e]"
               />
             </div>
+          ) : variant === "verify" ? (
+            <span className="mx-auto grid size-16 place-items-center rounded-full bg-[#fdf8f2] text-[#ed802a] shadow-[0_6px_16px_rgba(205,146,85,0.1)]">
+              <PawPrint
+                aria-hidden="true"
+                className="size-8"
+                strokeWidth={2.5}
+              />
+            </span>
           ) : (
             <Link
               aria-label="Petmosphere home"
@@ -63,11 +74,13 @@ export function AuthEntryShell({
           )}
 
           <h1
-            className={`${isForgotPassword ? "mt-8 text-3xl" : "mt-7 text-[2rem]"} font-bold tracking-[-0.025em] text-balance`}
+            className={`${isForgotPassword ? "mt-8 text-3xl font-bold" : "mt-5 text-[26px] leading-9 font-extrabold"} tracking-[-0.025em] text-balance`}
           >
             {title}
           </h1>
-          <p className="mx-auto mt-2 max-w-sm text-lg leading-7 text-balance text-[#7a7a7a]">
+          <p
+            className={`mx-auto max-w-sm text-balance text-[#7a7a7a] ${isForgotPassword ? "mt-2 text-lg leading-7" : variant === "verify" ? "mt-2 text-[15px] leading-[22px]" : "mt-1.5 text-sm leading-5"}`}
+          >
             {description}
           </p>
         </header>

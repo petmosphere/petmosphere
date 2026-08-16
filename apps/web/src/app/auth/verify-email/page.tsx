@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { AuthShell } from "@/components/features/auth/auth-shell";
+import { AuthEntryShell } from "@/components/features/auth/auth-entry-shell";
 import { VerifyEmailCodeForm } from "@/components/features/auth/verify-email-code-form";
 import {
   getPendingSignUp,
@@ -17,15 +17,16 @@ export default async function VerifyEmailPage() {
   if (!pendingSignUp.email) redirect("/auth/sign-up");
 
   return (
-    <AuthShell
+    <AuthEntryShell
       description="Enter the code from your email to finish creating your private account."
       title="Check your email"
+      variant="verify"
     >
       <VerifyEmailCodeForm
         initialResendWait={getResendWaitSeconds(pendingSignUp.sentAt)}
         maskedEmail={maskEmail(pendingSignUp.email)}
         resendCooldown={resendCooldownSeconds}
       />
-    </AuthShell>
+    </AuthEntryShell>
   );
 }

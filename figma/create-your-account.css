@@ -1,0 +1,754 @@
+/* petmosphere-register */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+
+position: relative;
+width: 393px;
+height: 852px;
+
+background: #fdf8f2;
+
+/* status-bar */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: space-between;
+align-items: center;
+padding: 0px 24px;
+
+width: 393px;
+height: 44px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+/* status-time */
+
+width: 28px;
+height: 19px;
+
+font-family: "Manrope";
+font-style: normal;
+font-weight: 600;
+font-size: 14px;
+line-height: 19px;
+
+color: #2d2d2d;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+/* status-icons */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px;
+gap: 8px;
+
+width: 78px;
+height: 20px;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+/* ios-signal */
+
+width: 18px;
+height: 12px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+/* Vector */
+
+position: absolute;
+width: 18px;
+height: 12px;
+left: 0px;
+top: 0px;
+
+background: #2d2d2d;
+
+/* ios-wifi-signal */
+
+width: 16px;
+height: 12px;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+/* Vector */
+
+position: absolute;
+width: 16px;
+height: 12px;
+left: 0px;
+top: 0px;
+
+background: #2d2d2d;
+
+/* ios-battery-full */
+
+width: 28px;
+height: 20px;
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+/* Vector */
+
+position: absolute;
+width: 28px;
+height: 20px;
+left: 0px;
+top: 0px;
+
+background: #2d2d2d;
+
+/* scroll-content */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 12px 24px 20px;
+gap: 24px;
+
+width: 393px;
+height: 774px;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+align-self: stretch;
+flex-grow: 1;
+
+/* header-section */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: center;
+padding: 0px;
+gap: 16px;
+
+width: 345px;
+height: 129px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+/* logo-badge */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+padding: 0px;
+
+width: 52px;
+height: 52px;
+
+background: #fdf8f2;
+box-shadow: 0px 4px 12px rgba(205, 146, 85, 0.0784314);
+border-radius: 26px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+/* paw-print */
+
+width: 26px;
+height: 26px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+/* Vector */
+
+box-sizing: border-box;
+
+position: absolute;
+width: 26px;
+height: 26px;
+left: 0px;
+top: 0px;
+
+border: 2px solid #ed802a;
+
+/* header-text */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: center;
+padding: 0px;
+gap: 6px;
+
+width: 345px;
+height: 61px;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+align-self: stretch;
+flex-grow: 0;
+
+/* title */
+
+width: 345px;
+height: 36px;
+
+font-family: "Manrope";
+font-style: normal;
+font-weight: 800;
+font-size: 26px;
+line-height: 36px;
+/* identical to box height */
+text-align: center;
+
+color: #2d2d2d;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+/* subtitle */
+
+width: 345px;
+height: 19px;
+
+font-family: "Manrope";
+font-style: normal;
+font-weight: 400;
+font-size: 14px;
+line-height: 19px;
+text-align: center;
+
+color: #7a7a7a;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+align-self: stretch;
+flex-grow: 0;
+
+/* fields-section */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 12px;
+
+width: 345px;
+height: 272px;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+align-self: stretch;
+flex-grow: 0;
+
+/* input-fullname */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px 16px;
+gap: 12px;
+
+width: 345px;
+height: 52px;
+
+background: #fdf8f2;
+border: 1px solid #f0e6d8;
+border-radius: 12px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+/* user-icon */
+
+width: 20px;
+height: 20px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+/* user */
+
+position: absolute;
+width: 20px;
+height: 20px;
+left: 0px;
+top: 0px;
+
+/* Vector */
+
+position: absolute;
+left: 20.83%;
+right: 20.83%;
+top: 12.5%;
+bottom: 12.5%;
+
+border: 2px solid #7a7a7a;
+
+/* placeholder */
+
+width: 281px;
+height: 20px;
+
+font-family: "Manrope";
+font-style: normal;
+font-weight: 400;
+font-size: 15px;
+line-height: 20px;
+
+color: #aaaaaa;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 1;
+
+/* input-email */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px 16px;
+gap: 12px;
+
+width: 345px;
+height: 52px;
+
+background: #fdf8f2;
+border: 1px solid #f0e6d8;
+border-radius: 12px;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+align-self: stretch;
+flex-grow: 0;
+
+/* mail */
+
+width: 20px;
+height: 20px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+/* Vector */
+
+box-sizing: border-box;
+
+position: absolute;
+width: 20px;
+height: 20px;
+left: 0px;
+top: 0px;
+
+border: 2px solid #7a7a7a;
+
+/* placeholder */
+
+width: 281px;
+height: 20px;
+
+font-family: "Manrope";
+font-style: normal;
+font-weight: 400;
+font-size: 15px;
+line-height: 20px;
+
+color: #aaaaaa;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 1;
+
+/* input-password */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px 16px;
+gap: 12px;
+
+width: 345px;
+height: 52px;
+
+background: #fdf8f2;
+border: 1px solid #f0e6d8;
+border-radius: 12px;
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+align-self: stretch;
+flex-grow: 0;
+
+/* lock */
+
+width: 20px;
+height: 20px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+/* Vector */
+
+box-sizing: border-box;
+
+position: absolute;
+width: 20px;
+height: 20px;
+left: 0px;
+top: 0px;
+
+border: 2px solid #7a7a7a;
+
+/* placeholder */
+
+width: 249px;
+height: 20px;
+
+font-family: "Manrope";
+font-style: normal;
+font-weight: 400;
+font-size: 15px;
+line-height: 20px;
+
+color: #aaaaaa;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 1;
+
+/* eye */
+
+width: 20px;
+height: 20px;
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+/* Vector */
+
+box-sizing: border-box;
+
+position: absolute;
+width: 20px;
+height: 20px;
+left: 0px;
+top: 0px;
+
+border: 2px solid #7a7a7a;
+
+/* input-confirm-password */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px 16px;
+gap: 12px;
+
+width: 345px;
+height: 52px;
+
+background: #fdf8f2;
+border: 1px solid #f0e6d8;
+border-radius: 12px;
+
+/* Inside auto layout */
+flex: none;
+order: 3;
+align-self: stretch;
+flex-grow: 0;
+
+/* lock */
+
+width: 20px;
+height: 20px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+/* Vector */
+
+box-sizing: border-box;
+
+position: absolute;
+width: 20px;
+height: 20px;
+left: 0px;
+top: 0px;
+
+border: 2px solid #7a7a7a;
+
+/* placeholder */
+
+width: 249px;
+height: 20px;
+
+font-family: "Manrope";
+font-style: normal;
+font-weight: 400;
+font-size: 15px;
+line-height: 20px;
+
+color: #aaaaaa;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 1;
+
+/* eye */
+
+width: 20px;
+height: 20px;
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+/* Vector */
+
+box-sizing: border-box;
+
+position: absolute;
+width: 20px;
+height: 20px;
+left: 0px;
+top: 0px;
+
+border: 2px solid #7a7a7a;
+
+/* error-password-mismatch */
+
+width: 345px;
+height: 16px;
+
+font-family: "Manrope";
+font-style: normal;
+font-weight: 400;
+font-size: 12px;
+line-height: 16px;
+
+color: #e64033;
+
+/* Inside auto layout */
+flex: none;
+order: 4;
+flex-grow: 0;
+
+/* actions-section */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 8px;
+
+width: 345px;
+height: 75px;
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+align-self: stretch;
+flex-grow: 0;
+
+/* btn-create-account */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 0px;
+
+width: 345px;
+height: 52px;
+
+background: #ed802a;
+opacity: 0.4;
+box-shadow: 0px 4px 16px rgba(205, 146, 85, 0.0784314);
+border-radius: 12px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+/* btn-label */
+
+width: 120px;
+height: 22px;
+
+font-family: "Manrope";
+font-style: normal;
+font-weight: 600;
+font-size: 16px;
+line-height: 22px;
+/* identical to box height */
+
+color: #fdf8f2;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+/* terms-text */
+
+width: 345px;
+height: 15px;
+
+font-family: "Manrope";
+font-style: normal;
+font-weight: 400;
+font-size: 11px;
+line-height: 15px;
+/* identical to box height */
+text-align: center;
+
+color: #7a7a7a;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+/* signup-section */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: flex-start;
+padding: 0px;
+
+width: 345px;
+height: 19px;
+
+/* Inside auto layout */
+flex: none;
+order: 3;
+align-self: stretch;
+flex-grow: 0;
+
+/* signup-prompt */
+
+width: 208px;
+height: 19px;
+
+font-family: "Manrope";
+font-style: normal;
+font-weight: 400;
+font-size: 14px;
+line-height: 19px;
+
+color: #7a7a7a;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+/* home-indicator */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+padding: 0px;
+
+width: 393px;
+height: 34px;
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+align-self: stretch;
+flex-grow: 0;
+
+/* indicator-bar */
+
+width: 134px;
+height: 5px;
+
+background: #2d2d2d;
+opacity: 0.2;
+border-radius: 2.5px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
