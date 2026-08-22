@@ -18,8 +18,8 @@ import {
 
 const tabs: { label: string; value: ReminderStatus }[] = [
   { label: "Upcoming", value: "upcoming" },
-  { label: "Completed", value: "completed" },
   { label: "Overdue", value: "overdue" },
+  { label: "Completed", value: "completed" },
 ];
 
 export function RemindersHome({
@@ -136,8 +136,13 @@ export function RemindersHome({
       >
         {tabs.map((tab) => (
           <button
+            aria-label={
+              tab.value === "overdue" && lists.overdue.length > 0
+                ? `Overdue, ${lists.overdue.length} ${lists.overdue.length === 1 ? "reminder" : "reminders"}`
+                : tab.label
+            }
             aria-selected={active === tab.value}
-            className={`relative min-h-12 px-0.5 text-base font-medium transition-colors duration-150 after:absolute after:right-0 after:bottom-0 after:left-0 after:h-1 after:rounded-full after:transition-transform after:duration-150 motion-reduce:transition-none ${active === tab.value ? "text-[#ed802a] after:scale-x-100 after:bg-[#ed802a]" : "text-[#7a7a7a] after:scale-x-0 after:bg-transparent"}`}
+            className={`relative inline-flex min-h-12 items-center gap-2 px-0.5 text-base font-medium transition-colors duration-150 after:absolute after:right-0 after:bottom-0 after:left-0 after:h-1 after:rounded-full after:transition-transform after:duration-150 motion-reduce:transition-none ${active === tab.value ? "text-[#ed802a] after:scale-x-100 after:bg-[#ed802a]" : "text-[#7a7a7a] after:scale-x-0 after:bg-transparent"}`}
             key={tab.value}
             onClick={() => {
               setActive(tab.value);
@@ -147,6 +152,14 @@ export function RemindersHome({
             type="button"
           >
             {tab.label}
+            {tab.value === "overdue" && lists.overdue.length > 0 ? (
+              <span
+                aria-hidden="true"
+                className="grid h-6 min-w-6 place-items-center rounded-full bg-[#ef4444] px-1.5 text-xs font-bold text-white"
+              >
+                {lists.overdue.length}
+              </span>
+            ) : null}
           </button>
         ))}
       </div>

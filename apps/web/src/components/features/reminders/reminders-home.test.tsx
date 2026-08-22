@@ -51,7 +51,11 @@ describe("RemindersHome", () => {
     expect(
       screen.getByRole("link", { name: /Add Your First Reminder/ }),
     ).toHaveAttribute("href", "/reminders/new");
-    expect(screen.getByRole("tab", { name: "Overdue" })).toBeVisible();
+    expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
+      "Upcoming",
+      "Overdue",
+      "Completed",
+    ]);
 
     fireEvent.click(screen.getByRole("tab", { name: "Completed" }));
     expect(
@@ -74,7 +78,11 @@ describe("RemindersHome", () => {
     expect(
       screen.getByRole("heading", { name: "No reminders yet" }),
     ).toBeVisible();
-    fireEvent.click(screen.getByRole("tab", { name: "Overdue" }));
+    const overdueTab = screen.getByRole("tab", {
+      name: "Overdue, 1 reminder",
+    });
+    expect(overdueTab).toHaveTextContent("1");
+    fireEvent.click(overdueTab);
     expect(screen.getByText("Vet appointment")).toBeVisible();
   });
 });
