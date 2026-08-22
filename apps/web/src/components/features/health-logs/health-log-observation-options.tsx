@@ -28,7 +28,11 @@ export function HealthLogObservationOptions({
           return (
             <button
               aria-pressed={selected}
-              className={`flex min-h-13 items-center gap-2 rounded-full border px-4 text-left font-medium transition-[border-color,background-color,transform] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.98] ${selected ? "border-[#ED802A] bg-[#ED802A] text-white" : "border-[#ead9c7] bg-white text-stone-600"}`}
+              className={`flex min-h-13 items-center gap-2 rounded-full border px-4 text-left font-medium transition-[border-color,background-color,transform] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a96225] ${
+                selected
+                  ? "border-[#a96225] bg-[#a96225] text-white"
+                  : "border-stone-300 bg-white text-stone-900 hover:border-stone-400"
+              }`}
               key={observation}
               onClick={() =>
                 onChange(
