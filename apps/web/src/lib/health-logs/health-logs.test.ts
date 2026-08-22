@@ -3,7 +3,11 @@ import {
   healthLogReminderSchema,
   webPushSubscriptionSchema,
 } from "@petmosphere/api-contracts";
-import { deriveLocalDate, type HealthLog } from "@petmosphere/domain";
+import {
+  deriveLocalDate,
+  healthLogObservationsByStatus,
+  type HealthLog,
+} from "@petmosphere/domain";
 import {
   createHealthLog,
   FutureHealthLogDateError,
@@ -32,12 +36,13 @@ describe("health log contracts", () => {
       creationRequestId: "40000000-0000-4000-8000-000000000004",
       note: "",
       localDate: "2026-08-15",
-      observations: [],
+      observations: [...healthLogObservationsByStatus.doing_well],
       petId: existingHealthLog.petId,
       status: "doing_well",
       timezone: "Australia/Melbourne",
     });
     expect(valid.note).toBeUndefined();
+    expect(valid.observations).toHaveLength(10);
 
     const invalid = createHealthLogSchema.safeParse({
       ...valid,
@@ -50,6 +55,12 @@ describe("health log contracts", () => {
       observations: ["vomited"],
     });
     expect(mismatchedObservation.success).toBe(false);
+
+    const tooManyObservations = createHealthLogSchema.safeParse({
+      ...valid,
+      observations: Array.from({ length: 11 }, () => "playful"),
+    });
+    expect(tooManyObservations.success).toBe(false);
   });
 
   it("derives the local date at an Australian timezone boundary", () => {

@@ -98,7 +98,6 @@ export function HealthDiaryCalendar({
               return <span aria-hidden="true" key={`empty-${index}`} />;
             const log = byDate.get(date);
             const details = log ? healthLogStatusDetails[log.status] : null;
-            const Icon = details?.icon;
             const future = date > today;
             return (
               <button
@@ -110,12 +109,13 @@ export function HealthDiaryCalendar({
                 type="button"
               >
                 <span>{Number(date.slice(-2))}</span>
-                {Icon ? (
-                  <Icon
+                {details ? (
+                  <span
                     aria-hidden="true"
-                    className={`mt-0.5 size-4 ${details?.selectedClass.split(" ").at(-1)}`}
-                    strokeWidth={2}
-                  />
+                    className="mt-0.5 text-sm leading-none"
+                  >
+                    {details.emoji}
+                  </span>
                 ) : (
                   <span className="mt-1 size-1 rounded-full bg-stone-200" />
                 )}
