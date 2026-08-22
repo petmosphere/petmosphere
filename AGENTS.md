@@ -1,6 +1,7 @@
 # Petmosphere — AGENTS.md
 
 > Minimize token usage. Maximize code quality. Every rule serves both.
+> Always run `pnpm prettier pnpm exec prettier . --write` before push commit
 
 ## Style
 
@@ -421,6 +422,13 @@ The application should degrade gracefully if a feature is disabled.
 # 13. Frontend rules
 
 Build mobile-first.
+**Apply the brand’s theme color**:
+#ED802A
+#65BCB5
+#E9CEAF
+for accent elements, buttons, and highlights (representing trust, calmness, and energy).
+
+***Apply font Manrope**.
 
 Every user-facing feature must consider:
 
