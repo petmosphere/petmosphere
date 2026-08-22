@@ -78,13 +78,8 @@ export function HealthLogStatusOptions({
 }) {
   return (
     <fieldset aria-describedby={error ? "health-status-error" : undefined}>
-      <legend className="text-lg font-bold">
-        How is {petName} feeling?
-        <span aria-hidden="true" className="ml-1 text-red-600">
-          *
-        </span>
-      </legend>
-      <div className="mt-3 grid grid-cols-3 gap-3">
+      <legend className="sr-only">How is {petName} feeling? (required)</legend>
+      <div className="grid grid-cols-3 gap-3">
         {(
           Object.entries(healthLogStatusDetails) as Array<
             [HealthLogStatus, (typeof healthLogStatusDetails)[HealthLogStatus]]
@@ -94,7 +89,7 @@ export function HealthLogStatusOptions({
           return (
             <button
               aria-pressed={selected}
-              className={`grid min-h-28 place-items-center rounded-2xl border bg-white px-2 py-3 text-center transition-[border-color,background-color,transform] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.98] ${selected ? `border-2 ${details.selectedClass}` : "border-[#ead9c7] text-stone-500"}`}
+              className={`grid min-h-16 place-items-center rounded-xl border px-2 py-2 text-center transition-[border-color,background-color,transform] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.98] ${selected ? `border-2 ${details.selectedClass}` : "border-[#e8d0b3] bg-[#fdf8f2] text-[#7a7a7a]"}`}
               key={status}
               onClick={() => onChange(status)}
               type="button"
@@ -102,11 +97,11 @@ export function HealthLogStatusOptions({
               <span>
                 <span
                   aria-hidden="true"
-                  className="block text-4xl leading-none"
+                  className="block text-2xl leading-none"
                 >
                   {details.emoji}
                 </span>
-                <span className="mt-2 block font-semibold">
+                <span className="mt-1 block text-sm font-medium">
                   {details.label}
                 </span>
               </span>

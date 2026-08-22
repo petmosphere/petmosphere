@@ -229,7 +229,10 @@ export function PetsHome({
       </section>
 
       <div className="min-h-8 flex-1" />
-      <AppNav diaryHref={diaryHref} />
+      <AppNav
+        diaryHref={diaryHref}
+        profileHref={`/pets/${currentPet.pet.id}`}
+      />
     </main>
   );
 }

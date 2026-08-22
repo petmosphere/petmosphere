@@ -11,7 +11,6 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 import { AppNav } from "@/components/features/pets/app-nav";
-import { PetAvatar } from "@/components/features/pets/pet-avatar";
 import { HealthDiaryCalendar } from "./health-diary-calendar";
 import { HealthLogDetail } from "./health-log-detail";
 import { HealthLogForm } from "./health-log-form";
@@ -184,7 +183,7 @@ export function HealthDiary({
       <main className="mx-auto min-h-dvh w-full max-w-md bg-[#fdf8f2] px-6 py-8 text-[#2d2d2d]">
         <HealthLogSaved
           healthLog={selectedLog}
-          onEdit={() => setView("form")}
+          onBackHome={() => router.push("/home")}
           onViewDiary={showCalendar}
           pet={pet}
         />
@@ -209,7 +208,7 @@ export function HealthDiary({
 
   if (view === "form") {
     return (
-      <main className="mx-auto min-h-dvh w-full max-w-md bg-[#fdf8f2] px-6 py-8 text-[#2d2d2d]">
+      <main className="relative mx-auto min-h-dvh w-full max-w-[393px] bg-[#fdf8f2] px-6 py-8 text-[#2d2d2d] sm:my-4 sm:min-h-[852px] sm:rounded-[40px] sm:border sm:border-[#f0e6d8] sm:shadow-[0_8px_24px_rgba(205,146,85,0.08)]">
         <header>
           <button
             aria-label="Cancel health log"
@@ -219,29 +218,12 @@ export function HealthDiary({
           >
             <ArrowLeft aria-hidden="true" />
           </button>
-          <p className="mt-7 text-sm font-medium text-[#a96225]">
-            {selectedLog ? "Update entry" : "Daily check-in"}
-          </p>
-          <h1 className="mt-1 text-3xl font-bold">
-            {selectedLog ? "Edit health log" : "Anything special?"}
+          <h1 className="mt-7 text-2xl font-bold tracking-tight">
+            {selectedLog ? "Update this health log" : "Anything special today?"}
           </h1>
-          <p className="mt-2 text-stone-500">
-            Record what you observed—no diagnosis needed.
-          </p>
-          <div className="mt-5 flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm">
-            <PetAvatar
-              className="size-14"
-              name={pet.name}
-              photoUrl={photoUrl}
-              species={pet.species}
-            />
-            <div>
-              <p className="font-semibold">{pet.name}</p>
-              <p className="text-sm text-stone-500">Private observation</p>
-            </div>
-          </div>
+          <p className="mt-2 text-lg text-[#7a7a7a]">Tap all that apply</p>
         </header>
-        <section className="mt-7">
+        <section className="mt-5">
           <HealthLogForm
             existing={selectedLog}
             initialDate={selectedDate}
@@ -255,6 +237,8 @@ export function HealthDiary({
             }}
             petId={pet.id}
             petName={pet.name}
+            petPhotoUrl={photoUrl}
+            petSpecies={pet.species}
           />
         </section>
       </main>
@@ -308,7 +292,11 @@ export function HealthDiary({
         </div>
       )}
       <div className="min-h-8 flex-1" />
-      <AppNav active="diary" diaryHref={`/pets/${pet.id}/health-logs`} />
+      <AppNav
+        active="diary"
+        diaryHref={`/pets/${pet.id}/health-logs`}
+        profileHref={`/pets/${pet.id}`}
+      />
     </main>
   );
 }

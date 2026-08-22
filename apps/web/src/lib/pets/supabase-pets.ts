@@ -1,6 +1,10 @@
 import * as Sentry from "@sentry/nextjs";
 import type { NewPet, Pet } from "@petmosphere/domain";
-import type { PetPhotoStorage, PetRepository } from "@petmosphere/services";
+import type {
+  PetPhotoStorage,
+  PetRepository,
+  UpdatePetRepository,
+} from "@petmosphere/services";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 const petColumns =
@@ -55,7 +59,9 @@ async function findByCreationRequest(
   return data ? toPet(data as PetRow) : null;
 }
 
-export function createPetRepository(supabase: SupabaseClient): PetRepository {
+export function createPetRepository(
+  supabase: SupabaseClient,
+): PetRepository & UpdatePetRepository {
   return {
     async create(pet: NewPet) {
       const { data, error } = await supabase
@@ -90,6 +96,28 @@ export function createPetRepository(supabase: SupabaseClient): PetRepository {
     },
     findByCreationRequest: (ownerId, requestId) =>
       findByCreationRequest(supabase, ownerId, requestId),
+    findOwned: (ownerId, petId) => getOwnedPet(supabase, ownerId, petId),
+    async update(ownerId, petId, details) {
+      const { data, error } = await supabase
+        .from("pets")
+        .update({
+          approximate_age: details.approximateAge,
+          birth_date: details.birthDate,
+          breed: details.breed,
+          desexed_status: details.desexedStatus,
+          name: details.name,
+          photo_path: details.photoPath,
+          sex: details.sex,
+          species: details.species,
+          weight_kg: details.weightKg,
+        })
+        .eq("owner_id", ownerId)
+        .eq("id", petId)
+        .select(petColumns)
+        .maybeSingle();
+      if (error) throw error;
+      return data ? toPet(data as PetRow) : null;
+    },
   };
 }
 
@@ -101,10 +129,15 @@ export function createPetPhotoStorage(
       const { error } = await supabase.storage
         .from("pet-photos")
         .remove([path]);
-      if (error) throw error;
+      if (error) {
+        Sentry.captureException(error, {
+          tags: { operation: "pet_photo_remove" },
+        });
+        throw error;
+      }
     },
     async upload({ ownerId, petId, photo }) {
-      const path = `${ownerId}/${petId}/profile.webp`;
+      const path = `${ownerId}/${petId}/${crypto.randomUUID()}.webp`;
       const { error } = await supabase.storage
         .from("pet-photos")
         .upload(path, photo.bytes, {

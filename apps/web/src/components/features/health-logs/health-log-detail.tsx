@@ -161,7 +161,7 @@ export function HealthLogDetail({
           role="dialog"
         >
           <div className="w-full max-w-sm rounded-3xl bg-[#fdf8f2] p-6 text-center shadow-2xl">
-            <span className="mx-auto grid size-16 place-items-center rounded-full bg-[#fff0ef] text-[#d65952]">
+            <span className="mx-auto grid size-16 place-items-center rounded-full bg-[#ffebee] text-[#ffa959]">
               <Trash2 aria-hidden="true" />
             </span>
             <h2 className="mt-4 text-2xl font-bold" id="delete-log-title">
@@ -186,7 +186,7 @@ export function HealthLogDetail({
                 Cancel
               </button>
               <button
-                className="min-h-12 rounded-2xl bg-[#d65952] font-semibold text-white disabled:opacity-60"
+                className="min-h-12 rounded-2xl bg-[#ffa959] font-semibold text-white disabled:opacity-60"
                 disabled={deleting}
                 onClick={() => void remove()}
                 type="button"

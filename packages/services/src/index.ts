@@ -3,3 +3,4 @@ export * from "./health-logs/save-health-log";
 export * from "./health-logs/health-log-reminder";
 export * from "./health-logs/dispatch-health-log-reminders";
 export * from "./pets/create-pet";
+export * from "./pets/update-pet";

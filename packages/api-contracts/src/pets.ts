@@ -40,47 +40,64 @@ function todayInMelbourne() {
   return `${parts.year}-${parts.month}-${parts.day}`;
 }
 
+const petFields = {
+  approximateAge: optionalChoice(petAgeBands),
+  birthDate: z
+    .union([z.literal(""), z.iso.date()])
+    .transform((value) => value || undefined),
+  breed: optionalText(100),
+  desexedStatus: optionalChoice(petDesexedStatuses),
+  name: z.string().trim().min(1, "Enter your pet's name.").max(80),
+  sex: optionalChoice(petSexes),
+  species: z.enum(petSpecies, { error: "Choose your pet's species." }),
+  weightKg: z
+    .string()
+    .trim()
+    .refine(
+      (value) =>
+        value === "" ||
+        (!Number.isNaN(Number(value)) &&
+          Number(value) > 0 &&
+          Number(value) <= 300),
+      "Enter a weight between 0 and 300 kg.",
+    )
+    .transform((value) => (value === "" ? undefined : Number(value))),
+};
+
+const validateAge = (
+  {
+    approximateAge,
+    birthDate,
+  }: {
+    approximateAge: string | undefined;
+    birthDate: string | undefined;
+  },
+  context: z.RefinementCtx,
+) => {
+  if (birthDate && birthDate > todayInMelbourne()) {
+    context.addIssue({
+      code: "custom",
+      message: "Date of birth cannot be in the future.",
+      path: ["birthDate"],
+    });
+  }
+  if (birthDate && approximateAge) {
+    context.addIssue({
+      code: "custom",
+      message: "Choose a date of birth or an approximate age, not both.",
+      path: ["approximateAge"],
+    });
+  }
+};
+
+export const updatePetSchema = z.object(petFields).superRefine(validateAge);
+
 export const createPetSchema = z
   .object({
-    approximateAge: optionalChoice(petAgeBands),
-    birthDate: z
-      .union([z.literal(""), z.iso.date()])
-      .transform((value) => value || undefined),
-    breed: optionalText(100),
+    ...petFields,
     creationRequestId: z.uuid(),
-    desexedStatus: optionalChoice(petDesexedStatuses),
-    name: z.string().trim().min(1, "Enter your pet's name.").max(80),
-    sex: optionalChoice(petSexes),
-    species: z.enum(petSpecies, { error: "Choose your pet's species." }),
-    weightKg: z
-      .string()
-      .trim()
-      .refine(
-        (value) =>
-          value === "" ||
-          (!Number.isNaN(Number(value)) &&
-            Number(value) > 0 &&
-            Number(value) <= 300),
-        "Enter a weight between 0 and 300 kg.",
-      )
-      .transform((value) => (value === "" ? undefined : Number(value))),
   })
-  .superRefine(({ approximateAge, birthDate }, context) => {
-    if (birthDate && birthDate > todayInMelbourne()) {
-      context.addIssue({
-        code: "custom",
-        message: "Date of birth cannot be in the future.",
-        path: ["birthDate"],
-      });
-    }
-    if (birthDate && approximateAge) {
-      context.addIssue({
-        code: "custom",
-        message: "Choose a date of birth or an approximate age, not both.",
-        path: ["approximateAge"],
-      });
-    }
-  });
+  .superRefine(validateAge);
 
 export const petResponseSchema = z.object({
   approximateAge: z.enum(petAgeBands).nullable(),
@@ -100,3 +117,5 @@ export const petResponseSchema = z.object({
 export type CreatePetInput = z.infer<typeof createPetSchema>;
 export type CreatePetFormInput = z.input<typeof createPetSchema>;
 export type PetResponse = z.infer<typeof petResponseSchema>;
+export type UpdatePetFormInput = z.input<typeof updatePetSchema>;
+export type UpdatePetInput = z.infer<typeof updatePetSchema>;
