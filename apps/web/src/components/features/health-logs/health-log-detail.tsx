@@ -29,7 +29,6 @@ export function HealthLogDetail({
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string>();
   const mood = healthLogStatusDetails[healthLog.status];
-  const MoodIcon = mood.icon;
 
   async function remove() {
     setDeleting(true);
@@ -95,7 +94,9 @@ export function HealthLogDetail({
         <span
           className={`grid size-16 place-items-center rounded-2xl ${mood.selectedClass}`}
         >
-          <MoodIcon aria-hidden="true" className="size-9" />
+          <span aria-hidden="true" className="text-4xl leading-none">
+            {mood.emoji}
+          </span>
         </span>
         <div>
           <p className="text-sm text-stone-500">Emotion</p>
@@ -112,7 +113,10 @@ export function HealthLogDetail({
                 className="rounded-full bg-[#ED802A] px-4 py-2 text-sm font-medium text-white"
                 key={observation}
               >
-                {healthLogObservationDetails[observation]}
+                <span aria-hidden="true" className="mr-1">
+                  {healthLogObservationDetails[observation].emoji}
+                </span>
+                {healthLogObservationDetails[observation].label}
               </span>
             ))}
           </div>
@@ -157,7 +161,7 @@ export function HealthLogDetail({
           role="dialog"
         >
           <div className="w-full max-w-sm rounded-3xl bg-[#fdf8f2] p-6 text-center shadow-2xl">
-            <span className="mx-auto grid size-16 place-items-center rounded-full bg-[#fff0ef] text-[#d65952]">
+            <span className="mx-auto grid size-16 place-items-center rounded-full bg-[#ffebee] text-[#ffa959]">
               <Trash2 aria-hidden="true" />
             </span>
             <h2 className="mt-4 text-2xl font-bold" id="delete-log-title">
@@ -182,7 +186,7 @@ export function HealthLogDetail({
                 Cancel
               </button>
               <button
-                className="min-h-12 rounded-2xl bg-[#d65952] font-semibold text-white disabled:opacity-60"
+                className="min-h-12 rounded-2xl bg-[#ffa959] font-semibold text-white disabled:opacity-60"
                 disabled={deleting}
                 onClick={() => void remove()}
                 type="button"

@@ -2,37 +2,68 @@ import type {
   HealthLogObservation,
   HealthLogStatus,
 } from "@petmosphere/domain";
-import { Frown, Laugh, Meh, type LucideIcon } from "lucide-react";
 
 export const healthLogStatusDetails = {
   doing_well: {
-    icon: Laugh,
+    emoji: "😊",
     label: "Great",
+    pillClass: "border-[#62bdb8] bg-[#62bdb8] text-white",
     selectedClass: "border-[#62bdb8] bg-[#e8f7f5] text-[#287f7b]",
   },
   something_different: {
-    icon: Meh,
+    emoji: "😐",
     label: "Okay",
+    pillClass: "border-[#d49a55] bg-[#d49a55] text-white",
     selectedClass: "border-[#d49a55] bg-[#fff3e4] text-[#a96225]",
   },
   concerned: {
-    icon: Frown,
+    emoji: "😟",
     label: "Not good",
+    pillClass: "border-[#f47b20] bg-[#f47b20] text-white",
     selectedClass: "border-[#e87474] bg-[#fff0ef] text-[#bd3f3f]",
   },
 } satisfies Record<
   HealthLogStatus,
-  { icon: LucideIcon; label: string; selectedClass: string }
+  {
+    emoji: string;
+    label: string;
+    pillClass: string;
+    selectedClass: string;
+  }
 >;
 
 export const healthLogObservationDetails = {
-  ate_less: "Ate less",
-  ate_well: "Ate well",
-  diarrhoea: "Diarrhoea",
-  low_energy: "Low energy",
-  playful: "Playful",
-  vomited: "Vomited",
-} satisfies Record<HealthLogObservation, string>;
+  ate_less: { emoji: "🍽️", label: "Ate less" },
+  ate_well: { emoji: "🍽️", label: "Ate well" },
+  bad_breath: { emoji: "🦷", label: "Bad breath" },
+  blood_in_stool: { emoji: "🩸", label: "Blood in stool" },
+  calm_relaxed: { emoji: "😌", label: "Calm & relaxed" },
+  clingy: { emoji: "🤗", label: "Clingy" },
+  coughing: { emoji: "😷", label: "Coughing" },
+  diarrhoea: { emoji: "💩", label: "Diarrhoea" },
+  drank_more: { emoji: "💧", label: "Drank more" },
+  drank_normally: { emoji: "💧", label: "Drank normally" },
+  enjoyed_walk: { emoji: "🐕", label: "Enjoyed walk" },
+  eye_nose_discharge: { emoji: "👁️", label: "Eye/nose discharge" },
+  friendly: { emoji: "🐾", label: "Friendly" },
+  good_energy: { emoji: "⚡", label: "Good energy" },
+  good_poop: { emoji: "💩", label: "Good poop" },
+  lethargic: { emoji: "😴", label: "Lethargic" },
+  limping: { emoji: "🦵", label: "Limping" },
+  low_energy: { emoji: "🪫", label: "Low energy" },
+  not_eating: { emoji: "🚫", label: "Not eating" },
+  playful: { emoji: "🎾", label: "Playful" },
+  restless: { emoji: "😣", label: "Restless" },
+  scratching: { emoji: "🐾", label: "Scratching" },
+  shaking: { emoji: "🫨", label: "Shaking" },
+  shiny_coat: { emoji: "✨", label: "Shiny coat" },
+  skipped_treat: { emoji: "🦴", label: "Skipped treat" },
+  slept_well: { emoji: "💤", label: "Slept well" },
+  slight_limp: { emoji: "🦵", label: "Slight limp" },
+  soft_poop: { emoji: "💩", label: "Soft poop" },
+  swelling_lump: { emoji: "🔎", label: "Swelling/lump" },
+  vomited: { emoji: "🤮", label: "Vomited" },
+} satisfies Record<HealthLogObservation, { emoji: string; label: string }>;
 
 export function HealthLogStatusOptions({
   error,
@@ -47,35 +78,30 @@ export function HealthLogStatusOptions({
 }) {
   return (
     <fieldset aria-describedby={error ? "health-status-error" : undefined}>
-      <legend className="text-lg font-bold">
-        How is {petName} feeling?
-        <span aria-hidden="true" className="ml-1 text-red-600">
-          *
-        </span>
-      </legend>
-      <div className="mt-3 grid grid-cols-3 gap-3">
+      <legend className="sr-only">How is {petName} feeling? (required)</legend>
+      <div className="grid grid-cols-3 gap-3">
         {(
           Object.entries(healthLogStatusDetails) as Array<
             [HealthLogStatus, (typeof healthLogStatusDetails)[HealthLogStatus]]
           >
         ).map(([status, details]) => {
           const selected = value === status;
-          const Icon = details.icon;
           return (
             <button
               aria-pressed={selected}
-              className={`grid min-h-28 place-items-center rounded-2xl border bg-white px-2 py-3 text-center transition-[border-color,background-color,transform] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.98] ${selected ? `border-2 ${details.selectedClass}` : "border-[#ead9c7] text-stone-500"}`}
+              className={`grid min-h-16 place-items-center rounded-xl border px-2 py-2 text-center transition-[border-color,background-color,transform] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.98] ${selected ? `border-2 ${details.selectedClass}` : "border-[#e8d0b3] bg-[#fdf8f2] text-[#7a7a7a]"}`}
               key={status}
               onClick={() => onChange(status)}
               type="button"
             >
               <span>
-                <Icon
+                <span
                   aria-hidden="true"
-                  className="mx-auto size-9"
-                  strokeWidth={1.7}
-                />
-                <span className="mt-2 block font-semibold">
+                  className="block text-2xl leading-none"
+                >
+                  {details.emoji}
+                </span>
+                <span className="mt-1 block text-sm font-medium">
                   {details.label}
                 </span>
               </span>

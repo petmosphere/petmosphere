@@ -22,13 +22,19 @@ describe("HealthLogForm", () => {
         onSaved={vi.fn()}
         petId="30000000-0000-4000-8000-000000000003"
         petName="Max"
+        petPhotoUrl={null}
+        petSpecies="dog"
       />,
     );
 
-    const save = screen.getByRole("button", { name: "Save log" });
+    const save = screen.getByRole("button", { name: "Save" });
     expect(save).toBeDisabled();
     fireEvent.click(screen.getByRole("button", { name: "Great" }));
     expect(save).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Ate well" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Enjoyed walk" })).toBeVisible();
+    expect(screen.getByText("Add photos")).toBeVisible();
+    expect(screen.getByPlaceholderText("Add a note…")).toBeVisible();
   });
 
   it("preserves the note after a recoverable save failure", async () => {
@@ -52,14 +58,16 @@ describe("HealthLogForm", () => {
         onSaved={vi.fn()}
         petId="30000000-0000-4000-8000-000000000003"
         petName="Max"
+        petPhotoUrl={null}
+        petSpecies="dog"
       />,
     );
     fireEvent.click(screen.getByRole("button", { name: "Okay" }));
-    const note = screen.getByLabelText(/Add notes/);
+    const note = screen.getByLabelText(/Add a note/);
     fireEvent.change(note, {
       target: { value: "Max was quieter after lunch." },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Save log" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     expect(
       await screen.findByText("Temporary save failure. Please retry."),

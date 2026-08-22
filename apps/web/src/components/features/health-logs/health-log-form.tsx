@@ -14,13 +14,22 @@ import {
 import {
   deriveLocalDate,
   type HealthLogObservation,
+  type Pet,
 } from "@petmosphere/domain";
-import { CalendarDays, Camera, LoaderCircle, WifiOff, X } from "lucide-react";
+import {
+  CalendarDays,
+  ImagePlus,
+  LoaderCircle,
+  Tags,
+  WifiOff,
+  X,
+} from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
+import { PetAvatar } from "@/components/features/pets/pet-avatar";
 import { trackHealthLogEvent } from "@/lib/health-logs/analytics";
 import { HealthLogObservationOptions } from "./health-log-observation-options";
 import { HealthLogStatusOptions } from "./health-log-status-options";
@@ -37,6 +46,8 @@ export function HealthLogForm({
   onSaved,
   petId,
   petName,
+  petPhotoUrl,
+  petSpecies,
 }: {
   existing: HealthLogResponse | null;
   initialDate: string;
@@ -45,6 +56,8 @@ export function HealthLogForm({
   onSaved: (healthLog: HealthLogResponse) => void;
   petId: string;
   petName: string;
+  petPhotoUrl: string | null;
+  petSpecies: Pet["species"];
 }) {
   const router = useRouter();
   const [startedAt] = useState(() => Date.now());
@@ -201,26 +214,28 @@ export function HealthLogForm({
 
   return (
     <form className="pb-8" noValidate onSubmit={submit}>
-      <div className="mb-7">
-        <label className="text-lg font-bold" htmlFor="health-log-date">
-          Date{" "}
-          <span aria-hidden="true" className="text-red-600">
-            *
-          </span>
-        </label>
-        <div className="relative mt-3">
-          <CalendarDays
-            aria-hidden="true"
-            className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-[#ed802a]"
-          />
-          <input
-            {...register("localDate")}
-            aria-invalid={Boolean(errors.localDate)}
-            className="min-h-14 w-full rounded-2xl border border-[#ead9c7] bg-white pr-4 pl-12 font-medium outline-none focus:border-[#ed802a] focus:ring-4 focus:ring-[#ed802a]/10"
-            id="health-log-date"
-            max={today}
-            type="date"
-          />
+      <div className="mb-5">
+        <div className="flex items-center justify-between gap-4">
+          <label
+            className="text-sm font-medium text-[#7a7a7a]"
+            htmlFor="health-log-date"
+          >
+            Log date
+          </label>
+          <div className="relative">
+            <input
+              {...register("localDate")}
+              aria-invalid={Boolean(errors.localDate)}
+              className="min-h-12 w-[174px] appearance-none rounded-2xl border border-[#e8d0b3] bg-white py-2 pr-11 pl-4 text-[15px] font-semibold text-[#2d2d2d] tabular-nums shadow-sm transition-[border-color,box-shadow] outline-none focus:border-[#ed802a] focus:ring-4 focus:ring-[#ed802a]/10 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
+              id="health-log-date"
+              max={today}
+              type="date"
+            />
+            <CalendarDays
+              aria-hidden="true"
+              className="pointer-events-none absolute top-1/2 right-4 size-5 -translate-y-1/2 text-[#ed802a]"
+            />
+          </div>
         </div>
         {errors.localDate ? (
           <p className="mt-2 text-sm text-red-600" role="alert">
@@ -229,19 +244,30 @@ export function HealthLogForm({
         ) : null}
       </div>
 
-      <HealthLogStatusOptions
-        {...(errors.status?.message ? { error: errors.status.message } : {})}
-        onChange={(value) => {
-          if (value !== status) setValue("observations", []);
-          setValue("status", value, {
-            shouldDirty: true,
-            shouldValidate: true,
-          });
-          clearErrors("status");
-        }}
-        petName={petName}
-        value={status}
-      />
+      <section className="rounded-2xl bg-[#fdf8f2] px-5 py-5 shadow-[0_4px_16px_rgba(205,146,85,0.08)]">
+        <div className="mb-4 flex items-center gap-3">
+          <PetAvatar
+            className="size-10 border border-[#ed802a]"
+            name={petName}
+            photoUrl={petPhotoUrl}
+            species={petSpecies}
+          />
+          <h2 className="text-lg font-medium">How is {petName} today?</h2>
+        </div>
+        <HealthLogStatusOptions
+          {...(errors.status?.message ? { error: errors.status.message } : {})}
+          onChange={(value) => {
+            if (value !== status) setValue("observations", []);
+            setValue("status", value, {
+              shouldDirty: true,
+              shouldValidate: true,
+            });
+            clearErrors("status");
+          }}
+          petName={petName}
+          value={status}
+        />
+      </section>
 
       {status ? (
         <HealthLogObservationOptions
@@ -256,35 +282,11 @@ export function HealthLogForm({
         />
       ) : null}
 
-      <div className="mt-7">
-        <div className="flex items-end justify-between gap-3">
-          <label className="text-lg font-bold" htmlFor="health-log-note">
-            Add notes{" "}
-            <span className="font-normal text-stone-500">(optional)</span>
-          </label>
-          <span className="text-xs text-stone-400">
-            {note?.length ?? 0}/{MAX_HEALTH_LOG_NOTE_LENGTH}
-          </span>
-        </div>
-        <textarea
-          {...register("note")}
-          aria-invalid={Boolean(errors.note)}
-          className="mt-3 min-h-32 w-full resize-y rounded-2xl border border-[#ead9c7] bg-white p-4 leading-6 outline-none focus:border-[#ed802a] focus:ring-4 focus:ring-[#ed802a]/10"
-          id="health-log-note"
-          maxLength={MAX_HEALTH_LOG_NOTE_LENGTH}
-          placeholder="Anything else you noticed?"
-        />
-      </div>
-
-      <fieldset className="mt-7">
-        <legend className="text-lg font-bold">
-          Add photos{" "}
-          <span className="font-normal text-stone-500">(optional)</span>
-        </legend>
-        <p className="mt-1 text-sm text-stone-500">
-          Up to four private photos · 4 MB each
-        </p>
-        <div className="mt-3 grid grid-cols-3 gap-3">
+      <fieldset className="mt-8">
+        <legend className="sr-only">Add photos (optional)</legend>
+        <div
+          className={`grid gap-3 ${retainedImageIndexes.length + images.length > 0 ? "grid-cols-3" : "grid-cols-1"}`}
+        >
           {existing?.imageUrls.map((url, index) =>
             retainedImageIndexes.includes(index) ? (
               <div
@@ -344,13 +346,11 @@ export function HealthLogForm({
           {retainedImageIndexes.length + images.length <
           MAX_HEALTH_LOG_IMAGES ? (
             <label
-              className="grid aspect-square min-h-24 cursor-pointer place-items-center rounded-2xl border-2 border-dashed border-[#d7b28b] bg-white text-center text-sm font-medium text-[#a96225] focus-within:outline-2 focus-within:outline-[#ed802a]"
+              className={`flex cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[#d7c3b0] bg-[#fdf8f2] text-center font-medium text-[#7a7a7a] focus-within:outline-2 focus-within:outline-[#ed802a] ${retainedImageIndexes.length + images.length > 0 ? "aspect-square min-h-24 flex-col text-sm" : "min-h-[76px] w-full"}`}
               htmlFor="health-log-images"
             >
-              <span>
-                <Camera aria-hidden="true" className="mx-auto mb-1 size-6" />
-                Choose photos
-              </span>
+              <ImagePlus aria-hidden="true" className="size-6" />
+              <span>Add photos</span>
               <input
                 accept={HEALTH_LOG_IMAGE_TYPES.join(",")}
                 className="sr-only"
@@ -370,7 +370,31 @@ export function HealthLogForm({
             {imageError}
           </p>
         ) : null}
+        <p className="mt-2 text-xs text-[#aaa095]">
+          Up to four private photos · 4 MB each
+        </p>
       </fieldset>
+
+      <div className="relative mt-6">
+        <label className="sr-only" htmlFor="health-log-note">
+          Add a note (optional)
+        </label>
+        <Tags
+          aria-hidden="true"
+          className="pointer-events-none absolute top-5 left-4 size-5 text-[#7a7a7a]"
+        />
+        <textarea
+          {...register("note")}
+          aria-invalid={Boolean(errors.note)}
+          className="min-h-20 w-full resize-y rounded-xl border border-[#e8d0b3] bg-[#fdf8f2] py-4 pr-4 pl-12 leading-6 outline-none placeholder:text-[#aaa095] focus:border-[#ed802a] focus:ring-4 focus:ring-[#ed802a]/10"
+          id="health-log-note"
+          maxLength={MAX_HEALTH_LOG_NOTE_LENGTH}
+          placeholder="Add a note…"
+        />
+        <span className="mt-1 block text-right text-xs text-[#aaa095]">
+          {note?.length ?? 0}/{MAX_HEALTH_LOG_NOTE_LENGTH}
+        </span>
+      </div>
 
       {serverError ? (
         <div
@@ -384,34 +408,29 @@ export function HealthLogForm({
         </div>
       ) : null}
 
-      <div className="mt-7 grid grid-cols-[1fr_2fr] gap-3">
-        <button
-          className="min-h-14 rounded-2xl border border-[#e8d0b3] bg-white font-semibold text-stone-600 active:scale-[0.98]"
-          onClick={onCancel}
-          type="button"
-        >
-          Cancel
-        </button>
-        <button
-          className="flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-[#f47b20] px-5 font-semibold text-white shadow-lg shadow-[#f47b20]/20 transition-transform duration-150 ease-out enabled:active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-500 disabled:shadow-none"
-          disabled={!status || !localDate || isSubmitting}
-          type="submit"
-        >
-          {isSubmitting ? (
-            <>
-              <LoaderCircle
-                aria-hidden="true"
-                className="size-5 animate-spin"
-              />
-              Saving…
-            </>
-          ) : existing ? (
-            "Save changes"
-          ) : (
-            "Save log"
-          )}
-        </button>
-      </div>
+      <button
+        className="mt-8 flex h-[52px] w-full items-center justify-center gap-2 rounded-xl bg-[#65bcb5] text-base font-semibold text-[#fdf8f2] shadow-[0_8px_24px_rgba(205,146,85,0.08)] transition-transform duration-150 ease-out enabled:active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-500 disabled:shadow-none"
+        disabled={!status || !localDate || isSubmitting}
+        type="submit"
+      >
+        {isSubmitting ? (
+          <>
+            <LoaderCircle aria-hidden="true" className="size-5 animate-spin" />
+            Saving…
+          </>
+        ) : existing ? (
+          "Save changes"
+        ) : (
+          "Save"
+        )}
+      </button>
+      <button
+        className="mt-6 min-h-11 w-full text-[15px] font-medium text-[#7a7a7a] underline underline-offset-4 active:scale-[0.98]"
+        onClick={onCancel}
+        type="button"
+      >
+        {existing ? "Cancel" : "Skip"}
+      </button>
     </form>
   );
 }
