@@ -110,7 +110,7 @@ export function HealthLogDetail({
           <div className="mt-3 flex flex-wrap gap-2">
             {healthLog.observations.map((observation) => (
               <span
-                className="rounded-full bg-[#cd9255] px-4 py-2 text-sm font-medium text-white"
+                className="rounded-full bg-[#ED802A] px-4 py-2 text-sm font-medium text-white"
                 key={observation}
               >
                 <span aria-hidden="true" className="mr-1">

@@ -27,6 +27,7 @@ supabase/.temp/
 *.swp
 .idea/
 .vscode/
+.figma/
 
 # logs
 *.log

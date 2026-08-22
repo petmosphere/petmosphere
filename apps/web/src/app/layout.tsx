@@ -1,7 +1,14 @@
 import type { Metadata, Viewport } from "next";
+import { Manrope } from "next/font/google";
 
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
 import "@/styles/globals.css";
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  weight: ["400", "600", "700", "800"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -17,7 +24,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#cd9255",
+  themeColor: "#ED802A",
   colorScheme: "light",
 };
 
@@ -27,7 +34,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en-AU">
+    <html className={manrope.className} lang="en-AU">
       <body>
         {children}
         <ServiceWorkerRegistration />

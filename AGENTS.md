@@ -1,5 +1,28 @@
 # Petmosphere — AGENTS.md
 
+> Minimize token usage. Maximize code quality. Every rule serves both.
+
+## Style
+
+- Extremely concise. No filler, no restating, no long prose.
+- Code changes: what changed, why, verified how. Nothing else.
+- Large patches: summarize pattern, point to files.
+- Uncertain → state exactly what is unknown.
+
+## Workflow
+
+1. Understand scope → inspect only relevant files → smallest correct change → implement → cheapest verification → stop.
+
+- Preserve architecture/conventions. Reuse existing utilities.
+- No unrelated renames, refactors, or new dependencies.
+- User names files → start there. Gives error → search exact error.
+- Options requested → give 2–3, not 10.
+
+## Efficiency
+
+- Smallest useful scope first. Exact paths/symbols over broad searches.
+- File references over pasted contents. Preserve prompt caching.
+
 ## 1. Purpose
 
 This file defines the engineering rules that all humans and AI coding agents

@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
 export default withSentryConfig(nextConfig, {
   org: "petmosphere",
   project: "petmosphere-pwa",
+
   ...(process.env.SENTRY_AUTH_TOKEN
     ? { authToken: process.env.SENTRY_AUTH_TOKEN }
     : {}),

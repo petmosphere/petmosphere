@@ -1,4 +1,4 @@
-import { ChevronLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -25,55 +25,50 @@ const acceptableUseItems = [
 
 function Section({
   children,
+  number,
   title,
 }: {
   children: React.ReactNode;
+  number: string;
   title: string;
 }) {
   return (
-    <section className="scroll-mt-24">
-      <h2 className="text-xl font-bold tracking-tight text-stone-900">
+    <section className="rounded-2xl border border-[#f0e6d8] bg-white p-6">
+      <h2 className="flex items-center gap-3 text-base font-bold text-[#2d2d2d]">
+        <span className="grid h-6 min-w-9 place-items-center rounded-lg bg-[#ed802a]/10 px-2 text-sm font-semibold text-[#ed802a]">
+          {number}
+        </span>
         {title}
       </h2>
-      <div className="mt-3 space-y-3 leading-7 text-stone-700">{children}</div>
+      <div className="mt-3 space-y-3 text-sm leading-6 text-[#7a7a7a]">
+        {children}
+      </div>
     </section>
   );
 }
 
 export default function TermsPage() {
   return (
-    <main className="min-h-dvh bg-[#fdf8f2] px-5 py-10 text-stone-950 sm:py-16">
-      <article className="mx-auto max-w-3xl rounded-3xl border border-[#ead9c7] bg-white px-6 py-8 shadow-sm sm:px-12 sm:py-12">
-        <Link
-          aria-label="Back to Petmosphere"
-          className="grid size-11 place-items-center rounded-full border border-[#f0e6d8] bg-white text-[#2d2d2d] transition-colors hover:bg-[#fdf8f2] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a]"
-          href="/"
-        >
-          <ChevronLeft aria-hidden="true" className="size-6" strokeWidth={2} />
-        </Link>
-        <header className="mt-8 border-b border-[#ead9c7] pb-8">
-          <p className="text-sm font-semibold tracking-[0.16em] text-[#a96527] uppercase">
-            Legal
-          </p>
-          <h1 className="mt-3 text-4xl font-bold tracking-tight">
-            Terms of Service
+    <main className="min-h-dvh bg-[#fdf8f2] pb-28 text-[#2d2d2d]">
+      <div className="mx-auto w-full max-w-md px-6 pt-[max(1.5rem,env(safe-area-inset-top))]">
+        <div className="flex items-center gap-4">
+          <Link
+            aria-label="Back"
+            className="grid size-9 shrink-0 place-items-center rounded-xl border border-[#f0e6d8] bg-white text-[#2d2d2d] transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.97] motion-reduce:transform-none"
+            href="/auth/sign-up"
+          >
+            <ArrowLeft aria-hidden="true" className="size-5" strokeWidth={2} />
+          </Link>
+          <h1 className="text-2xl font-extrabold tracking-[-0.025em]">
+            Terms &amp; Conditions
           </h1>
-          <dl className="mt-5 grid gap-1 text-sm text-stone-500 sm:grid-cols-2">
-            <div>
-              <dt className="inline font-semibold text-stone-700">
-                Effective date:{" "}
-              </dt>
-              <dd className="inline">12 August 2026</dd>
-            </div>
-            <div>
-              <dt className="inline font-semibold text-stone-700">Version: </dt>
-              <dd className="inline">2026-08-12</dd>
-            </div>
-          </dl>
-        </header>
+        </div>
+        <p className="mt-3 text-sm text-[#7A7A7A]">
+          Effective date: 12 August 2026 · Version 2026-08-12
+        </p>
 
-        <div className="mt-10 space-y-10">
-          <Section title="1. About these Terms">
+        <div className="mt-6 space-y-4">
+          <Section number="1" title="About these Terms">
             <p>
               These Terms of Service (“Terms”) are an agreement between you and
               J CAI &amp; S LI &amp; H LU, ABN 24 226 497 748, trading as
@@ -93,7 +88,7 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="2. The Service">
+          <Section number="2" title="The Service">
             <p>
               Petmosphere is a digital pet health and management platform that
               helps pet owners organise, record and manage information relating
@@ -121,7 +116,7 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="3. Veterinary and emergency disclaimer">
+          <Section number="3" title="Veterinary and emergency disclaimer">
             <p>
               Petmosphere is not a veterinary clinic, veterinarian or other
               veterinary practitioner, animal emergency service, or substitute
@@ -153,7 +148,7 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="4. Eligibility and your account">
+          <Section number="4" title="Eligibility and your account">
             <p>
               You must be at least 18 years old to create an account and must
               provide information that is accurate and reasonably current.
@@ -172,7 +167,7 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="5. Your content and data">
+          <Section number="5" title="Your content and data">
             <h3 className="font-bold text-stone-900">Your rights</h3>
             <p>
               “User Content” means records, notes, photographs, videos,
@@ -240,7 +235,7 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="6. Acceptable use">
+          <Section number="6" title="Acceptable use">
             <p>
               You must use the Service lawfully and responsibly. You must not
               use or attempt to use Petmosphere to:
@@ -257,7 +252,7 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="7. Petmosphere intellectual property">
+          <Section number="7" title="Petmosphere intellectual property">
             <p>
               Petmosphere and its licensors retain all rights in the Service
               other than rights you retain in your User Content. This includes
@@ -271,7 +266,7 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="8. Feedback">
+          <Section number="8" title="Feedback">
             <p>
               If you voluntarily provide suggestions or feedback, you permit us
               to use that feedback to operate and improve the Service without
@@ -280,7 +275,7 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="9. Third-party services">
+          <Section number="9" title="Third-party services">
             <p>
               The Service relies on third-party providers for functions such as
               hosting, authentication, storage, monitoring and email delivery.
@@ -295,7 +290,7 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="10. Service availability and changes">
+          <Section number="10" title="Service availability and changes">
             <p>
               We aim to operate Petmosphere reliably, but do not guarantee that
               the Service will always be available, uninterrupted or error-free.
@@ -314,7 +309,7 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="11. Suspension and account closure">
+          <Section number="11" title="Suspension and account closure">
             <p>
               You may ask us to close your account using available account tools
               or by contacting us.
@@ -335,7 +330,7 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="12. Consumer guarantees">
+          <Section number="12" title="Consumer guarantees">
             <p>
               Our services come with guarantees that cannot be excluded under
               the Australian Consumer Law.
@@ -348,7 +343,7 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="13. Liability">
+          <Section number="13" title="Liability">
             <p>
               Nothing in these Terms limits liability where doing so would be
               unlawful, including liability under consumer guarantees that
@@ -372,7 +367,7 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="14. Changes to these Terms">
+          <Section number="14" title="Changes to these Terms">
             <p>
               We may update these Terms to reflect changes to the Service, our
               business or providers, legal or security requirements, or
@@ -386,7 +381,7 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="15. Complaints and disputes">
+          <Section number="15" title="Complaints and disputes">
             <p>
               Contact us with enough information for us to understand your
               concern. We will acknowledge complaints within a reasonable time
@@ -399,7 +394,7 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="16. Governing law">
+          <Section number="16" title="Governing law">
             <p>
               These Terms are governed by the laws of Victoria, Australia. You
               and Petmosphere submit to the jurisdiction of Victorian courts and
@@ -411,7 +406,7 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="17. General terms">
+          <Section number="17" title="General terms">
             <p>
               If part of these Terms is invalid or unenforceable, it will be
               read down to the minimum extent necessary or removed, and the
@@ -425,7 +420,7 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="18. Contact us">
+          <Section number="18" title="Contact us">
             <p>
               <strong>Petmosphere</strong>
               <br />
@@ -435,7 +430,7 @@ export default function TermsPage() {
               <br />
               Email:{" "}
               <a
-                className="font-semibold text-[#a96527] underline"
+                className="font-semibold text-[#ED802A] underline"
                 href="mailto:info.petmosphere@gmail.com"
               >
                 info.petmosphere@gmail.com
@@ -443,7 +438,18 @@ export default function TermsPage() {
             </p>
           </Section>
         </div>
-      </article>
+      </div>
+
+      <div className="fixed inset-x-0 bottom-0 z-10 bg-gradient-to-t from-[#fdf8f2] via-[#fdf8f2]/95 to-transparent px-6 pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+        <div className="mx-auto w-full max-w-md">
+          <Link
+            className="block min-h-13 w-full rounded-xl bg-[#ED802A] px-5 py-3.5 text-center text-base font-semibold text-[#fdf8f2] shadow-[0_4px_16px_rgba(205,146,85,0.14)] transition hover:bg-[#df6d16] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a94e0c]"
+            href="/auth/sign-up"
+          >
+            Agree
+          </Link>
+        </div>
+      </div>
     </main>
   );
 }
