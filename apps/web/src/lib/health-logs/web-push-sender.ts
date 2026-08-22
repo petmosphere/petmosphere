@@ -17,17 +17,23 @@ export function createWebPushSender(): WebPushSender {
   const vapidDetails = getWebPushConfig();
 
   return {
-    async send(subscription) {
+    async send(subscription, notification) {
       try {
         await webPush.sendNotification(
           {
             endpoint: subscription.endpoint,
             keys: { auth: subscription.auth, p256dh: subscription.p256dh },
           },
-          null,
+          notification
+            ? JSON.stringify({
+                body: notification.body,
+                tag: notification.tag,
+                url: notification.url,
+              })
+            : null,
           {
             TTL: 3_600,
-            topic: "petmosphere-daily-check-in",
+            ...(notification ? {} : { topic: "petmosphere-daily-check-in" }),
             urgency: "normal",
             vapidDetails,
           },

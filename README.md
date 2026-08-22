@@ -83,7 +83,7 @@ cp .env.example apps/web/.env.local
 
 Next.js loads local application variables from `apps/web/.env.local`. Never commit secrets. Public variables prefixed with `NEXT_PUBLIC_` are exposed to the browser and must not contain secrets.
 
-Daily PWA reminders additionally require a stable Web Push VAPID key pair,
+PWA health-log and pet-care reminders additionally require a stable Web Push VAPID key pair,
 `SUPABASE_SECRET_KEY`, and `CRON_SECRET`. Only
 `NEXT_PUBLIC_WEB_PUSH_VAPID_PUBLIC_KEY` is exposed to the browser. Keep
 `WEB_PUSH_VAPID_PRIVATE_KEY`, `SUPABASE_SECRET_KEY`, and `CRON_SECRET`

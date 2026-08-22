@@ -6,7 +6,11 @@ import { AppNav } from "./app-nav";
 describe("AppNav", () => {
   it("uses Profile instead of a separate Settings destination", () => {
     render(
-      <AppNav diaryHref="/pets/pet-1/health-logs" profileHref="/pets/pet-1" />,
+      <AppNav
+        diaryHref="/pets/pet-1/health-logs"
+        profileHref="/pets/pet-1"
+        reminderHref="/reminders"
+      />,
     );
 
     expect(screen.getByRole("link", { name: "Home" })).toHaveAttribute(
@@ -15,6 +19,10 @@ describe("AppNav", () => {
     );
     expect(screen.getByText("Diary")).toBeVisible();
     expect(screen.getByText("Reminders")).toBeVisible();
+    expect(screen.getByRole("link", { name: "Reminders" })).toHaveAttribute(
+      "href",
+      "/reminders",
+    );
     expect(screen.getByRole("link", { name: "Profile" })).toHaveAttribute(
       "href",
       "/pets/pet-1",
