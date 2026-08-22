@@ -8,9 +8,9 @@ export function AppNav({
   reminderHref,
 }: {
   active?: "diary" | "home" | "reminders";
-  diaryHref?: string;
-  profileHref?: string;
-  reminderHref?: string;
+  diaryHref?: string | undefined;
+  profileHref?: string | undefined;
+  reminderHref?: string | undefined;
 }) {
   return (
     <nav
