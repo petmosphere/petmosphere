@@ -1,3 +1,4 @@
+import type { ReminderResponse } from "@petmosphere/api-contracts";
 import type { HealthLogReminder, Pet } from "@petmosphere/domain";
 import { Bell, Check, ChevronRight } from "lucide-react";
 import Link from "next/link";
@@ -8,6 +9,10 @@ import {
   healthLogStatusDetails,
 } from "@/components/features/health-logs/health-log-status-options";
 import type { HomeHealthLogSummary } from "@/lib/health-logs/supabase-health-logs";
+import {
+  categoryDetails,
+  formatReminderDate,
+} from "@/components/features/reminders/reminder-ui";
 import { AppNav } from "./app-nav";
 import { PetAvatar } from "./pet-avatar";
 
@@ -32,12 +37,14 @@ function formatLogDate(localDate: string) {
 
 export function PetsHome({
   displayName,
+  careReminders = [],
   healthLogs,
   pets,
   reminder,
   today,
 }: {
   displayName: string;
+  careReminders?: ReminderResponse[];
   healthLogs: HomeHealthLogSummary[];
   pets: PetWithPhoto[];
   reminder: Pick<HealthLogReminder, "enabled" | "localTime"> | null;
@@ -148,7 +155,44 @@ export function PetsHome({
       </section>
 
       <section className="mx-6 mt-7">
-        <h2 className="text-lg font-bold">Coming up</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold">Coming up</h2>
+          <Link
+            className="text-sm font-semibold text-[#a96225]"
+            href="/reminders"
+          >
+            View all
+          </Link>
+        </div>
+        {careReminders.map((careReminder) => {
+          const details = categoryDetails[careReminder.category];
+          const Icon = details.Icon;
+          return (
+            <Link
+              className="mt-3 flex min-h-16 items-center gap-3 rounded-2xl bg-white px-4 shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.99]"
+              href={`/reminders/${careReminder.id}`}
+              key={careReminder.id}
+            >
+              <span
+                className={`grid size-10 place-items-center rounded-full ${details.colours}`}
+              >
+                <Icon aria-hidden="true" className="size-5" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-semibold">
+                  {careReminder.title}
+                </span>
+                <span className="block text-sm text-stone-500">
+                  {formatReminderDate(careReminder.dueDate)}
+                </span>
+              </span>
+              <ChevronRight
+                aria-hidden="true"
+                className="size-5 text-stone-400"
+              />
+            </Link>
+          );
+        })}
         {reminder?.enabled ? (
           <Link
             className="mt-3 flex min-h-16 items-center gap-3 rounded-2xl bg-white px-4 shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.99]"
@@ -168,9 +212,9 @@ export function PetsHome({
               className="size-5 text-stone-400"
             />
           </Link>
-        ) : (
+        ) : careReminders.length === 0 ? (
           <p className="mt-3 text-sm text-stone-500">No record yet</p>
-        )}
+        ) : null}
       </section>
 
       <section className="mx-6 mt-7">
@@ -232,6 +276,7 @@ export function PetsHome({
       <AppNav
         diaryHref={diaryHref}
         profileHref={`/pets/${currentPet.pet.id}`}
+        reminderHref="/reminders"
       />
     </main>
   );

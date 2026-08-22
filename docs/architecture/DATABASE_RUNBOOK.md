@@ -125,6 +125,9 @@ Open local Supabase Studio at <http://127.0.0.1:54323>. Useful locations are:
 - **Table Editor → health_log_reminders** for per-pet daily reminder preferences;
   the dispatcher records the last locally notified date here to prevent
   duplicate reminders
+- **Table Editor → reminders** for owner-scoped pet-care reminder occurrences;
+  completed rows retain history and the one active row represents the next
+  occurrence in a repeating series
 - **Table Editor → web_push_subscriptions** for private browser push endpoints
   and encryption keys; never copy these values into logs or support tickets
 - **Table Editor → health_log_analytics_events** for privacy-minimised,
@@ -145,6 +148,7 @@ select * from public.policy_acceptances;
 select * from public.pets order by created_at desc;
 select * from public.health_logs order by created_at desc;
 select * from public.health_log_reminders order by updated_at desc;
+select * from public.reminders order by due_local_date, local_time;
 select id, owner_id, created_at, updated_at
 from public.web_push_subscriptions
 order by updated_at desc;
@@ -158,9 +162,12 @@ behaviour.
 
 ### PWA push reminder operations
 
-Health-log reminder delivery uses browser Web Push. The Next.js dispatcher is
-called every five minutes by Supabase Cron, claims each due pet/local-date at
-most once, and skips the notification when that date already has a health log.
+Health-log and pet-care reminder delivery use browser Web Push. Separate
+Next.js dispatchers are called every five minutes by Supabase Cron. Each claims
+a due occurrence at most once. Health-log reminders are skipped when that date
+already has a health log. Pet-care reminders send only generic wording; titles,
+notes, pet names, categories, and other private details never enter the push
+payload.
 The stored timezone is `Australia/Melbourne`, so PostgreSQL applies AEDT or AEST
 automatically across daylight-saving boundaries.
 
@@ -200,7 +207,7 @@ then store two Vault secrets:
   environment
 
 Create the job through **Integrations → Cron** or with reviewed SQL equivalent
-to the following. The job name must be unique within each project:
+to the following. Job names must be unique within each project:
 
 ```sql
 select cron.schedule(
@@ -226,6 +233,30 @@ select cron.schedule(
   );
   $$
 );
+
+select cron.schedule(
+  'dispatch-pet-care-reminders',
+  '*/5 * * * *',
+  $$
+  select net.http_post(
+    url := (
+      select decrypted_secret
+      from vault.decrypted_secrets
+      where name = 'petmosphere_app_url'
+    ) || '/api/v1/reminders/dispatch',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'Authorization', 'Bearer ' || (
+        select decrypted_secret
+        from vault.decrypted_secrets
+        where name = 'health_log_cron_secret'
+      )
+    ),
+    body := '{}'::jsonb,
+    timeout_milliseconds := 10000
+  );
+  $$
+);
 ```
 
 Verify job runs in **Integrations → Cron** and confirm the dispatcher returns a
@@ -235,11 +266,17 @@ An expired push endpoint is removed automatically. Other provider failures are
 reported only as aggregate counts and are not retried that day, which avoids
 duplicate notifications; the next day's reminder remains eligible.
 
-For a safe manual staging check, enable the reminder from an installed PWA,
+For a safe manual staging check, enable the health-log reminder from an installed PWA,
 create no health log for that pet/date, and invoke the Cron job. Confirm one
 generic notification arrives, invoke it again to confirm no duplicate, then
 create today's log and confirm no reminder is claimed. Repeat the time-boundary
 database tests with `supabase test db` before promotion.
+
+Also create a pet-care reminder a few minutes ahead, confirm the browser has
+notification permission, and invoke `dispatch-pet-care-reminders` after it is
+due. Confirm the notification uses generic wording, opens the reminder detail,
+and is not sent a second time. Completing a repeating reminder must preserve
+the completed occurrence and create exactly one next future occurrence.
 
 ### 2. Create a migration
 

@@ -296,6 +296,7 @@ export function HealthDiary({
         active="diary"
         diaryHref={`/pets/${pet.id}/health-logs`}
         profileHref={`/pets/${pet.id}`}
+        reminderHref="/reminders"
       />
     </main>
   );

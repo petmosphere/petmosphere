@@ -18,7 +18,16 @@ export type HealthLogReminderDeliveryRepository = {
 };
 
 export type WebPushSender = {
-  send(subscription: StoredWebPushSubscription): Promise<"expired" | "sent">;
+  send(
+    subscription: StoredWebPushSubscription,
+    notification?: WebPushNotification,
+  ): Promise<"expired" | "sent">;
+};
+
+export type WebPushNotification = {
+  body: string;
+  tag: string;
+  url: string;
 };
 
 export async function dispatchHealthLogReminders(

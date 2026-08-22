@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { deriveLocalDate } from "@petmosphere/domain";
+import { deriveLocalDate, deriveLocalTime } from "@petmosphere/domain";
 
 import { PetsHome } from "@/components/features/pets/pets-home";
 import { requireUser } from "@/lib/auth/require-user";
 import { createHealthLogReminderRepository } from "@/lib/health-logs/supabase-health-log-reminders";
 import { listOwnedHealthLogSummaries } from "@/lib/health-logs/supabase-health-logs";
 import { getPetPhotoUrl, listOwnedPets } from "@/lib/pets/supabase-pets";
+import {
+  createReminderRepository,
+  toReminderResponse,
+} from "@/lib/reminders/supabase-reminders";
 
 export const metadata: Metadata = {
   title: "Home",
@@ -24,7 +28,9 @@ export default async function AppHomePage() {
   const pets = await listOwnedPets(supabase, user.id);
   if (pets.length === 0) redirect("/onboarding");
   const currentPet = pets[0]!;
-  const today = deriveLocalDate(new Date(), "Australia/Melbourne");
+  const now = new Date();
+  const today = deriveLocalDate(now, "Australia/Melbourne");
+  const localTime = deriveLocalTime(now, "Australia/Melbourne");
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -35,22 +41,29 @@ export default async function AppHomePage() {
     profile?.display_name?.trim().split(/\s+/)[0] ||
     user.user_metadata.display_name?.trim().split(/\s+/)[0] ||
     "there";
-  const [petsWithPhotos, healthLogs, reminder] = await Promise.all([
-    Promise.all(
-      pets.map(async (pet) => ({
-        pet,
-        photoUrl: await getPetPhotoUrl(supabase, pet.photoPath),
-      })),
-    ),
-    listOwnedHealthLogSummaries(
-      supabase,
-      user.id,
-      currentPet.id,
-      localDateDaysAgo(today, 6),
-      today,
-    ),
-    createHealthLogReminderRepository(supabase).find(user.id, currentPet.id),
-  ]);
+  const [petsWithPhotos, healthLogs, reminder, careReminders] =
+    await Promise.all([
+      Promise.all(
+        pets.map(async (pet) => ({
+          pet,
+          photoUrl: await getPetPhotoUrl(supabase, pet.photoPath),
+        })),
+      ),
+      listOwnedHealthLogSummaries(
+        supabase,
+        user.id,
+        currentPet.id,
+        localDateDaysAgo(today, 6),
+        today,
+      ),
+      createHealthLogReminderRepository(supabase).find(user.id, currentPet.id),
+      createReminderRepository(supabase).list(
+        user.id,
+        "upcoming",
+        today,
+        localTime,
+      ),
+    ]);
 
   return (
     <PetsHome
@@ -58,6 +71,7 @@ export default async function AppHomePage() {
       healthLogs={healthLogs}
       pets={petsWithPhotos}
       reminder={reminder}
+      careReminders={careReminders.slice(0, 3).map(toReminderResponse)}
       today={today}
     />
   );
