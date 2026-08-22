@@ -8,12 +8,7 @@ import {
   type CreatePetFormInput,
   type CreatePetInput,
 } from "@petmosphere/api-contracts";
-import type {
-  PetAgeBand,
-  PetDesexedStatus,
-  PetSex,
-  PetSpecies,
-} from "@petmosphere/domain";
+import type { PetAgeBand, PetDesexedStatus, PetSex } from "@petmosphere/domain";
 import {
   ArrowLeft,
   CalendarDays,
@@ -27,18 +22,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { useForm, useWatch } from "react-hook-form";
-
-const breedSuggestions: Record<PetSpecies, string[]> = {
-  cat: ["Domestic shorthair", "Domestic longhair", "Ragdoll", "Siamese"],
-  dog: [
-    "Cavoodle",
-    "Golden Retriever",
-    "Labrador",
-    "Staffordshire Bull Terrier",
-  ],
-  other: ["Bird", "Guinea pig", "Rabbit", "Reptile"],
-};
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { BreedSelect } from "./breed-select";
 
 const ageOptions: Array<{ label: string; value: PetAgeBand }> = [
   { label: "Puppy / kitten", value: "baby" },
@@ -293,12 +278,13 @@ export function FirstPetForm() {
                       aria-pressed={selected}
                       className={`flex min-h-28 flex-col items-center justify-center rounded-2xl border bg-[#fffaf5] transition-[border-color,background-color,transform] duration-150 ease-out active:scale-[0.97] ${selected ? "border-2 border-[#ed802a] bg-[#fff0e1] text-[#d8640d]" : "border-[#ead9c7]"}`}
                       key={value}
-                      onClick={() =>
+                      onClick={() => {
                         setValue("species", value, {
                           shouldDirty: true,
                           shouldValidate: true,
-                        })
-                      }
+                        });
+                        setValue("breed", "");
+                      }}
                       type="button"
                     >
                       <Icon
@@ -319,28 +305,26 @@ export function FirstPetForm() {
             </fieldset>
 
             <div className="mt-5">
-              <label
+              <span
                 className="mb-2 block text-sm font-medium"
-                htmlFor="pet-breed"
+                id="pet-breed-label"
               >
                 Breed{" "}
                 <span className="font-normal text-stone-500">(optional)</span>
-              </label>
-              <input
-                {...register("breed")}
-                className="min-h-13 w-full rounded-xl border border-[#ead9c7] bg-[#fffaf5] px-4 text-base outline-none focus:border-[#ed802a] focus:ring-4 focus:ring-[#ed802a]/10"
-                disabled={!species}
-                id="pet-breed"
-                list="breed-suggestions"
-                placeholder={
-                  species ? "Select or type breed" : "Choose a species first"
-                }
+              </span>
+              <Controller
+                control={control}
+                name="breed"
+                render={({ field }) => (
+                  <BreedSelect
+                    disabled={!species}
+                    id="pet-breed"
+                    onChange={field.onChange}
+                    species={species}
+                    value={field.value ?? ""}
+                  />
+                )}
               />
-              <datalist id="breed-suggestions">
-                {(species ? breedSuggestions[species] : []).map((breed) => (
-                  <option key={breed} value={breed} />
-                ))}
-              </datalist>
             </div>
 
             <button
