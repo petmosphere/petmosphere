@@ -131,3 +131,20 @@ export function deriveLocalDate(instant: Date, timeZone: string) {
 
   return `${parts.year}-${parts.month}-${parts.day}`;
 }
+
+export function deriveLocalTime(instant: Date, timeZone: string) {
+  const parts = new Intl.DateTimeFormat("en-AU", {
+    hour: "2-digit",
+    hourCycle: "h23",
+    minute: "2-digit",
+    second: "2-digit",
+    timeZone,
+  })
+    .formatToParts(instant)
+    .reduce<Record<string, string>>((result, part) => {
+      result[part.type] = part.value;
+      return result;
+    }, {});
+
+  return `${parts.hour}:${parts.minute}:${parts.second}`;
+}
