@@ -8,11 +8,7 @@ import {
   type CreatePetFormInput,
   type CreatePetInput,
 } from "@petmosphere/api-contracts";
-import type {
-  PetAgeBand,
-  PetDesexedStatus,
-  PetSex,
-} from "@petmosphere/domain";
+import type { PetAgeBand, PetDesexedStatus, PetSex } from "@petmosphere/domain";
 import {
   ArrowLeft,
   CalendarDays,
