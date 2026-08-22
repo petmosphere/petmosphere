@@ -2,15 +2,18 @@ import type { Pet } from "@petmosphere/domain";
 import { getPetAgeLabel } from "@petmosphere/domain";
 import {
   ArrowLeft,
-  CalendarDays,
+  Cake,
+  ChartNoAxesCombined,
+  ChevronRight,
   CircleHelp,
+  Mars,
+  Pencil,
   Scissors,
   Scale,
-  VenusAndMars,
 } from "lucide-react";
 import Link from "next/link";
 
-import { PetAvatar } from "./pet-avatar";
+import { PetPhotoViewer } from "./pet-photo-viewer";
 
 const labels = {
   no: "No",
@@ -29,7 +32,7 @@ export function PetProfile({
   const detailRows = [
     pet.birthDate
       ? {
-          icon: CalendarDays,
+          icon: Cake,
           label: "Birthday",
           value: new Intl.DateTimeFormat("en-AU", {
             dateStyle: "medium",
@@ -43,8 +46,8 @@ export function PetProfile({
       : null,
     pet.sex
       ? {
-          icon: VenusAndMars,
-          label: "Sex",
+          icon: Mars,
+          label: "Gender",
           value:
             pet.sex === "unknown"
               ? "Unknown"
@@ -57,54 +60,81 @@ export function PetProfile({
   ].filter((row) => row !== null);
 
   return (
-    <main className="mx-auto min-h-dvh w-full max-w-md bg-[#fdf8f2] px-6 pt-8 pb-12 text-[#2d2d2d] shadow-xl shadow-stone-900/5">
-      <Link
-        aria-label="Back to Home"
-        className="grid min-h-11 min-w-11 place-items-center justify-self-start rounded-full focus-visible:outline-2 focus-visible:outline-[#ed802a]"
-        href="/home"
-      >
-        <ArrowLeft aria-hidden="true" className="size-6" />
-      </Link>
+    <main className="mx-auto min-h-dvh w-full max-w-[393px] bg-[#fdf8f2] px-6 pt-[max(2rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))] text-[#2d2d2d]">
+      <div className="flex items-center justify-between">
+        <Link
+          aria-label="Back to Home"
+          className="-ml-3 grid min-h-11 min-w-11 place-items-center rounded-full focus-visible:outline-2 focus-visible:outline-[#ed802a]"
+          href="/home"
+        >
+          <ArrowLeft aria-hidden="true" className="size-6" />
+        </Link>
+        <Link
+          aria-label={`Edit ${pet.name}'s profile`}
+          className="grid min-h-11 min-w-11 place-items-center rounded-full text-[#ed802a] focus-visible:outline-2 focus-visible:outline-[#ed802a]"
+          href={`/pets/${pet.id}/edit`}
+        >
+          <Pencil aria-hidden="true" className="size-5" />
+        </Link>
+      </div>
 
-      <section className="mt-5 text-center">
-        <PetAvatar
-          className="mx-auto size-32"
+      <section className="mt-4 text-center">
+        <PetPhotoViewer
           name={pet.name}
           photoUrl={photoUrl}
           species={pet.species}
         />
-        <h1 className="mt-5 text-3xl font-bold">{pet.name}</h1>
-        <p className="mt-1 text-stone-500">
+        <h1 className="mt-5 text-2xl font-bold">{pet.name}</h1>
+        <p className="mt-1 text-sm text-[#7a7a7a]">
           {[pet.breed || pet.species, age].filter(Boolean).join(" · ")}
         </p>
       </section>
 
       {detailRows.length > 0 ? (
-        <dl className="mt-8 divide-y divide-[#f0e2d1] rounded-3xl bg-white px-5 py-2 shadow-sm">
+        <dl className="mt-6 divide-y divide-[#f0e6d8] rounded-2xl bg-[#fdf8f2] px-5 shadow-[0_8px_24px_rgba(205,146,85,0.08)]">
           {detailRows.map(({ icon: Icon, label, value }) => (
-            <div className="flex min-h-13 items-center gap-3" key={label}>
+            <div className="flex min-h-14 items-center gap-3" key={label}>
               <Icon
                 aria-hidden="true"
                 className="size-5 text-[#ed802a]"
                 strokeWidth={1.8}
               />
-              <dt className="flex-1 text-stone-500">{label}</dt>
-              <dd className="font-medium">{value}</dd>
+              <dt className="flex-1 text-sm text-[#7a7a7a]">{label}</dt>
+              <dd className="text-sm font-medium">{value}</dd>
             </div>
           ))}
         </dl>
       ) : (
-        <p className="mt-8 rounded-3xl bg-white p-5 text-center text-stone-500 shadow-sm">
+        <p className="mt-6 rounded-2xl bg-[#fdf8f2] p-5 text-center text-sm text-[#7a7a7a] shadow-[0_8px_24px_rgba(205,146,85,0.08)]">
           You can add more profile details in a future update.
         </p>
       )}
 
-      <section className="mt-5 rounded-3xl bg-white p-6 text-center shadow-sm">
-        <h2 className="font-bold">No health logs yet</h2>
-        <p className="mt-2 text-sm leading-6 text-stone-500">
-          Health logging is the next Journey A story.
-        </p>
-      </section>
+      <div className="mt-5 flex min-h-[68px] items-center gap-3 rounded-2xl bg-[#fdf8f2] px-4 shadow-[0_8px_24px_rgba(205,146,85,0.08)]">
+        <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#dff3ef] text-[#65bcb5]">
+          <ChartNoAxesCombined
+            aria-hidden="true"
+            className="size-5"
+            strokeWidth={1.8}
+          />
+        </span>
+        <span className="flex-1 text-left font-medium">Weight History</span>
+        <svg
+          aria-hidden="true"
+          className="h-4 w-12 text-[#65bcb5]"
+          fill="none"
+          viewBox="0 0 48 16"
+        >
+          <path
+            d="M1 11.5 10 13l8-5 8 1 8-5 13-3"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+          />
+        </svg>
+        <ChevronRight aria-hidden="true" className="size-5 text-[#9b948d]" />
+      </div>
     </main>
   );
 }

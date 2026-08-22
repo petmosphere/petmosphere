@@ -1,3 +1,4 @@
+import { ChevronLeft } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -43,8 +44,12 @@ export default function TermsPage() {
   return (
     <main className="min-h-dvh bg-[#fdf8f2] px-5 py-10 text-stone-950 sm:py-16">
       <article className="mx-auto max-w-3xl rounded-3xl border border-[#ead9c7] bg-white px-6 py-8 shadow-sm sm:px-12 sm:py-12">
-        <Link className="font-semibold text-[#a96527]" href="/">
-          ← Petmosphere
+        <Link
+          aria-label="Back to Petmosphere"
+          className="grid size-11 place-items-center rounded-full border border-[#f0e6d8] bg-white text-[#2d2d2d] transition-colors hover:bg-[#fdf8f2] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a]"
+          href="/"
+        >
+          <ChevronLeft aria-hidden="true" className="size-6" strokeWidth={2} />
         </Link>
         <header className="mt-8 border-b border-[#ead9c7] pb-8">
           <p className="text-sm font-semibold tracking-[0.16em] text-[#a96527] uppercase">
