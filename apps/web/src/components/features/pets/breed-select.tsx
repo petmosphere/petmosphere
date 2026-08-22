@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, ChevronDown, List, Search } from "lucide-react";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import type { PetSpecies } from "@petmosphere/domain";
 
 const breedSuggestions: Record<PetSpecies, string[]> = {
@@ -146,7 +146,6 @@ export function BreedSelect({
   const [query, setQuery] = useState("");
   const triggerId = id;
   const listboxId = useId();
-  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const breeds = species ? breedSuggestions[species] : [];
   const normalizedQuery = query.trim().toLowerCase();

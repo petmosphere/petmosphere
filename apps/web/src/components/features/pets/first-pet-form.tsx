@@ -12,7 +12,6 @@ import type {
   PetAgeBand,
   PetDesexedStatus,
   PetSex,
-  PetSpecies,
 } from "@petmosphere/domain";
 import {
   ArrowLeft,
