@@ -15,11 +15,6 @@ export function HealthLogObservationOptions({
   value: HealthLogObservation[];
 }) {
   const allObservations = healthLogObservationsByStatus[status];
-  const selectedClass = {
-    concerned: "border-[#e87474] bg-[#e87474] text-white",
-    doing_well: "border-[#65bcb5] bg-[#65bcb5] text-white",
-    something_different: "border-[#d49a55] bg-[#d49a55] text-white",
-  }[status];
 
   return (
     <fieldset className="mt-9">
