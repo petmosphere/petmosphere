@@ -154,7 +154,7 @@ export function FirstPetForm() {
   });
 
   const inputClass =
-    "min-h-13 w-full rounded-xl border border-[#ead9c7] bg-[#fffaf5] px-12 text-base text-stone-900 outline-none transition-[border-color,box-shadow] focus:border-[#ed802a] focus:ring-4 focus:ring-[#ed802a]/10";
+    "min-h-13 w-full rounded-xl border border-[#ead9c7] bg-white/60 px-12 text-base text-stone-900 outline-none transition-[border-color,box-shadow] focus:border-[#ed802a] focus:ring-4 focus:ring-[#ed802a]/10";
 
   return (
     <main className="mx-auto min-h-dvh w-full max-w-md bg-[#fdf8f2] px-6 pt-7 pb-10 text-[#2d2d2d] shadow-xl shadow-stone-900/5">
@@ -190,7 +190,7 @@ export function FirstPetForm() {
 
             <div className="mt-6 text-center">
               <label
-                className="relative mx-auto grid size-28 cursor-pointer place-items-center overflow-hidden rounded-full border-2 border-dashed border-[#ed802a] bg-[#fffaf5] text-[#ed802a] focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[#b45309]"
+                className="relative mx-auto grid size-28 cursor-pointer place-items-center overflow-hidden rounded-full border-2 border-dashed border-[#ed802a] bg-white/60 text-[#ed802a] focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[#b45309]"
                 htmlFor="pet-photo"
               >
                 {photoPreview ? (
@@ -276,7 +276,7 @@ export function FirstPetForm() {
                   return (
                     <button
                       aria-pressed={selected}
-                      className={`flex min-h-28 flex-col items-center justify-center rounded-2xl border bg-[#fffaf5] transition-[border-color,background-color,transform] duration-150 ease-out active:scale-[0.97] ${selected ? "border-2 border-[#ed802a] bg-[#fff0e1] text-[#d8640d]" : "border-[#ead9c7]"}`}
+                      className={`flex min-h-28 flex-col items-center justify-center rounded-2xl border bg-white/60 transition-[border-color,background-color,transform] duration-150 ease-out active:scale-[0.97] ${selected ? "border-2 border-[#ed802a] bg-[#fff0e1] text-[#d8640d]" : "border-[#ead9c7]"}`}
                       key={value}
                       onClick={() => {
                         setValue("species", value, {
@@ -404,7 +404,7 @@ export function FirstPetForm() {
               {unknownBirthDate ? (
                 <select
                   {...register("approximateAge")}
-                  className="mt-2 min-h-13 w-full rounded-xl border border-[#ead9c7] bg-[#fffaf5] px-4 text-base outline-none focus:border-[#ed802a] focus:ring-4 focus:ring-[#ed802a]/10"
+                  className="mt-2 min-h-13 w-full rounded-xl border border-[#ead9c7] bg-white/60 px-4 text-base outline-none focus:border-[#ed802a] focus:ring-4 focus:ring-[#ed802a]/10"
                 >
                   <option value="">Select approximate age</option>
                   {ageOptions.map((option) => (

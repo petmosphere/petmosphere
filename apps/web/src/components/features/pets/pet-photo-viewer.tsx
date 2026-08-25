@@ -47,7 +47,7 @@ export function PetPhotoViewer({
           }}
           role="dialog"
         >
-          <div className="relative rounded-[2rem] bg-[#fdf8f2] p-2 shadow-2xl">
+          <div className="relative rounded-[2rem] bg-white/60 p-2 shadow-2xl">
             <PetAvatar
               className="size-[min(82vw,24rem)] border-0"
               name={name}

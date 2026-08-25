@@ -91,7 +91,7 @@ export function PetProfile({
       </section>
 
       {detailRows.length > 0 ? (
-        <dl className="mt-6 divide-y divide-[#f0e6d8] rounded-2xl bg-[#fdf8f2] px-5 shadow-[0_8px_24px_rgba(205,146,85,0.08)]">
+        <dl className="mt-6 divide-y divide-[#f0e6d8] rounded-2xl bg-white/60 px-5 shadow-[0_8px_24px_rgba(205,146,85,0.08)]">
           {detailRows.map(({ icon: Icon, label, value }) => (
             <div className="flex min-h-14 items-center gap-3" key={label}>
               <Icon
@@ -105,12 +105,12 @@ export function PetProfile({
           ))}
         </dl>
       ) : (
-        <p className="mt-6 rounded-2xl bg-[#fdf8f2] p-5 text-center text-sm text-[#7a7a7a] shadow-[0_8px_24px_rgba(205,146,85,0.08)]">
+        <p className="mt-6 rounded-2xl bg-white/60 p-5 text-center text-sm text-[#7a7a7a] shadow-[0_8px_24px_rgba(205,146,85,0.08)]">
           You can add more profile details in a future update.
         </p>
       )}
 
-      <div className="mt-5 flex min-h-[68px] items-center gap-3 rounded-2xl bg-[#fdf8f2] px-4 shadow-[0_8px_24px_rgba(205,146,85,0.08)]">
+      <div className="mt-5 flex min-h-[68px] items-center gap-3 rounded-2xl bg-white/60 px-4 shadow-[0_8px_24px_rgba(205,146,85,0.08)]">
         <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#dff3ef] text-[#65bcb5]">
           <ChartNoAxesCombined
             aria-hidden="true"

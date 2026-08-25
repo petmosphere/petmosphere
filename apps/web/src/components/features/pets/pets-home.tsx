@@ -66,7 +66,7 @@ export function PetsHome({
         <div className="mt-3 space-y-3">
           {pets.map(({ pet, photoUrl }) => (
             <Link
-              className="flex items-center gap-4 rounded-3xl border border-[#f0e2d1] bg-white p-4 shadow-sm transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.98]"
+              className="flex items-center gap-4 rounded-3xl border border-[#f0e2d1] bg-white/60 p-4 shadow-sm transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.98]"
               href={`/pets/${pet.id}`}
               key={pet.id}
             >
@@ -100,7 +100,7 @@ export function PetsHome({
               ? `Review today’s health log. ${healthLogStatusDetails[todayLog.status].label} is selected today.`
               : "Record today’s health. No emotion selected."
           }
-          className="block rounded-3xl bg-white p-5 shadow-sm transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.99]"
+          className="block rounded-3xl bg-white/60 p-5 shadow-sm transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.99]"
           href={todayHref}
         >
           <h2 className="text-center text-lg font-bold">
@@ -111,7 +111,7 @@ export function PetsHome({
               const selected = todayLog?.status === status;
               return (
                 <span
-                  className={`relative grid min-h-24 place-items-center rounded-2xl border px-2 py-3 text-center ${selected ? `border-2 ${details.selectedClass}` : "border-[#ead9c7] bg-[#fdfaf6] text-stone-500"}`}
+                  className={`relative grid min-h-24 place-items-center rounded-2xl border px-2 py-3 text-center ${selected ? `border-2 ${details.selectedClass}` : "border-[#ead9c7] bg-white/60 text-stone-500"}`}
                   key={status}
                 >
                   {selected ? (
@@ -151,7 +151,7 @@ export function PetsHome({
         <h2 className="text-lg font-bold">Coming up</h2>
         {reminder?.enabled ? (
           <Link
-            className="mt-3 flex min-h-16 items-center gap-3 rounded-2xl bg-white px-4 shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.99]"
+            className="mt-3 flex min-h-16 items-center gap-3 rounded-2xl bg-white/60 px-4 shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.99]"
             href={diaryHref}
           >
             <span className="grid size-10 place-items-center rounded-full bg-[#fff0df] text-[#d86f1d]">
