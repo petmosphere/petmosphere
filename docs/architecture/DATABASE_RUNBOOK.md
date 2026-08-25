@@ -257,6 +257,30 @@ select cron.schedule(
   );
   $$
 );
+
+select cron.schedule(
+  'dispatch-pet-weight-reminders',
+  '*/5 * * * *',
+  $$
+  select net.http_post(
+    url := (
+      select decrypted_secret
+      from vault.decrypted_secrets
+      where name = 'petmosphere_app_url'
+    ) || '/api/v1/weight-reminders/dispatch',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'Authorization', 'Bearer ' || (
+        select decrypted_secret
+        from vault.decrypted_secrets
+        where name = 'health_log_cron_secret'
+      )
+    ),
+    body := '{}'::jsonb,
+    timeout_milliseconds := 10000
+  );
+  $$
+);
 ```
 
 Verify job runs in **Integrations → Cron** and confirm the dispatcher returns a
@@ -277,6 +301,12 @@ notification permission, and invoke `dispatch-pet-care-reminders` after it is
 due. Confirm the notification uses generic wording, opens the reminder detail,
 and is not sent a second time. Completing a repeating reminder must preserve
 the completed occurrence and create exactly one next future occurrence.
+
+For weight reminders, log a weight before the scheduled time and confirm the
+job advances without sending a notification. On another due date with no
+weight entry, confirm one generic notification opens the pet's Log Weight page
+and that a second job run does not duplicate it. Test weekly, fortnightly,
+month-end monthly, and quarter-end schedules in staging before production.
 
 ### 2. Create a migration
 

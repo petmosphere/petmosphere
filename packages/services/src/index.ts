@@ -6,3 +6,5 @@ export * from "./pets/create-pet";
 export * from "./pets/update-pet";
 export * from "./reminders/manage-reminders";
 export * from "./reminders/dispatch-reminders";
+export * from "./weights/manage-weight";
+export * from "./weights/dispatch-weight-reminders";

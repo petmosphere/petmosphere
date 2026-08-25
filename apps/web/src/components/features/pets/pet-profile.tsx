@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import { SignOutButton } from "@/components/features/auth/sign-out-button";
+
 import { PetPhotoViewer } from "./pet-photo-viewer";
 
 const labels = {
@@ -110,7 +112,10 @@ export function PetProfile({
         </p>
       )}
 
-      <div className="mt-5 flex min-h-[68px] items-center gap-3 rounded-2xl bg-white/60 px-4 shadow-[0_8px_24px_rgba(205,146,85,0.08)]">
+      <Link
+        className="mt-5 flex min-h-[68px] items-center gap-3 rounded-2xl bg-white/60 px-4 shadow-[0_8px_24px_rgba(205,146,85,0.08)] transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#65bcb5] active:scale-[0.98]"
+        href={`/pets/${pet.id}/weight`}
+      >
         <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#dff3ef] text-[#65bcb5]">
           <ChartNoAxesCombined
             aria-hidden="true"
@@ -134,6 +139,10 @@ export function PetProfile({
           />
         </svg>
         <ChevronRight aria-hidden="true" className="size-5 text-[#9b948d]" />
+      </Link>
+
+      <div className="mt-6 flex justify-center">
+        <SignOutButton />
       </div>
     </main>
   );

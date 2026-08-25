@@ -62,7 +62,19 @@ describe("PetsHome", () => {
       />,
     );
 
-    expect(screen.getAllByText("No record yet")).toHaveLength(2);
+    expect(screen.getByText("No reminders set")).toBeVisible();
+    expect(screen.getByText("No activity logged yet")).toBeVisible();
+    expect(
+      screen.getByRole("heading", { name: "Weight Tracker" }),
+    ).toBeVisible();
+    expect(screen.getByRole("link", { name: "Log Weight" })).toHaveAttribute(
+      "href",
+      `/pets/${pet.id}/weight`,
+    );
+    expect(screen.getByRole("link", { name: "Add Reminder" })).toHaveAttribute(
+      "href",
+      "/reminders/new",
+    );
     expect(screen.queryByText(/selected today/)).not.toBeInTheDocument();
   });
 });

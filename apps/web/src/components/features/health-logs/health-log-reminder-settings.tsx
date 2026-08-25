@@ -4,18 +4,12 @@ import type { HealthLogReminder } from "@petmosphere/api-contracts";
 import { Bell, LoaderCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { enablePushNotifications } from "@/lib/health-logs/push-notifications";
+import {
+  enablePushNotifications,
+  pushSetupErrorMessages,
+} from "@/lib/health-logs/push-notifications";
 
 const MELBOURNE_TIMEZONE = "Australia/Melbourne";
-
-const pushErrorMessages = {
-  configuration: "Push notifications are not configured in this environment.",
-  denied:
-    "Notifications are blocked. Allow them in your browser settings, then try again.",
-  save: "We could not enable notifications on this device. Try again.",
-  unsupported:
-    "Push notifications are unavailable here. On iPhone or iPad, install Petmosphere to your Home Screen and open it there.",
-} as const;
 
 export function HealthLogReminderSettings({ petId }: { petId: string }) {
   const [reminder, setReminder] = useState<
@@ -49,7 +43,7 @@ export function HealthLogReminderSettings({ petId }: { petId: string }) {
       if (reminder.enabled) {
         const push = await enablePushNotifications();
         if (!push.ok) {
-          setErrorMessage(pushErrorMessages[push.reason]);
+          setErrorMessage(pushSetupErrorMessages[push.reason]);
           setState("error");
           return;
         }
