@@ -3,6 +3,15 @@ type PushSetupFailure = "configuration" | "denied" | "save" | "unsupported";
 export type PushSetupResult =
   { ok: true } | { ok: false; reason: PushSetupFailure };
 
+export const pushSetupErrorMessages: Record<PushSetupFailure, string> = {
+  configuration: "Push notifications are not configured in this environment.",
+  denied:
+    "Notifications are blocked. Allow them in your browser settings, then try again.",
+  save: "We could not enable notifications on this device. Try again.",
+  unsupported:
+    "Push notifications are unavailable here. On iPhone or iPad, install Petmosphere to your Home Screen and open it there.",
+};
+
 function decodeVapidPublicKey(value: string) {
   const padding = "=".repeat((4 - (value.length % 4)) % 4);
   const base64 = (value + padding).replace(/-/g, "+").replace(/_/g, "/");

@@ -11,6 +11,8 @@ import {
   createReminderRepository,
   toReminderResponse,
 } from "@/lib/reminders/supabase-reminders";
+import { createWeightRepository } from "@/lib/weights/supabase-weights";
+import { listWeights } from "@petmosphere/services";
 
 export const metadata: Metadata = {
   title: "Home",
@@ -23,11 +25,16 @@ function localDateDaysAgo(localDate: string, days: number) {
   return date.toISOString().slice(0, 10);
 }
 
-export default async function AppHomePage() {
+export default async function AppHomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ pet?: string }>;
+}) {
   const { supabase, user } = await requireUser("/home");
   const pets = await listOwnedPets(supabase, user.id);
   if (pets.length === 0) redirect("/onboarding");
-  const currentPet = pets[0]!;
+  const { pet: selectedPetId } = await searchParams;
+  const currentPet = pets.find((pet) => pet.id === selectedPetId) ?? pets[0]!;
   const now = new Date();
   const today = deriveLocalDate(now, "Australia/Melbourne");
   const localTime = deriveLocalTime(now, "Australia/Melbourne");
@@ -41,7 +48,7 @@ export default async function AppHomePage() {
     profile?.display_name?.trim().split(/\s+/)[0] ||
     user.user_metadata.display_name?.trim().split(/\s+/)[0] ||
     "there";
-  const [petsWithPhotos, healthLogs, reminder, careReminders] =
+  const [petsWithPhotos, healthLogs, reminder, careReminders, weightEntries] =
     await Promise.all([
       Promise.all(
         pets.map(async (pet) => ({
@@ -63,16 +70,24 @@ export default async function AppHomePage() {
         today,
         localTime,
       ),
+      listWeights(
+        user.id,
+        currentPet.id,
+        createWeightRepository(supabase),
+        now,
+      ),
     ]);
 
   return (
     <PetsHome
       displayName={displayName}
+      currentPetId={currentPet.id}
       healthLogs={healthLogs}
       pets={petsWithPhotos}
       reminder={reminder}
       careReminders={careReminders.slice(0, 3).map(toReminderResponse)}
       today={today}
+      weightEntries={weightEntries}
     />
   );
 }
