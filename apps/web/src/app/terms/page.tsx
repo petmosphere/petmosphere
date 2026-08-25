@@ -33,7 +33,7 @@ function Section({
   title: string;
 }) {
   return (
-    <section className="rounded-2xl border border-[#f0e6d8] bg-white p-6">
+    <section className="rounded-2xl border border-[#f0e6d8] bg-white/60 p-6">
       <h2 className="flex items-center gap-3 text-base font-bold text-[#2d2d2d]">
         <span className="grid h-6 min-w-9 place-items-center rounded-lg bg-[#ed802a]/10 px-2 text-sm font-semibold text-[#ed802a]">
           {number}

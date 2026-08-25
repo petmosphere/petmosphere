@@ -90,7 +90,7 @@ export function HealthLogDetail({
         </div>
       </div>
 
-      <div className="mt-8 flex items-center gap-4 rounded-3xl bg-white p-5 shadow-sm">
+      <div className="mt-8 flex items-center gap-4 rounded-3xl bg-white/60 p-5 shadow-sm">
         <span
           className={`grid size-16 place-items-center rounded-2xl ${mood.selectedClass}`}
         >
@@ -147,7 +147,7 @@ export function HealthLogDetail({
       {healthLog.note ? (
         <div className="mt-7">
           <h2 className="text-lg font-bold">Notes</h2>
-          <p className="mt-3 rounded-2xl bg-white p-4 leading-6 whitespace-pre-wrap text-stone-600">
+          <p className="mt-3 rounded-2xl bg-white/60 p-4 leading-6 whitespace-pre-wrap text-stone-600">
             {healthLog.note}
           </p>
         </div>
@@ -160,7 +160,7 @@ export function HealthLogDetail({
           className="fixed inset-0 z-50 grid place-items-end bg-stone-950/55 p-4 sm:place-items-center"
           role="dialog"
         >
-          <div className="w-full max-w-sm rounded-3xl bg-[#fdf8f2] p-6 text-center shadow-2xl">
+          <div className="w-full max-w-sm rounded-3xl bg-white/60 p-6 text-center shadow-2xl">
             <span className="mx-auto grid size-16 place-items-center rounded-full bg-[#ffebee] text-[#ffa959]">
               <Trash2 aria-hidden="true" />
             </span>

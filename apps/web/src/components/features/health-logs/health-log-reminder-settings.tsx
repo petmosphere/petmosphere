@@ -74,7 +74,7 @@ export function HealthLogReminderSettings({ petId }: { petId: string }) {
 
   return (
     <section
-      className="mt-8 rounded-3xl bg-white p-5 shadow-sm"
+      className="mt-8 rounded-3xl bg-white/60 p-5 shadow-sm"
       aria-labelledby="daily-reminder-title"
     >
       <div className="flex items-start gap-3">
@@ -114,7 +114,7 @@ export function HealthLogReminderSettings({ petId }: { petId: string }) {
         <label className="mt-4 flex items-center justify-between gap-3 text-sm font-medium">
           Reminder time
           <input
-            className="min-h-11 rounded-xl border border-[#ead9c7] bg-[#fdf8f2] px-3"
+            className="min-h-11 rounded-xl border border-[#ead9c7] bg-white/60 px-3"
             onChange={(event) => {
               setReminder((current) => ({
                 ...current,

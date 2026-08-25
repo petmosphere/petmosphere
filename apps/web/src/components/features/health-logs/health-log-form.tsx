@@ -226,7 +226,7 @@ export function HealthLogForm({
             <input
               {...register("localDate")}
               aria-invalid={Boolean(errors.localDate)}
-              className="min-h-12 w-[174px] appearance-none rounded-2xl border border-[#e8d0b3] bg-white py-2 pr-11 pl-4 text-[15px] font-semibold text-[#2d2d2d] tabular-nums shadow-sm transition-[border-color,box-shadow] outline-none focus:border-[#ed802a] focus:ring-4 focus:ring-[#ed802a]/10 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
+              className="min-h-12 w-[174px] appearance-none rounded-2xl border border-[#e8d0b3] bg-white/60 py-2 pr-11 pl-4 text-[15px] font-semibold text-[#2d2d2d] tabular-nums shadow-sm transition-[border-color,box-shadow] outline-none focus:border-[#ed802a] focus:ring-4 focus:ring-[#ed802a]/10 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
               id="health-log-date"
               max={today}
               type="date"
@@ -244,7 +244,7 @@ export function HealthLogForm({
         ) : null}
       </div>
 
-      <section className="rounded-2xl bg-[#fdf8f2] px-5 py-5 shadow-[0_4px_16px_rgba(205,146,85,0.08)]">
+      <section className="rounded-2xl bg-white/60 px-5 py-5 shadow-[0_4px_16px_rgba(205,146,85,0.08)]">
         <div className="mb-4 flex items-center gap-3">
           <PetAvatar
             className="size-10 border border-[#ed802a]"
@@ -346,7 +346,7 @@ export function HealthLogForm({
           {retainedImageIndexes.length + images.length <
           MAX_HEALTH_LOG_IMAGES ? (
             <label
-              className={`flex cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[#d7c3b0] bg-[#fdf8f2] text-center font-medium text-[#7a7a7a] focus-within:outline-2 focus-within:outline-[#ed802a] ${retainedImageIndexes.length + images.length > 0 ? "aspect-square min-h-24 flex-col text-sm" : "min-h-[76px] w-full"}`}
+              className={`flex cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[#d7c3b0] bg-white/60 text-center font-medium text-[#7a7a7a] focus-within:outline-2 focus-within:outline-[#ed802a] ${retainedImageIndexes.length + images.length > 0 ? "aspect-square min-h-24 flex-col text-sm" : "min-h-[76px] w-full"}`}
               htmlFor="health-log-images"
             >
               <ImagePlus aria-hidden="true" className="size-6" />
@@ -386,7 +386,7 @@ export function HealthLogForm({
         <textarea
           {...register("note")}
           aria-invalid={Boolean(errors.note)}
-          className="min-h-20 w-full resize-y rounded-xl border border-[#e8d0b3] bg-[#fdf8f2] py-4 pr-4 pl-12 leading-6 outline-none placeholder:text-[#aaa095] focus:border-[#ed802a] focus:ring-4 focus:ring-[#ed802a]/10"
+          className="min-h-20 w-full resize-y rounded-xl border border-[#e8d0b3] bg-white/60 py-4 pr-4 pl-12 leading-6 outline-none placeholder:text-[#aaa095] focus:border-[#ed802a] focus:ring-4 focus:ring-[#ed802a]/10"
           id="health-log-note"
           maxLength={MAX_HEALTH_LOG_NOTE_LENGTH}
           placeholder="Add a note…"

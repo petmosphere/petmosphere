@@ -129,7 +129,7 @@ export function AuthForm({
                   className={
                     isEntryForm
                       ? "min-h-13 w-full rounded-xl border border-[#f0e6d8] bg-transparent py-3 pr-12 pl-12 text-base text-[#2d2d2d] transition-[border-color,box-shadow] duration-150 outline-none placeholder:text-[#aaaaaa] focus:border-[#ED802A] focus:ring-4 focus:ring-[#ED802A]/12"
-                      : "min-h-12 w-full rounded-2xl border border-stone-300 bg-white px-4 text-base text-stone-950 transition outline-none focus:border-[#87b35c] focus:ring-4 focus:ring-[#87b35c]/20"
+                      : "min-h-12 w-full rounded-2xl border border-stone-300 bg-white/60 px-4 text-base text-stone-950 transition outline-none focus:border-[#87b35c] focus:ring-4 focus:ring-[#87b35c]/20"
                   }
                   id={field.name}
                   placeholder={isEntryForm ? field.label : undefined}

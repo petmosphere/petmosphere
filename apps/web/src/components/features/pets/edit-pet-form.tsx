@@ -126,7 +126,7 @@ export function EditPetForm({
   });
 
   const inputClass =
-    "min-h-[52px] w-full rounded-xl border border-[#f0e6d8] bg-[#fdf8f2] px-4 text-base text-[#2d2d2d] outline-none transition-[border-color,box-shadow] focus:border-[#ed802a] focus:ring-4 focus:ring-[#ed802a]/10";
+    "min-h-[52px] w-full rounded-xl border border-[#f0e6d8] bg-white/60 px-4 text-base text-[#2d2d2d] outline-none transition-[border-color,box-shadow] focus:border-[#ed802a] focus:ring-4 focus:ring-[#ed802a]/10";
 
   return (
     <main className="mx-auto min-h-dvh w-full max-w-md bg-[#fdf8f2] px-6 pt-[max(2rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))] text-[#2d2d2d] shadow-xl shadow-stone-900/5">

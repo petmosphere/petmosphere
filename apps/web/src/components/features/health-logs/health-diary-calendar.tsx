@@ -60,7 +60,7 @@ export function HealthDiaryCalendar({
         </button>
       </div>
 
-      <div className="mt-8 rounded-3xl bg-white p-4 shadow-sm">
+      <div className="mt-8 rounded-3xl bg-white/60 p-4 shadow-sm">
         <div className="flex items-center justify-between">
           <button
             aria-label="Previous month"

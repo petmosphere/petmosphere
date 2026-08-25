@@ -105,7 +105,7 @@ export function VerifyEmailCodeForm({
                 className={`grid size-16 place-items-center rounded-xl border text-2xl leading-8 font-bold text-[#2d2d2d] ${
                   isCurrent
                     ? "border-2 border-[#ed802a] bg-white shadow-[0_4px_12px_rgba(237,128,42,0.1)]"
-                    : "border border-[#f0e6d8] bg-[#faf3e8]"
+                    : "border border-[#f0e6d8] bg-white/60"
                 }`}
                 key={index}
               >

@@ -12,7 +12,7 @@ export function AuthShell({
 }>) {
   return (
     <main className="grid min-h-dvh place-items-center bg-[#fdf8f2] px-5 py-10 text-stone-950">
-      <section className="w-full max-w-md rounded-[2rem] border border-[#ead9c7] bg-white p-6 shadow-xl shadow-[#8b5b30]/8 sm:p-9">
+      <section className="w-full max-w-md rounded-[2rem] border border-[#ead9c7] bg-white/60 p-6 shadow-xl shadow-[#8b5b30]/8 sm:p-9">
         <Link
           aria-label="Petmosphere home"
           className="mx-auto flex h-13 w-13 items-center justify-center rounded-full bg-[#fffaf5] font-bold text-[#dd792d] shadow-sm"
