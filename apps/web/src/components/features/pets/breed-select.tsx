@@ -180,7 +180,7 @@ export function BreedSelect({
         aria-expanded={open}
         aria-haspopup="listbox"
         aria-labelledby={`${triggerId}-label`}
-        className={`flex min-h-13 w-full items-center gap-3 rounded-xl border bg-white/60 px-4 text-left transition-[border-color,box-shadow] focus:border-[#ed802a] focus:ring-4 focus:ring-[#ed802a]/10 focus:outline-none ${
+        className={`flex min-h-13 w-full items-center gap-3 rounded-xl border bg-[#fdf8f2] px-4 text-left transition-[border-color,box-shadow] focus:border-[#ed802a] focus:ring-4 focus:ring-[#ed802a]/10 focus:outline-none ${
           disabled
             ? "border-[#f0e6d8] text-stone-400"
             : "border-[#f0e6d8] text-[#2d2d2d]"
@@ -220,8 +220,8 @@ export function BreedSelect({
             onClick={close}
           />
           {/* dropdown card */}
-          <div className="absolute top-full right-0 left-0 z-50 mt-2 flex max-h-[360px] flex-col overflow-hidden rounded-2xl border border-[#f0e6d8] bg-white/60 shadow-[0px_16px_32px_-10px_rgba(0,0,0,0.078),0px_2px_8px_rgba(0,0,0,0.05)]">
-            <div className="flex items-center gap-2.5 border-b border-[#f0e6d8] bg-white/60 px-4 py-3">
+          <div className="absolute top-full right-0 left-0 z-50 mt-2 flex max-h-[360px] flex-col overflow-hidden rounded-2xl border border-[#f0e6d8] bg-white shadow-[0px_16px_32px_-10px_rgba(0,0,0,0.078),0px_2px_8px_rgba(0,0,0,0.05)]">
+            <div className="flex items-center gap-2.5 border-b border-[#f0e6d8] bg-[#fff9f2] px-4 py-3">
               <Search
                 aria-hidden="true"
                 className="size-4 shrink-0 text-stone-500"
