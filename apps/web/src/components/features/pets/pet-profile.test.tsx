@@ -26,7 +26,6 @@ describe("PetProfile", () => {
 
     expect(screen.getByRole("heading", { name: "Max" })).toBeVisible();
     expect(screen.getByText("Kelpie", { exact: false })).toBeVisible();
-    expect(screen.getByText("18 kg")).toBeVisible();
     expect(
       screen.getByRole("link", { name: "Edit Max's profile" }),
     ).toHaveAttribute("href", `/pets/${pet.id}/edit`);

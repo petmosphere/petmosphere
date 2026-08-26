@@ -16,7 +16,6 @@ import {
   Cat,
   Dog,
   PawPrint,
-  Scale,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -370,7 +369,10 @@ export function FirstPetForm() {
                   className={inputClass}
                   disabled={unknownBirthDate}
                   id="birth-date"
-                  type="date"
+                  inputMode="numeric"
+                  pattern="\d{4}-\d{2}-\d{2}"
+                  placeholder="YYYY-MM-DD"
+                  type="text"
                 />
               </div>
               {errors.birthDate ? (
@@ -428,48 +430,6 @@ export function FirstPetForm() {
               ]}
               value={sex}
             />
-
-            <div className="mt-6">
-              <label
-                className="mb-2 block text-sm font-medium"
-                htmlFor="weight"
-              >
-                Weight{" "}
-                <span className="font-normal text-stone-500">(optional)</span>
-              </label>
-              <div className="relative">
-                <Scale
-                  aria-hidden="true"
-                  className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-stone-500"
-                />
-                <input
-                  {...register("weightKg")}
-                  aria-describedby={
-                    errors.weightKg ? "weight-error" : undefined
-                  }
-                  aria-invalid={Boolean(errors.weightKg)}
-                  className={`${inputClass} pr-12`}
-                  id="weight"
-                  inputMode="decimal"
-                  min="0.1"
-                  placeholder="0.0"
-                  step="0.1"
-                  type="number"
-                />
-                <span className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-stone-500">
-                  kg
-                </span>
-              </div>
-              {errors.weightKg ? (
-                <p
-                  className="mt-1.5 text-sm text-red-600"
-                  id="weight-error"
-                  role="alert"
-                >
-                  {errors.weightKg.message}
-                </p>
-              ) : null}
-            </div>
 
             <ChoiceGroup<PetDesexedStatus>
               label="Desexed (optional)"
