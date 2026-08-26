@@ -90,7 +90,7 @@ export function TimePickerSheet({
 
         <div className="relative flex items-center justify-center gap-6 px-6 py-2">
           {/* selected highlight band */}
-          <span className="pointer-events-none absolute top-1/2 left-6 right-6 h-[38px] -translate-y-1/2 rounded-lg border border-[#f0e6d8] bg-[#fdf8f2]" />
+          <span className="pointer-events-none absolute top-1/2 right-6 left-6 h-[38px] -translate-y-1/2 rounded-lg border border-[#f0e6d8] bg-[#fdf8f2]" />
           <Wheel
             items={HOURS}
             onSelect={(h) => commit(h, m, period)}
@@ -112,9 +112,9 @@ export function TimePickerSheet({
           />
         </div>
 
-        <div className="px-6 pb-6 pt-3">
+        <div className="px-6 pt-3 pb-6">
           <button
-            className="flex min-h-[50px] w-full items-center justify-center rounded-2xl bg-[#ed802a] text-base font-bold text-white transition-transform duration-150 ease-out active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a94e0c] motion-reduce:transition-none"
+            className="flex min-h-[50px] w-full items-center justify-center rounded-2xl bg-[#ed802a] text-base font-bold text-white transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a94e0c] active:scale-[0.98] motion-reduce:transition-none"
             onClick={() => {
               onConfirm(draft);
               onClose();
