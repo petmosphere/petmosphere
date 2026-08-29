@@ -1,9 +1,14 @@
 import * as Sentry from "@sentry/nextjs";
-import { petResponseSchema, updatePetSchema } from "@petmosphere/api-contracts";
-import { updatePet } from "@petmosphere/services";
+import {
+  deletePetSchema,
+  petResponseSchema,
+  updatePetSchema,
+} from "@petmosphere/api-contracts";
+import { deletePet, updatePet } from "@petmosphere/services";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { createHealthLogImageStorage } from "@/lib/health-logs/supabase-health-logs";
 import {
   createPetPhotoStorage,
   createPetRepository,
@@ -25,6 +30,48 @@ function readPetFields(formData: FormData) {
       "weightKg",
     ].map((key) => [key, formData.get(key)?.toString() ?? ""]),
   );
+}
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ petId: string }> },
+) {
+  const supabase = await createClient();
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+  if (authError || !authData.user) {
+    return NextResponse.json(
+      { message: "Sign in to delete your pet." },
+      { status: 401 },
+    );
+  }
+
+  const parsed = deletePetSchema.safeParse({ petId: (await params).petId });
+  if (!parsed.success) {
+    return NextResponse.json({ message: "Pet not found." }, { status: 404 });
+  }
+
+  try {
+    const result = await deletePet(
+      authData.user.id,
+      parsed.data.petId,
+      createPetRepository(supabase),
+      createPetPhotoStorage(supabase),
+      createHealthLogImageStorage(supabase),
+    );
+    if (result.cleanupFailed) {
+      Sentry.captureMessage("Pet media cleanup failed after deletion.", {
+        level: "error",
+        tags: { operation: "delete_pet_media_cleanup" },
+      });
+    }
+    return new NextResponse(null, { status: 204 });
+  } catch (error) {
+    Sentry.captureException(error, { tags: { operation: "delete_pet" } });
+    return NextResponse.json(
+      { message: "We could not delete your pet. Try again." },
+      { status: 500 },
+    );
+  }
 }
 
 export async function PATCH(

@@ -320,7 +320,6 @@ export function RemindersHome({
       <AppNav
         active="reminders"
         diaryHref={pets[0] ? `/pets/${pets[0].id}/health-logs` : undefined}
-        profileHref={pets[0] ? `/pets/${pets[0].id}` : undefined}
         reminderHref="/reminders"
       />
     </main>

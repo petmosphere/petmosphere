@@ -8,13 +8,11 @@ export function AppNav({
   active = "home",
   diaryHref,
   fixed = false,
-  profileHref,
   reminderHref,
 }: {
-  active?: "diary" | "home" | "reminders";
+  active?: "diary" | "home" | "profile" | "reminders";
   diaryHref?: string | undefined;
   fixed?: boolean;
-  profileHref?: string | undefined;
   reminderHref?: string | undefined;
 }) {
   return (
@@ -88,25 +86,20 @@ export function AppNav({
           Reminders
         </span>
       )}
-      {profileHref ? (
-        <Link className={`${itemClass} text-[#7a7a7a]`} href={profileHref}>
-          <ContactRound
-            aria-hidden="true"
-            className="mb-0.5 size-5"
-            strokeWidth={1.7}
-          />
-          Profile
-        </Link>
-      ) : (
-        <span aria-disabled="true" className={`${itemClass} text-[#7a7a7a]`}>
-          <ContactRound
-            aria-hidden="true"
-            className="mb-0.5 size-5"
-            strokeWidth={1.7}
-          />
-          Profile
-        </span>
-      )}
+      <Link
+        aria-current={active === "profile" ? "page" : undefined}
+        className={`${itemClass} ${
+          active === "profile" ? "bg-white/85 text-[#ed802a]" : "text-[#7a7a7a]"
+        }`}
+        href="/profile"
+      >
+        <ContactRound
+          aria-hidden="true"
+          className="mb-0.5 size-5"
+          strokeWidth={1.7}
+        />
+        Profile
+      </Link>
     </nav>
   );
 }

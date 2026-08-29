@@ -4,11 +4,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   MAX_PET_PHOTO_BYTES,
   PET_PHOTO_TYPES,
-  updatePetSchema,
+  createUpdatePetFormSchema,
   type UpdatePetFormInput,
   type UpdatePetInput,
 } from "@petmosphere/api-contracts";
-import type { Pet, PetDesexedStatus, PetSex } from "@petmosphere/domain";
+import {
+  weightFromKilograms,
+  weightToKilograms,
+  type Pet,
+  type PetDesexedStatus,
+  type PetSex,
+  type WeightUnit,
+} from "@petmosphere/domain";
 import {
   ArrowLeft,
   CalendarDays,
@@ -25,9 +32,11 @@ import { useForm, useWatch } from "react-hook-form";
 export function EditPetForm({
   pet,
   photoUrl,
+  weightUnit = "kg",
 }: {
   pet: Pet;
   photoUrl: string | null;
+  weightUnit?: WeightUnit;
 }) {
   const router = useRouter();
   const [photo, setPhoto] = useState<File | null>(null);
@@ -48,10 +57,14 @@ export function EditPetForm({
       name: pet.name,
       sex: pet.sex ?? "",
       species: pet.species,
-      weightKg: pet.weightKg?.toString() ?? "",
+      weightKg: pet.weightKg
+        ? Number(
+            weightFromKilograms(pet.weightKg, weightUnit).toFixed(2),
+          ).toString()
+        : "",
     },
     mode: "onChange",
-    resolver: zodResolver(updatePetSchema),
+    resolver: zodResolver(createUpdatePetFormSchema(weightUnit)),
   });
   const [sex, desexedStatus] = useWatch({
     control,
@@ -89,7 +102,13 @@ export function EditPetForm({
     setServerError(undefined);
     const formData = new FormData();
     Object.entries(values).forEach(([key, value]) => {
-      if (value !== undefined) formData.set(key, value.toString());
+      if (value === undefined) return;
+      formData.set(
+        key,
+        key === "weightKg" && typeof value === "number"
+          ? Number(weightToKilograms(value, weightUnit).toFixed(2)).toString()
+          : value.toString(),
+      );
     });
     if (photo) formData.set("photo", photo);
 
@@ -273,12 +292,12 @@ export function EditPetForm({
                 className={`${inputClass} pr-12 pl-12`}
                 id="edit-weight"
                 inputMode="decimal"
-                min="0.1"
+                min="0.01"
                 step="0.1"
                 type="number"
               />
               <span className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-[#7a7a7a]">
-                kg
+                {weightUnit}
               </span>
             </div>
           </Field>

@@ -1,5 +1,5 @@
-import type { Pet } from "@petmosphere/domain";
-import { getPetAgeLabel } from "@petmosphere/domain";
+import type { Pet, WeightUnit } from "@petmosphere/domain";
+import { formatWeight, getPetAgeLabel } from "@petmosphere/domain";
 import {
   ArrowLeft,
   Cake,
@@ -13,8 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-import { SignOutButton } from "@/components/features/auth/sign-out-button";
-
+import { DeletePetButton } from "./delete-pet-button";
 import { PetPhotoViewer } from "./pet-photo-viewer";
 
 const labels = {
@@ -26,9 +25,11 @@ const labels = {
 export function PetProfile({
   pet,
   photoUrl,
+  weightUnit = "kg",
 }: {
   pet: Pet;
   photoUrl: string | null;
+  weightUnit?: WeightUnit;
 }) {
   const age = getPetAgeLabel(pet);
   const detailRows = [
@@ -44,7 +45,11 @@ export function PetProfile({
         ? { icon: CircleHelp, label: "Approximate age", value: age }
         : null,
     pet.weightKg
-      ? { icon: Scale, label: "Weight", value: `${pet.weightKg} kg` }
+      ? {
+          icon: Scale,
+          label: "Weight",
+          value: formatWeight(pet.weightKg, weightUnit),
+        }
       : null,
     pet.sex
       ? {
@@ -71,13 +76,16 @@ export function PetProfile({
         >
           <ArrowLeft aria-hidden="true" className="size-6" />
         </Link>
-        <Link
-          aria-label={`Edit ${pet.name}'s profile`}
-          className="grid min-h-11 min-w-11 place-items-center rounded-full text-[#ed802a] focus-visible:outline-2 focus-visible:outline-[#ed802a]"
-          href={`/pets/${pet.id}/edit`}
-        >
-          <Pencil aria-hidden="true" className="size-5" />
-        </Link>
+        <div className="flex items-center gap-1">
+          <Link
+            aria-label={`Edit ${pet.name}'s profile`}
+            className="grid size-11 place-items-center rounded-full text-[#d86f1d] focus-visible:outline-2 focus-visible:outline-[#ed802a]"
+            href={`/pets/${pet.id}/edit`}
+          >
+            <Pencil aria-hidden="true" className="size-5" />
+          </Link>
+          <DeletePetButton petId={pet.id} />
+        </div>
       </div>
 
       <section className="mt-4 text-center">
@@ -140,10 +148,6 @@ export function PetProfile({
         </svg>
         <ChevronRight aria-hidden="true" className="size-5 text-[#9b948d]" />
       </Link>
-
-      <div className="mt-6 flex justify-center">
-        <SignOutButton />
-      </div>
     </main>
   );
 }

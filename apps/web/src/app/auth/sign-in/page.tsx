@@ -35,6 +35,14 @@ export default async function SignInPage({
           Password updated. Sign in with your new password.
         </p>
       ) : null}
+      {params.notice === "account-deleted" ? (
+        <p
+          className="mt-5 rounded-2xl bg-[#65bcb5]/15 px-4 py-3 text-sm text-[#246865]"
+          role="status"
+        >
+          Your Petmosphere account and private data were permanently deleted.
+        </p>
+      ) : null}
       <AuthForm
         action={signInAction}
         fields={[

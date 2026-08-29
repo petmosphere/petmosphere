@@ -1,6 +1,6 @@
 begin;
 
-select plan(16);
+select plan(18);
 
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password, raw_user_meta_data,
@@ -58,9 +58,9 @@ select is(
   'Changed',
   'owner reads their updated pet'
 );
-select throws_ok(
+select lives_ok(
   $$delete from public.pets where id = '60000000-0000-0000-0000-000000000006'$$,
-  '42501', null, 'pet deletion is unavailable in this story'
+  'owner deletes their pet'
 );
 select lives_ok(
   $$insert into storage.objects (bucket_id, name, owner_id) values (
@@ -91,10 +91,14 @@ insert into public.pets (
 set local role authenticated;
 set local "request.jwt.claims" =
   '{"sub":"40000000-0000-0000-0000-000000000004","role":"authenticated"}';
-select is((select count(*) from public.pets), 1::bigint, 'other owner pet is hidden');
+select is((select count(*) from public.pets), 0::bigint, 'other owner pet is hidden');
 select lives_ok(
   $$update public.pets set name = 'Changed by another owner' where owner_id = '50000000-0000-0000-0000-000000000005'$$,
   'updates cannot reach another owner pet'
+);
+select lives_ok(
+  $$delete from public.pets where owner_id = '50000000-0000-0000-0000-000000000005'$$,
+  'deletes cannot reach another owner pet'
 );
 reset role;
 select is(
@@ -130,6 +134,10 @@ select throws_ok(
 select throws_ok(
   $$update public.pets set name = 'Anonymous change' where id = '60000000-0000-0000-0000-000000000006'$$,
   '42501', null, 'anonymous user cannot update pets'
+);
+select throws_ok(
+  $$delete from public.pets where id = '60000000-0000-0000-0000-000000000006'$$,
+  '42501', null, 'anonymous user cannot delete pets'
 );
 select is(
   (select count(*) from storage.objects where bucket_id = 'pet-photos'),

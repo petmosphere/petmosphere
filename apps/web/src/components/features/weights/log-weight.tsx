@@ -8,7 +8,9 @@ import type {
   Pet,
   WeightEntry,
   WeightReminderFrequency,
+  WeightUnit,
 } from "@petmosphere/domain";
+import { weightFromKilograms, weightToKilograms } from "@petmosphere/domain";
 import { ArrowLeft, Bell, LoaderCircle, Minus, Plus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -36,13 +38,13 @@ const weekdays = [
   "Saturday",
 ];
 
-function formatLastEntry(entry: WeightEntry | undefined) {
+function formatLastEntry(entry: WeightEntry | undefined, unit: WeightUnit) {
   if (!entry) return "No records yet";
   const date = new Intl.DateTimeFormat("en-AU", {
     day: "numeric",
     month: "short",
   }).format(new Date(`${entry.localDate}T12:00:00Z`));
-  return `Last recorded: ${entry.weightKg} kg (${date})`;
+  return `Last recorded: ${Number(weightFromKilograms(entry.weightKg, unit).toFixed(2))} ${unit} (${date})`;
 }
 
 function formatWeightInput(weight: number) {
@@ -53,15 +55,17 @@ export function LogWeight({
   entries: initialEntries,
   pet,
   reminder: savedReminder,
+  weightUnit = "kg",
 }: {
   entries: WeightEntry[];
   pet: Pet;
   reminder: WeightReminderResponse | null;
+  weightUnit?: WeightUnit;
 }) {
   const latest = initialEntries.at(-1);
   const [entries, setEntries] = useState(initialEntries);
   const [weightInput, setWeightInput] = useState(
-    formatWeightInput(latest?.weightKg ?? 0),
+    formatWeightInput(weightFromKilograms(latest?.weightKg ?? 0, weightUnit)),
   );
   const [reminder, setReminder] = useState({
     enabled: savedReminder?.enabled ?? false,
@@ -78,8 +82,10 @@ export function LogWeight({
   const weekly =
     reminder.frequency === "weekly" || reminder.frequency === "fortnightly";
   const weight = Number(weightInput);
+  const weightKg = weightToKilograms(weight, weightUnit);
+  const maxWeight = weightFromKilograms(300, weightUnit);
   const validWeight =
-    /^\d+(?:\.\d{1,2})?$/.test(weightInput) && weight > 0 && weight <= 300;
+    /^\d+(?:\.\d{1,2})?$/.test(weightInput) && weight > 0 && weightKg <= 300;
 
   function changeWeight(amount: number) {
     const current = Number(weightInput) || 0;
@@ -104,7 +110,9 @@ export function LogWeight({
       const [weightResponse, reminderResponse] = await Promise.all([
         weightDirty
           ? fetch(`/api/v1/pets/${pet.id}/weights`, {
-              body: JSON.stringify({ weightKg: weight }),
+              body: JSON.stringify({
+                weightKg: Number(weightKg.toFixed(2)),
+              }),
               headers: { "Content-Type": "application/json" },
               method: "PUT",
             })
@@ -132,7 +140,9 @@ export function LogWeight({
           ...current.filter((entry) => entry.localDate !== saved.localDate),
           { ...saved, ownerId: pet.ownerId },
         ]);
-        setWeightInput(formatWeightInput(saved.weightKg));
+        setWeightInput(
+          formatWeightInput(weightFromKilograms(saved.weightKg, weightUnit)),
+        );
         setWeightDirty(false);
       }
       if (reminderResponse) setReminderDirty(false);
@@ -174,7 +184,8 @@ export function LogWeight({
           htmlFor="weight-value"
           id="weight-value-label"
         >
-          {pet.name}&apos;s weight in kilograms
+          {pet.name}&apos;s weight in{" "}
+          {weightUnit === "kg" ? "kilograms" : "pounds"}
         </label>
         <div className="relative flex min-w-0 items-center justify-center overflow-hidden">
           <input
@@ -197,15 +208,15 @@ export function LogWeight({
             value={weightInput}
           />
           <span className="absolute top-1/2 left-1/2 ml-[4.5rem] -translate-y-1/2 text-xl text-[#7a7a7a]">
-            kg
+            {weightUnit}
           </span>
         </div>
         <p className="mt-2 text-sm text-[#7a7a7a]" id="weight-last-entry">
-          {formatLastEntry(entries.at(-1))}
+          {formatLastEntry(entries.at(-1), weightUnit)}
         </p>
         <div className="mt-1 flex items-center justify-center gap-5">
           <button
-            aria-label="Reduce weight by 0.1 kilograms"
+            aria-label={`Reduce weight by 0.1 ${weightUnit}`}
             className="grid size-12 place-items-center rounded-full border border-[#ead9c7] bg-white/65 text-[#ed802a] transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.97]"
             onClick={() => changeWeight(-0.1)}
             type="button"
@@ -213,10 +224,10 @@ export function LogWeight({
             <Minus aria-hidden="true" />
           </button>
           <span className="rounded-full bg-[#f2e8da] px-5 py-2 text-xs font-medium text-[#7a7a7a]">
-            0.1 kg
+            0.1 {weightUnit}
           </span>
           <button
-            aria-label="Increase weight by 0.1 kilograms"
+            aria-label={`Increase weight by 0.1 ${weightUnit}`}
             className="grid size-12 place-items-center rounded-full border border-[#ead9c7] bg-white/65 text-[#ed802a] transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.97]"
             onClick={() => changeWeight(0.1)}
             type="button"
@@ -226,7 +237,8 @@ export function LogWeight({
         </div>
         {weightDirty && !validWeight ? (
           <p className="mt-2 text-xs text-red-600">
-            Enter a weight between 0.01 and 300 kg.
+            Enter a weight between 0.01 and {Number(maxWeight.toFixed(2))}{" "}
+            {weightUnit}.
           </p>
         ) : null}
       </section>
@@ -234,7 +246,7 @@ export function LogWeight({
       <section className="mx-6 mt-4 rounded-3xl bg-white/50 p-3 shadow-[0_8px_24px_rgba(205,146,85,0.06)]">
         <h2 className="text-base font-bold">Weight Trend</h2>
         <div className="mt-2">
-          <WeightTrendChart entries={entries} />
+          <WeightTrendChart entries={entries} weightUnit={weightUnit} />
         </div>
       </section>
 

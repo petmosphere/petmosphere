@@ -1,5 +1,10 @@
 import type { ReminderResponse } from "@petmosphere/api-contracts";
-import type { HealthLogReminder, Pet, WeightEntry } from "@petmosphere/domain";
+import type {
+  HealthLogReminder,
+  Pet,
+  WeightEntry,
+  WeightUnit,
+} from "@petmosphere/domain";
 import { Bell, Check, ChevronRight, Plus } from "lucide-react";
 import Link from "next/link";
 
@@ -45,6 +50,7 @@ export function PetsHome({
   reminder,
   today,
   weightEntries = [],
+  weightUnit = "kg",
 }: {
   careReminders?: ReminderResponse[];
   currentPetId?: string;
@@ -54,6 +60,7 @@ export function PetsHome({
   reminder: Pick<HealthLogReminder, "enabled" | "localTime"> | null;
   today: string;
   weightEntries?: WeightEntry[];
+  weightUnit?: WeightUnit;
 }) {
   const currentPet = pets.find(({ pet }) => pet.id === currentPetId) ?? pets[0];
   if (!currentPet) return null;
@@ -171,7 +178,11 @@ export function PetsHome({
         </Link>
       </section>
 
-      <HomeWeightTracker entries={weightEntries} pet={currentPet.pet} />
+      <HomeWeightTracker
+        entries={weightEntries}
+        pet={currentPet.pet}
+        weightUnit={weightUnit}
+      />
 
       <section className="mx-5 mt-4 rounded-3xl bg-white/45 p-4 shadow-[0_8px_24px_rgba(205,146,85,0.06)]">
         <div className="flex items-center justify-between gap-4">
@@ -314,12 +325,7 @@ export function PetsHome({
         )}
       </section>
 
-      <AppNav
-        diaryHref={diaryHref}
-        fixed
-        profileHref={`/pets/${currentPet.pet.id}`}
-        reminderHref="/reminders"
-      />
+      <AppNav diaryHref={diaryHref} fixed reminderHref="/reminders" />
     </main>
   );
 }

@@ -1,6 +1,7 @@
 import * as Sentry from "@sentry/nextjs";
 import type { NewPet, Pet } from "@petmosphere/domain";
 import type {
+  DeletePetRepository,
   PetPhotoStorage,
   PetRepository,
   UpdatePetRepository,
@@ -61,7 +62,7 @@ async function findByCreationRequest(
 
 export function createPetRepository(
   supabase: SupabaseClient,
-): PetRepository & UpdatePetRepository {
+): DeletePetRepository & PetRepository & UpdatePetRepository {
   return {
     async create(pet: NewPet) {
       const { data, error } = await supabase
@@ -97,6 +98,28 @@ export function createPetRepository(
     findByCreationRequest: (ownerId, requestId) =>
       findByCreationRequest(supabase, ownerId, requestId),
     findOwned: (ownerId, petId) => getOwnedPet(supabase, ownerId, petId),
+    async delete(ownerId, petId) {
+      const { data, error } = await supabase
+        .from("pets")
+        .delete()
+        .eq("owner_id", ownerId)
+        .eq("id", petId)
+        .select(petColumns)
+        .maybeSingle();
+      if (error) throw error;
+      return data ? toPet(data as PetRow) : null;
+    },
+    async listHealthLogImagePaths(ownerId, petId) {
+      const { data, error } = await supabase
+        .from("health_logs")
+        .select("image_paths")
+        .eq("owner_id", ownerId)
+        .eq("pet_id", petId);
+      if (error) throw error;
+      return (data as Array<{ image_paths: string[] }>).flatMap(
+        ({ image_paths }) => image_paths,
+      );
+    },
     async update(ownerId, petId, details) {
       const { data, error } = await supabase
         .from("pets")

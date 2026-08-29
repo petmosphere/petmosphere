@@ -3,6 +3,8 @@ import {
   petDesexedStatuses,
   petSexes,
   petSpecies,
+  weightFromKilograms,
+  type WeightUnit,
 } from "@petmosphere/domain";
 import { z } from "zod";
 
@@ -40,6 +42,20 @@ function todayInMelbourne() {
   return `${parts.year}-${parts.month}-${parts.day}`;
 }
 
+const weightField = (unit: WeightUnit) =>
+  z
+    .string()
+    .trim()
+    .refine(
+      (value) =>
+        value === "" ||
+        (!Number.isNaN(Number(value)) &&
+          Number(value) > 0 &&
+          Number(value) <= weightFromKilograms(300, unit)),
+      `Enter a weight between 0 and ${Number(weightFromKilograms(300, unit).toFixed(2))} ${unit}.`,
+    )
+    .transform((value) => (value === "" ? undefined : Number(value)));
+
 const petFields = {
   approximateAge: optionalChoice(petAgeBands),
   birthDate: z
@@ -50,18 +66,7 @@ const petFields = {
   name: z.string().trim().min(1, "Enter your pet's name.").max(80),
   sex: optionalChoice(petSexes),
   species: z.enum(petSpecies, { error: "Choose your pet's species." }),
-  weightKg: z
-    .string()
-    .trim()
-    .refine(
-      (value) =>
-        value === "" ||
-        (!Number.isNaN(Number(value)) &&
-          Number(value) > 0 &&
-          Number(value) <= 300),
-      "Enter a weight between 0 and 300 kg.",
-    )
-    .transform((value) => (value === "" ? undefined : Number(value))),
+  weightKg: weightField("kg"),
 };
 
 const validateAge = (
@@ -92,6 +97,11 @@ const validateAge = (
 
 export const updatePetSchema = z.object(petFields).superRefine(validateAge);
 
+export const createUpdatePetFormSchema = (unit: WeightUnit) =>
+  z
+    .object({ ...petFields, weightKg: weightField(unit) })
+    .superRefine(validateAge);
+
 export const createPetSchema = z
   .object({
     ...petFields,
@@ -113,6 +123,8 @@ export const petResponseSchema = z.object({
   updatedAt: z.iso.datetime({ offset: true }),
   weightKg: z.number().nullable(),
 });
+
+export const deletePetSchema = z.object({ petId: z.uuid() });
 
 export type CreatePetInput = z.infer<typeof createPetSchema>;
 export type CreatePetFormInput = z.input<typeof createPetSchema>;

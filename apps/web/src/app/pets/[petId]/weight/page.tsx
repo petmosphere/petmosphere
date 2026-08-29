@@ -5,6 +5,7 @@ import { listWeights } from "@petmosphere/services";
 import { LogWeight } from "@/components/features/weights/log-weight";
 import { requireUser } from "@/lib/auth/require-user";
 import { getOwnedPet } from "@/lib/pets/supabase-pets";
+import { getProfile } from "@/lib/profile/supabase-profile";
 import {
   createWeightReminderRepository,
   createWeightRepository,
@@ -26,9 +27,10 @@ export default async function LogWeightPage({
   const pet = await getOwnedPet(supabase, user.id, petId);
   if (!pet) notFound();
   const weights = createWeightRepository(supabase);
-  const [entries, reminder] = await Promise.all([
+  const [entries, reminder, profile] = await Promise.all([
     listWeights(user.id, petId, weights),
     createWeightReminderRepository(supabase).find(user.id, petId),
+    getProfile(supabase, user.id),
   ]);
 
   return (
@@ -36,6 +38,7 @@ export default async function LogWeightPage({
       entries={entries}
       pet={pet}
       reminder={reminder ? toWeightReminderResponse(reminder) : null}
+      weightUnit={profile.weightUnit}
     />
   );
 }

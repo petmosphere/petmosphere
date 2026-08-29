@@ -1,8 +1,12 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import type { Pet } from "@petmosphere/domain";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { PetProfile } from "./pet-profile";
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: vi.fn(), replace: vi.fn() }),
+}));
 
 describe("PetProfile", () => {
   it("shows pet details and links to edit", () => {
@@ -31,6 +35,16 @@ describe("PetProfile", () => {
       screen.getByRole("link", { name: "Edit Max's profile" }),
     ).toHaveAttribute("href", `/pets/${pet.id}/edit`);
     expect(screen.getByText("Weight History")).toBeVisible();
+    expect(screen.queryByText("Sign out")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Delete pet" }));
+    expect(
+      screen.getByRole("dialog", { name: "Delete this pet?" }),
+    ).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(
+      screen.queryByRole("dialog", { name: "Delete this pet?" }),
+    ).not.toBeInTheDocument();
 
     fireEvent.click(
       screen.getByRole("button", { name: "Enlarge Max's profile photo" }),
@@ -44,5 +58,8 @@ describe("PetProfile", () => {
     expect(
       screen.queryByRole("dialog", { name: "Max's profile photo" }),
     ).not.toBeInTheDocument();
+
+    render(<PetProfile pet={pet} photoUrl={null} weightUnit="lb" />);
+    expect(screen.getByText("39.68 lb")).toBeVisible();
   });
 });
