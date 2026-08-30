@@ -16,6 +16,13 @@ export function createReminderDeliveryRepository(
       );
     },
     async listSubscriptions(ownerId) {
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("reminder_notifications_enabled")
+        .eq("id", ownerId)
+        .single();
+      if (profileError) throw profileError;
+      if (!profile.reminder_notifications_enabled) return [];
       const { data, error } = await supabase
         .from("web_push_subscriptions")
         .select("id, endpoint, p256dh, auth")

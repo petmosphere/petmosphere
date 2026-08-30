@@ -19,7 +19,11 @@ import { type FormEvent, useMemo, useRef, useState } from "react";
 
 import { PetAvatar } from "@/components/features/pets/pet-avatar";
 import { enablePushNotifications } from "@/lib/health-logs/push-notifications";
-import { categoryDetails, repeatLabels } from "./reminder-ui";
+import {
+  categoryDetails,
+  notificationLeadOptions,
+  repeatLabels,
+} from "./reminder-ui";
 
 const timezone = "Australia/Melbourne" as const;
 
@@ -132,6 +136,9 @@ export function ReminderForm({
   const [title, setTitle] = useState(reminder?.title ?? "");
   const [dueDate, setDueDate] = useState(reminder?.dueDate ?? "");
   const [localTime, setLocalTime] = useState(reminder?.localTime ?? "");
+  const [notificationLeadMinutes, setNotificationLeadMinutes] = useState<
+    number | null
+  >(reminder?.notificationLeadMinutes ?? 0);
   const [repeatRule, setRepeatRule] = useState(reminder?.repeatRule ?? "never");
   const [note, setNote] = useState(reminder?.note ?? "");
   const [state, setState] = useState<"idle" | "saving" | "error">("idle");
@@ -156,6 +163,7 @@ export function ReminderForm({
             dueDate,
             localTime,
             note,
+            notificationLeadMinutes,
             petId,
             repeatRule,
             timezone,
@@ -301,6 +309,37 @@ export function ReminderForm({
           type="time"
           value={localTime}
         />
+
+        <label className="block text-base font-medium">
+          Notify me
+          <span className="relative mt-2 block">
+            <select
+              aria-label="Notify me"
+              className="min-h-[52px] w-full appearance-none rounded-xl border border-[#ead9c7] bg-transparent px-4 pr-12 text-base focus:border-[#ed802a] focus:ring-1 focus:ring-[#ed802a] focus:outline-none"
+              onChange={(event) =>
+                setNotificationLeadMinutes(
+                  event.target.value === "" ? null : Number(event.target.value),
+                )
+              }
+              value={
+                notificationLeadMinutes === null ? "" : notificationLeadMinutes
+              }
+            >
+              {notificationLeadOptions.map((option) => (
+                <option
+                  key={option.value === null ? "none" : option.value}
+                  value={option.value ?? ""}
+                >
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              aria-hidden="true"
+              className="pointer-events-none absolute top-1/2 right-4 size-5 -translate-y-1/2 text-[#7a7a7a]"
+            />
+          </span>
+        </label>
 
         <label className="block text-base font-medium">
           Repeat

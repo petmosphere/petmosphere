@@ -127,9 +127,13 @@ Open local Supabase Studio at <http://127.0.0.1:54323>. Useful locations are:
   duplicate reminders
 - **Table Editor → reminders** for owner-scoped pet-care reminder occurrences;
   completed rows retain history and the one active row represents the next
-  occurrence in a repeating series
+  occurrence in a repeating series. `notification_lead_minutes` stores the
+  per-reminder alert timing (`0` is at due time and `null` disables alerts);
+  supported lead times are 5 minutes through 1 month before the due time.
 - **Table Editor → web_push_subscriptions** for private browser push endpoints
   and encryption keys; never copy these values into logs or support tickets
+- **Table Editor → notifications** for the private in-app inbox; the application
+  shows 60 days and the reminder dispatcher removes records after six months
 - **Table Editor → health_log_analytics_events** for privacy-minimised,
   write-only Journey A event counts; it intentionally stores no user, pet,
   note, filename, media or request identifiers
@@ -153,6 +157,9 @@ select * from public.reminders order by due_local_date, local_time;
 select id, owner_id, created_at, updated_at
 from public.web_push_subscriptions
 order by updated_at desc;
+select id, owner_id, kind, read_at, created_at
+from public.notifications
+order by created_at desc;
 select * from public.health_log_analytics_events order by created_at desc;
 ```
 
@@ -298,9 +305,11 @@ create today's log and confirm no reminder is claimed. Repeat the time-boundary
 database tests with `supabase test db` before promotion.
 
 Also create a pet-care reminder a few minutes ahead, confirm the browser has
-notification permission, and invoke `dispatch-pet-care-reminders` after it is
-due. Confirm the notification uses generic wording, opens the reminder detail,
-and is not sent a second time. Completing a repeating reminder must preserve
+notification permission, select its **Notify me** timing, and invoke
+`dispatch-pet-care-reminders` once that alert window opens. Confirm the
+notification uses generic wording, appears in the in-app Notifications page,
+opens the reminder detail, and is not sent a second time. Choosing **None**
+must produce no reminder notification. Completing a repeating reminder must preserve
 the completed occurrence and create exactly one next future occurrence.
 
 For weight reminders, log a weight before the scheduled time and confirm the

@@ -1,6 +1,11 @@
 import { Bell, CalendarHeart, Cross, Scissors, ShieldPlus } from "lucide-react";
 
-import type { ReminderCategory, ReminderRepeatRule } from "@petmosphere/domain";
+import {
+  reminderNotificationLeadMinutes,
+  type ReminderCategory,
+  type ReminderNotificationLeadMinutes,
+  type ReminderRepeatRule,
+} from "@petmosphere/domain";
 
 export const categoryDetails = {
   vaccination: {
@@ -46,6 +51,37 @@ export const repeatLabels = {
   monthly: "Monthly",
   yearly: "Yearly",
 } satisfies Record<ReminderRepeatRule, string>;
+
+export const notificationLeadLabels: Record<
+  ReminderNotificationLeadMinutes,
+  string
+> = {
+  0: "At the time of the reminder",
+  5: "5 minutes before",
+  15: "15 minutes before",
+  30: "30 minutes before",
+  60: "1 hour before",
+  120: "2 hours before",
+  1440: "1 day before",
+  2880: "2 days before",
+  10080: "1 week before",
+  43200: "1 month before",
+};
+
+export const notificationLeadOptions = [
+  ...reminderNotificationLeadMinutes.map((value) => ({
+    label: notificationLeadLabels[value],
+    value,
+  })),
+  { label: "None", value: null },
+] as const;
+
+export function formatNotificationLead(value: number | null) {
+  return value === null
+    ? "None"
+    : (notificationLeadLabels[value as ReminderNotificationLeadMinutes] ??
+        "At the time of the reminder");
+}
 
 export function formatReminderDate(date: string) {
   return new Intl.DateTimeFormat("en-AU", {

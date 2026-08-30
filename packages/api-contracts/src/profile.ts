@@ -25,13 +25,6 @@ export const updateUnitsSchema = z.object({
 });
 
 export const updateReminderNotificationPreferencesSchema = z.object({
-  alertLeadDays: z.union([
-    z.literal(0),
-    z.literal(1),
-    z.literal(2),
-    z.literal(3),
-    z.literal(7),
-  ]),
   enabled: z.boolean(),
 });
 

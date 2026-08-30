@@ -7,13 +7,14 @@ import { requireUser } from "@/lib/auth/require-user";
 import { createHealthLogReminderRepository } from "@/lib/health-logs/supabase-health-log-reminders";
 import { listOwnedHealthLogSummaries } from "@/lib/health-logs/supabase-health-logs";
 import { getPetPhotoUrl, listOwnedPets } from "@/lib/pets/supabase-pets";
+import { createNotificationRepository } from "@/lib/notifications/supabase-notifications";
 import {
   createReminderRepository,
   toReminderResponse,
 } from "@/lib/reminders/supabase-reminders";
 import { createWeightRepository } from "@/lib/weights/supabase-weights";
 import { getProfile } from "@/lib/profile/supabase-profile";
-import { listWeights } from "@petmosphere/services";
+import { listNotifications, listWeights } from "@petmosphere/services";
 
 export const metadata: Metadata = {
   title: "Home",
@@ -45,35 +46,37 @@ export default async function AppHomePage({
     profile.displayName.trim().split(/\s+/)[0] ||
     user.user_metadata.display_name?.trim().split(/\s+/)[0] ||
     "there";
-  const [petsWithPhotos, healthLogs, reminder, careReminders, weightEntries] =
-    await Promise.all([
-      Promise.all(
-        pets.map(async (pet) => ({
-          pet,
-          photoUrl: await getPetPhotoUrl(supabase, pet.photoPath),
-        })),
-      ),
-      listOwnedHealthLogSummaries(
-        supabase,
-        user.id,
-        currentPet.id,
-        localDateDaysAgo(today, 6),
-        today,
-      ),
-      createHealthLogReminderRepository(supabase).find(user.id, currentPet.id),
-      createReminderRepository(supabase).list(
-        user.id,
-        "upcoming",
-        today,
-        localTime,
-      ),
-      listWeights(
-        user.id,
-        currentPet.id,
-        createWeightRepository(supabase),
-        now,
-      ),
-    ]);
+  const [
+    petsWithPhotos,
+    healthLogs,
+    reminder,
+    careReminders,
+    weightEntries,
+    notifications,
+  ] = await Promise.all([
+    Promise.all(
+      pets.map(async (pet) => ({
+        pet,
+        photoUrl: await getPetPhotoUrl(supabase, pet.photoPath),
+      })),
+    ),
+    listOwnedHealthLogSummaries(
+      supabase,
+      user.id,
+      currentPet.id,
+      localDateDaysAgo(today, 6),
+      today,
+    ),
+    createHealthLogReminderRepository(supabase).find(user.id, currentPet.id),
+    createReminderRepository(supabase).list(
+      user.id,
+      "upcoming",
+      today,
+      localTime,
+    ),
+    listWeights(user.id, currentPet.id, createWeightRepository(supabase), now),
+    listNotifications(user.id, createNotificationRepository(supabase), now),
+  ]);
 
   return (
     <PetsHome
@@ -86,6 +89,7 @@ export default async function AppHomePage({
       today={today}
       weightEntries={weightEntries}
       weightUnit={profile.weightUnit}
+      unreadNotificationCount={notifications.unreadCount}
     />
   );
 }

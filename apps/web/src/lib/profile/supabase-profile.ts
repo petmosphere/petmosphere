@@ -6,7 +6,6 @@ import type {
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export type Profile = {
-  alertLeadDays: 0 | 1 | 2 | 3 | 7;
   avatarPath: string | null;
   displayName: string;
   reminderNotificationsEnabled: boolean;
@@ -14,7 +13,6 @@ export type Profile = {
 };
 
 type ProfileRow = {
-  reminder_alert_lead_days: 0 | 1 | 2 | 3 | 7;
   avatar_path: string | null;
   display_name: string | null;
   reminder_notifications_enabled: boolean;
@@ -23,7 +21,6 @@ type ProfileRow = {
 
 function toProfile(row: ProfileRow): Profile {
   return {
-    alertLeadDays: row.reminder_alert_lead_days,
     avatarPath: row.avatar_path,
     displayName: row.display_name ?? "Pet parent",
     reminderNotificationsEnabled: row.reminder_notifications_enabled,
@@ -32,7 +29,7 @@ function toProfile(row: ProfileRow): Profile {
 }
 
 const columns =
-  "display_name, avatar_path, weight_unit, reminder_notifications_enabled, reminder_alert_lead_days";
+  "display_name, avatar_path, weight_unit, reminder_notifications_enabled";
 
 export async function getProfile(supabase: SupabaseClient, ownerId: string) {
   const { data, error } = await supabase
@@ -138,17 +135,11 @@ export async function updateProfileUnits(
 export async function updateReminderNotificationPreferences(
   supabase: SupabaseClient,
   ownerId: string,
-  preferences: {
-    alertLeadDays: 0 | 1 | 2 | 3 | 7;
-    enabled: boolean;
-  },
+  preferences: { enabled: boolean },
 ) {
   const { data, error } = await supabase
     .from("profiles")
-    .update({
-      reminder_alert_lead_days: preferences.alertLeadDays,
-      reminder_notifications_enabled: preferences.enabled,
-    })
+    .update({ reminder_notifications_enabled: preferences.enabled })
     .eq("id", ownerId)
     .select("id")
     .maybeSingle();

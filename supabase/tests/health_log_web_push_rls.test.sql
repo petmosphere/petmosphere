@@ -1,6 +1,6 @@
 begin;
 
-select plan(17);
+select plan(18);
 
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password, raw_user_meta_data,
@@ -48,7 +48,11 @@ select lives_ok(
 );
 
 select is(
-  (select count(*) from public.web_push_subscriptions),
+  (select count(*) from public.web_push_subscriptions
+    where owner_id in (
+      'f1000000-0000-0000-0000-000000000001',
+      'f2000000-0000-0000-0000-000000000002'
+    )),
   1::bigint,
   'owner reads their push subscription'
 );
@@ -158,7 +162,11 @@ reset role;
 set local role service_role;
 
 select is(
-  (select count(*) from public.web_push_subscriptions),
+  (select count(*) from public.web_push_subscriptions
+    where owner_id in (
+      'f1000000-0000-0000-0000-000000000001',
+      'f2000000-0000-0000-0000-000000000002'
+    )),
   2::bigint,
   'the server delivery role can read subscriptions after RLS checks'
 );
@@ -174,6 +182,14 @@ select results_eq(
     '2026-01-15'::date
   )$$,
   '7 pm AEDT is due and an existing local-date health log is skipped'
+);
+
+select is(
+  (select count(*) from public.notifications
+    where owner_id = 'f1000000-0000-0000-0000-000000000001'
+      and kind = 'daily_check_in'),
+  1::bigint,
+  'claiming a daily check-in creates one in-app notification'
 );
 
 reset role;

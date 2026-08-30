@@ -1,5 +1,5 @@
 begin;
-select plan(4);
+select plan(5);
 
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password, raw_user_meta_data,
@@ -39,19 +39,29 @@ insert into public.pet_weight_reminders (
 
 set local role service_role;
 select is(
-  (select count(*) from public.claim_due_pet_weight_reminders('2026-08-25T12:00:00Z', 100)),
+  (select count(*) from public.claim_due_pet_weight_reminders('2026-08-25T12:00:00Z', 100)
+    where owner_id = '85000000-0000-4000-8000-000000000005'),
   1::bigint,
   'a stale due reminder is claimed once'
 );
+select is(
+  (select count(*) from public.notifications
+    where owner_id = '85000000-0000-4000-8000-000000000005'
+      and kind = 'weight_log'),
+  1::bigint,
+  'claiming a weight reminder creates one in-app notification'
+);
 reset role;
 select is(
-  (select next_due_local_date from public.pet_weight_reminders),
+  (select next_due_local_date from public.pet_weight_reminders
+    where owner_id = '85000000-0000-4000-8000-000000000005'),
   date '2026-08-30',
   'a stale weekly reminder advances directly to the next future occurrence'
 );
 set local role service_role;
 select is(
-  (select count(*) from public.claim_due_pet_weight_reminders('2026-08-25T12:05:00Z', 100)),
+  (select count(*) from public.claim_due_pet_weight_reminders('2026-08-25T12:05:00Z', 100)
+    where owner_id = '85000000-0000-4000-8000-000000000005'),
   0::bigint,
   'a second job run does not duplicate the reminder'
 );
@@ -61,7 +71,8 @@ update public.pet_weight_reminders
 set frequency = 'monthly', schedule_day = 31, next_due_local_date = date '2026-01-31';
 set local role service_role;
 select is(
-  (select count(*) from public.claim_due_pet_weight_reminders('2026-08-31T12:00:00Z', 100)),
+  (select count(*) from public.claim_due_pet_weight_reminders('2026-08-31T12:00:00Z', 100)
+    where owner_id = '85000000-0000-4000-8000-000000000005'),
   1::bigint,
   'month-end reminders remain claimable after catch-up'
 );

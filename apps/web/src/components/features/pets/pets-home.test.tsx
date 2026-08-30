@@ -42,6 +42,7 @@ describe("PetsHome", () => {
         pets={[{ pet, photoUrl: null }]}
         reminder={{ enabled: true, localTime: "19:00" }}
         today="2026-08-16"
+        unreadNotificationCount={2}
       />,
     );
 
@@ -49,6 +50,9 @@ describe("PetsHome", () => {
     expect(screen.getByText("Reminder at 7:00 pm")).toBeVisible();
     expect(screen.getByText("Low energy")).toBeVisible();
     expect(screen.getByText("Playful")).toBeVisible();
+    expect(
+      screen.getByRole("link", { name: "Notifications, 2 unread" }),
+    ).toHaveAttribute("href", "/notifications");
   });
 
   it("shows empty states when no records or reminder exist", () => {

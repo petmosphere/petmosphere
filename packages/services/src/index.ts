@@ -3,6 +3,7 @@ export * from "./account/delete-account";
 export * from "./health-logs/save-health-log";
 export * from "./health-logs/health-log-reminder";
 export * from "./health-logs/dispatch-health-log-reminders";
+export * from "./notifications/manage-notifications";
 export * from "./pets/create-pet";
 export * from "./pets/delete-pet";
 export * from "./pets/update-pet";

@@ -1,6 +1,6 @@
 begin;
 
-select plan(15);
+select plan(18);
 
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password, raw_user_meta_data,
@@ -86,6 +86,35 @@ select is((select count(*) from public.reminders where completed_at is not null)
 select is((select count(*) from public.reminders where completed_at is null and deleted_at is null), 1::bigint, 'completion creates one active future occurrence');
 select lives_ok($$select * from public.complete_reminder('77000000-0000-4000-8000-000000000007', '2026-09-22')$$, 'completion retry is idempotent');
 select is((select count(*) from public.reminders), 2::bigint, 'completion retry does not duplicate the next occurrence');
+select is(
+  (select count(*) from public.notifications
+    where owner_id = '71000000-0000-4000-8000-000000000001'
+      and kind = 'reminder_completed'),
+  1::bigint,
+  'completion creates one idempotent in-app notification'
+);
+
+reset role;
+set local role authenticated;
+set local "request.jwt.claims" = '{"sub":"71000000-0000-4000-8000-000000000001","role":"authenticated"}';
+update public.reminders
+set notification_lead_minutes = 5
+where owner_id = '71000000-0000-4000-8000-000000000001'
+  and completed_at is null;
+reset role;
+set local role service_role;
+select is(
+  (select count(*) from public.claim_due_reminders('2026-09-22 08:54:00+00', 100)
+    where owner_id = '71000000-0000-4000-8000-000000000001'),
+  0::bigint,
+  'lead-time reminder is not claimed before its alert window'
+);
+select is(
+  (select count(*) from public.claim_due_reminders('2026-09-22 08:55:00+00', 100)
+    where owner_id = '71000000-0000-4000-8000-000000000001'),
+  1::bigint,
+  'claiming at the lead time creates an inbox occurrence'
+);
 
 reset role;
 set local role authenticated;
