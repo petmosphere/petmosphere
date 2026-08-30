@@ -16,6 +16,10 @@ describe("HomePage", () => {
       "href",
       "/auth/sign-up",
     );
+    expect(screen.getByRole("link", { name: "Log in" })).toHaveAttribute(
+      "href",
+      "/auth/sign-in",
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
     expect(
