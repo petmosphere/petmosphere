@@ -49,7 +49,7 @@ export function TermsContent({
   profileMode = false,
 }: {
   backHref: string;
-  diaryHref?: string;
+  diaryHref?: string | undefined;
   profileMode?: boolean;
 }) {
   return (

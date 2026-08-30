@@ -60,7 +60,7 @@ function Toggle({
   onChange,
 }: {
   checked: boolean;
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   label: string;
   onChange: () => void;
 }) {
@@ -92,7 +92,7 @@ function SettingCard({
   active: boolean;
   children?: ReactNode;
   description: string;
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   label: string;
   onToggle: () => void;
 }) {

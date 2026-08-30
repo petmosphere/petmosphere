@@ -13,7 +13,7 @@ export function SupportPageShell({
 }: {
   backHref?: string;
   children: React.ReactNode;
-  diaryHref?: string;
+  diaryHref?: string | undefined;
   lastUpdated?: string;
   showNavigation?: boolean;
   title: string;
