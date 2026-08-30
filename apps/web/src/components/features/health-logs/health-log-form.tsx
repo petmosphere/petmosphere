@@ -16,14 +16,7 @@ import {
   type HealthLogObservation,
   type Pet,
 } from "@petmosphere/domain";
-import {
-  CalendarDays,
-  ImagePlus,
-  LoaderCircle,
-  Tags,
-  WifiOff,
-  X,
-} from "lucide-react";
+import { ImagePlus, LoaderCircle, WifiOff, X } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -31,6 +24,7 @@ import { useForm, useWatch } from "react-hook-form";
 
 import { PetAvatar } from "@/components/features/pets/pet-avatar";
 import { trackHealthLogEvent } from "@/lib/health-logs/analytics";
+import { HealthLogDatePicker } from "./health-log-date-picker";
 import { HealthLogObservationOptions } from "./health-log-observation-options";
 import { HealthLogStatusOptions } from "./health-log-status-options";
 
@@ -213,47 +207,47 @@ export function HealthLogForm({
   });
 
   return (
-    <form className="pb-8" noValidate onSubmit={submit}>
-      <div className="mb-5">
-        <div className="flex items-center justify-between gap-4">
-          <label
-            className="text-sm font-medium text-[#7a7a7a]"
-            htmlFor="health-log-date"
-          >
-            Log date
-          </label>
-          <div className="relative">
-            <input
-              {...register("localDate")}
-              aria-invalid={Boolean(errors.localDate)}
-              className="min-h-12 w-[174px] appearance-none rounded-2xl border border-[#e8d0b3] bg-white/60 py-2 pr-11 pl-4 text-[15px] font-semibold text-[#2d2d2d] tabular-nums shadow-sm transition-[border-color,box-shadow] outline-none focus:border-[#ed802a] focus:ring-4 focus:ring-[#ed802a]/10 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
-              id="health-log-date"
-              max={today}
-              type="date"
-            />
-            <CalendarDays
-              aria-hidden="true"
-              className="pointer-events-none absolute top-1/2 right-4 size-5 -translate-y-1/2 text-[#ed802a]"
-            />
-          </div>
+    <form className="flex flex-col gap-6 pb-8" noValidate onSubmit={submit}>
+      {/* pet-context */}
+      <div className="flex items-center gap-3">
+        <PetAvatar
+          className="size-10 shrink-0 rounded-full bg-[#f0e6d8]"
+          name={petName}
+          photoUrl={petPhotoUrl}
+          species={petSpecies}
+        />
+        <div className="flex flex-col gap-0.5">
+          <span className="text-base font-bold text-[#2d2d2d]">{petName}</span>
         </div>
+      </div>
+
+      {/* date-picker-section */}
+      <div className="flex flex-col gap-1.5">
+        <span className="pb-1 text-[14px] font-semibold text-[#7a7a7a]">
+          Date
+        </span>
+        <HealthLogDatePicker
+          onChange={(date) =>
+            setValue("localDate", date, {
+              shouldDirty: true,
+              shouldValidate: true,
+            })
+          }
+          today={today}
+          value={localDate ?? ""}
+        />
         {errors.localDate ? (
-          <p className="mt-2 text-sm text-red-600" role="alert">
+          <p className="text-sm text-red-600" role="alert">
             {errors.localDate.message}
           </p>
         ) : null}
       </div>
 
-      <section className="rounded-2xl bg-white/60 px-5 py-5 shadow-[0_4px_16px_rgba(205,146,85,0.08)]">
-        <div className="mb-4 flex items-center gap-3">
-          <PetAvatar
-            className="size-10 border border-[#ed802a]"
-            name={petName}
-            photoUrl={petPhotoUrl}
-            species={petSpecies}
-          />
-          <h2 className="text-lg font-medium">How is {petName} today?</h2>
-        </div>
+      {/* mood-section */}
+      <div className="flex flex-col gap-0">
+        <span className="mb-2 block text-[14px] font-semibold text-[#7a7a7a]">
+          Mood
+        </span>
         <HealthLogStatusOptions
           {...(errors.status?.message ? { error: errors.status.message } : {})}
           onChange={(value) => {
@@ -267,8 +261,9 @@ export function HealthLogForm({
           petName={petName}
           value={status}
         />
-      </section>
+      </div>
 
+      {/* tags-section */}
       {status ? (
         <HealthLogObservationOptions
           onChange={(value: HealthLogObservation[]) =>
@@ -282,22 +277,25 @@ export function HealthLogForm({
         />
       ) : null}
 
-      <fieldset className="mt-8">
-        <legend className="sr-only">Add photos (optional)</legend>
+      {/* photos-section */}
+      <fieldset>
+        <legend className="mb-2 block text-[14px] font-semibold text-[#7a7a7a]">
+          Photos
+        </legend>
         <div
-          className={`grid gap-3 ${retainedImageIndexes.length + images.length > 0 ? "grid-cols-3" : "grid-cols-1"}`}
+          className={`grid gap-3 ${retainedImageIndexes.length + images.length > 0 ? "grid-cols-4" : "grid-cols-1"}`}
         >
           {existing?.imageUrls.map((url, index) =>
             retainedImageIndexes.includes(index) ? (
               <div
-                className="relative aspect-square overflow-hidden rounded-2xl"
+                className="relative aspect-square overflow-hidden rounded-2xl border border-[#f0e6d8]"
                 key={url}
               >
                 <Image
                   alt={`Saved health log photo ${index + 1}`}
                   className="object-cover"
                   fill
-                  sizes="112px"
+                  sizes="80px"
                   src={url}
                   unoptimized
                 />
@@ -318,14 +316,14 @@ export function HealthLogForm({
           )}
           {previews.map((url, index) => (
             <div
-              className="relative aspect-square overflow-hidden rounded-2xl"
+              className="relative aspect-square overflow-hidden rounded-2xl border border-[#f0e6d8]"
               key={url}
             >
               <Image
                 alt={`Selected health log photo ${index + 1}`}
                 className="object-cover"
                 fill
-                sizes="112px"
+                sizes="80px"
                 src={url}
                 unoptimized
               />
@@ -346,10 +344,10 @@ export function HealthLogForm({
           {retainedImageIndexes.length + images.length <
           MAX_HEALTH_LOG_IMAGES ? (
             <label
-              className={`flex cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[#d7c3b0] bg-white/60 text-center font-medium text-[#7a7a7a] focus-within:outline-2 focus-within:outline-[#ed802a] ${retainedImageIndexes.length + images.length > 0 ? "aspect-square min-h-24 flex-col text-sm" : "min-h-[76px] w-full"}`}
+              className={`flex cursor-pointer items-center justify-center gap-2 rounded-2xl border-[1.5px] border-dashed border-[#aaa095] bg-white/60 text-center font-medium text-[#7a7a7a] focus-within:outline-2 focus-within:outline-[#ed802a] ${retainedImageIndexes.length + images.length > 0 ? "aspect-square flex-col text-sm" : "min-h-20 w-full"}`}
               htmlFor="health-log-images"
             >
-              <ImagePlus aria-hidden="true" className="size-6" />
+              <ImagePlus aria-hidden="true" className="size-6 text-[#7a7a7a]" />
               <span>Add photos</span>
               <input
                 accept={HEALTH_LOG_IMAGE_TYPES.join(",")}
@@ -375,18 +373,21 @@ export function HealthLogForm({
         </p>
       </fieldset>
 
-      <div className="relative mt-6">
+      {/* note-section */}
+      <div>
+        <span
+          aria-hidden="true"
+          className="mb-2 block text-[14px] font-semibold text-[#7a7a7a]"
+        >
+          Note
+        </span>
         <label className="sr-only" htmlFor="health-log-note">
           Add a note (optional)
         </label>
-        <Tags
-          aria-hidden="true"
-          className="pointer-events-none absolute top-5 left-4 size-5 text-[#7a7a7a]"
-        />
         <textarea
           {...register("note")}
           aria-invalid={Boolean(errors.note)}
-          className="min-h-20 w-full resize-y rounded-xl border border-[#e8d0b3] bg-white/60 py-4 pr-4 pl-12 leading-6 outline-none placeholder:text-[#aaa095] focus:border-[#ed802a] focus:ring-4 focus:ring-[#ed802a]/10"
+          className="min-h-[120px] w-full resize-y rounded-2xl border border-[#f0e6d8] bg-white/60 p-4 text-[15px] leading-[22px] text-[#2d2d2d] outline-none placeholder:text-[#aaa095] focus:border-[#ed802a] focus:ring-4 focus:ring-[#ed802a]/10"
           id="health-log-note"
           maxLength={MAX_HEALTH_LOG_NOTE_LENGTH}
           placeholder="Add a note…"
@@ -398,7 +399,7 @@ export function HealthLogForm({
 
       {serverError ? (
         <div
-          className="mt-6 rounded-2xl border border-[#efb3ae] bg-[#fff0ef] p-4 text-sm text-[#9f342d]"
+          className="rounded-2xl border border-[#efb3ae] bg-[#fff0ef] p-4 text-sm text-[#9f342d]"
           role="alert"
         >
           <div className="flex gap-3">
@@ -408,29 +409,35 @@ export function HealthLogForm({
         </div>
       ) : null}
 
-      <button
-        className="mt-8 flex h-[52px] w-full items-center justify-center gap-2 rounded-xl bg-[#65bcb5] text-base font-semibold text-[#fdf8f2] shadow-[0_8px_24px_rgba(205,146,85,0.08)] transition-transform duration-150 ease-out enabled:active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-500 disabled:shadow-none"
-        disabled={!status || !localDate || isSubmitting}
-        type="submit"
-      >
-        {isSubmitting ? (
-          <>
-            <LoaderCircle aria-hidden="true" className="size-5 animate-spin" />
-            Saving…
-          </>
-        ) : existing ? (
-          "Save changes"
-        ) : (
-          "Save"
-        )}
-      </button>
-      <button
-        className="mt-6 min-h-11 w-full text-[15px] font-medium text-[#7a7a7a] underline underline-offset-4 active:scale-[0.98]"
-        onClick={onCancel}
-        type="button"
-      >
-        {existing ? "Cancel" : "Skip"}
-      </button>
+      {/* primary-action-container */}
+      <div className="pt-1">
+        <button
+          className="flex h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-[#65bcb5] text-base font-bold text-[#fdf8f2] transition-transform duration-150 ease-out enabled:active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-500"
+          disabled={!status || !localDate || isSubmitting}
+          type="submit"
+        >
+          {isSubmitting ? (
+            <>
+              <LoaderCircle
+                aria-hidden="true"
+                className="size-5 animate-spin"
+              />
+              Saving…
+            </>
+          ) : existing ? (
+            "Save changes"
+          ) : (
+            "Save"
+          )}
+        </button>
+        <button
+          className="mt-6 min-h-11 w-full text-[15px] font-semibold text-[#7a7a7a] active:scale-[0.98]"
+          onClick={onCancel}
+          type="button"
+        >
+          {existing ? "Cancel" : "Skip"}
+        </button>
+      </div>
     </form>
   );
 }

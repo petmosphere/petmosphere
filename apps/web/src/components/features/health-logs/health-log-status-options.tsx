@@ -7,20 +7,20 @@ export const healthLogStatusDetails = {
   doing_well: {
     emoji: "😊",
     label: "Great",
-    pillClass: "border-[#62bdb8] bg-[#62bdb8] text-white",
-    selectedClass: "border-[#62bdb8] bg-[#e8f7f5] text-[#287f7b]",
+    pillClass: "border-[#65bcb5] bg-[#65bcb5] text-[#fdf8f2]",
+    selectedClass: "border-[#65bcb5] bg-[#65bcb5]/10 text-[#65bcb5]",
   },
   something_different: {
     emoji: "😐",
     label: "Okay",
-    pillClass: "border-[#d49a55] bg-[#d49a55] text-white",
-    selectedClass: "border-[#d49a55] bg-[#fff3e4] text-[#a96225]",
+    pillClass: "border-[#cd9255] bg-[#cd9255] text-[#fdf8f2]",
+    selectedClass: "border-[#cd9255] bg-[#cd9255]/10 text-[#cd9255]",
   },
   concerned: {
     emoji: "😟",
     label: "Not good",
-    pillClass: "border-[#f47b20] bg-[#f47b20] text-white",
-    selectedClass: "border-[#e87474] bg-[#fff0ef] text-[#bd3f3f]",
+    pillClass: "border-[#ed802a] bg-[#ed802a] text-[#fdf8f2]",
+    selectedClass: "border-[#ed802a] bg-[#ed802a]/10 text-[#ed802a]",
   },
 } satisfies Record<
   HealthLogStatus,
@@ -89,21 +89,18 @@ export function HealthLogStatusOptions({
           return (
             <button
               aria-pressed={selected}
-              className={`grid min-h-16 place-items-center rounded-xl border px-2 py-2 text-center transition-[border-color,background-color,transform] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.98] ${selected ? `border-2 ${details.selectedClass}` : "border-[#e8d0b3] bg-white/60 text-[#7a7a7a]"}`}
+              className={`flex min-h-[70px] flex-col items-center justify-center gap-1 rounded-2xl border px-2 py-3 text-center transition-[border-color,background-color,transform] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.98] ${selected ? `border-[1.5px] ${details.selectedClass}` : "border-[#f0e6d8] bg-white/60 text-[#2d2d2d]"}`}
               key={status}
               onClick={() => onChange(status)}
               type="button"
             >
-              <span>
-                <span
-                  aria-hidden="true"
-                  className="block text-2xl leading-none"
-                >
-                  {details.emoji}
-                </span>
-                <span className="mt-1 block text-sm font-medium">
-                  {details.label}
-                </span>
+              <span aria-hidden="true" className="text-2xl leading-none">
+                {details.emoji}
+              </span>
+              <span
+                className={`text-[13px] ${selected ? "font-bold" : "font-medium"}`}
+              >
+                {details.label}
               </span>
             </button>
           );
