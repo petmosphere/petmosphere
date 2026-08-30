@@ -1,4 +1,4 @@
-import { Plus, PawPrint } from "lucide-react";
+import { Lock, Plus, PawPrint } from "lucide-react";
 import Link from "next/link";
 
 import { AppNav } from "./app-nav";
@@ -31,7 +31,12 @@ export function EmptyPetsHome({ displayName }: { displayName: string }) {
           <Plus aria-hidden="true" className="size-5" />
           Add your pet
         </Link>
-        <p className="mt-2 text-sm text-stone-500">It only takes a minute</p>
+        <div className="mt-3 flex w-fit items-center gap-3 rounded-xl border border-[#f0e6d8] bg-white/60 px-4 py-2.5 text-[#ed802a] shadow-[0_4px_16px_rgba(205,146,85,0.08)]">
+          <Lock aria-hidden="true" className="size-[18px] shrink-0" strokeWidth={2} />
+          <p className="whitespace-nowrap text-[13px] font-bold leading-[18px]">
+            Diary &amp; Reminders unlock after adding a pet
+          </p>
+        </div>
       </section>
 
       <AppNav />

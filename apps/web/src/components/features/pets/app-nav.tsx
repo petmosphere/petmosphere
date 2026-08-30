@@ -50,7 +50,7 @@ export function AppNav({
           Diary
         </Link>
       ) : (
-        <span aria-disabled="true" className={`${itemClass} text-[#7a7a7a]`}>
+        <span aria-disabled="true" className={`${itemClass} cursor-default text-[#c4c4c4]`}>
           <CalendarDays
             aria-hidden="true"
             className="mb-0.5 size-5"
@@ -77,7 +77,7 @@ export function AppNav({
           Reminders
         </Link>
       ) : (
-        <span aria-disabled="true" className={`${itemClass} text-[#7a7a7a]`}>
+        <span aria-disabled="true" className={`${itemClass} cursor-default text-[#c4c4c4]`}>
           <Bell
             aria-hidden="true"
             className="mb-0.5 size-5"
