@@ -265,7 +265,10 @@ export function PrivacyPolicyContent({
 
       <p className="px-1 text-center text-sm text-[#7a7a7a]">
         Read the{" "}
-        <Link className="font-semibold text-[#b05d1d] underline" href={termsHref}>
+        <Link
+          className="font-semibold text-[#b05d1d] underline"
+          href={termsHref}
+        >
           Terms of Service
         </Link>
         .
