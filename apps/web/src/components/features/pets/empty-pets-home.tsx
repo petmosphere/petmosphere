@@ -1,15 +1,13 @@
 import { Plus, PawPrint } from "lucide-react";
 import Link from "next/link";
 
-import { SignOutButton } from "@/components/features/auth/sign-out-button";
 import { AppNav } from "./app-nav";
 
 export function EmptyPetsHome({ displayName }: { displayName: string }) {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-[#fdf8f2] pb-3 text-[#2d2d2d] shadow-xl shadow-stone-900/5">
-      <header className="flex items-center justify-between px-6 pt-8">
+      <header className="flex items-center px-6 pt-8">
         <p className="text-lg font-medium">Hello, {displayName}</p>
-        <SignOutButton />
       </header>
 
       <section className="flex flex-1 flex-col items-center justify-center px-7 pb-16 text-center">

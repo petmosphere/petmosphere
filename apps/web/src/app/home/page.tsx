@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { deriveLocalDate, deriveLocalTime } from "@petmosphere/domain";
 
+import { EmptyPetsHome } from "@/components/features/pets/empty-pets-home";
 import { PetsHome } from "@/components/features/pets/pets-home";
 import { requireUser } from "@/lib/auth/require-user";
 import { createHealthLogReminderRepository } from "@/lib/health-logs/supabase-health-log-reminders";
@@ -33,18 +33,18 @@ export default async function AppHomePage({
 }) {
   const { supabase, user } = await requireUser("/home");
   const pets = await listOwnedPets(supabase, user.id);
-  if (pets.length === 0) redirect("/onboarding");
+  const profile = await getProfile(supabase, user.id);
+  const displayName =
+    profile.displayName.trim().split(/\s+/)[0] ||
+    user.user_metadata.display_name?.trim().split(/\s+/)[0] ||
+    "there";
+  if (pets.length === 0) return <EmptyPetsHome displayName={displayName} />;
   const { pet: selectedPetId } = await searchParams;
   const currentPet = pets.find((pet) => pet.id === selectedPetId) ?? pets[0]!;
   const now = new Date();
   const today = deriveLocalDate(now, "Australia/Melbourne");
   const localTime = deriveLocalTime(now, "Australia/Melbourne");
 
-  const profile = await getProfile(supabase, user.id);
-  const displayName =
-    profile.displayName.trim().split(/\s+/)[0] ||
-    user.user_metadata.display_name?.trim().split(/\s+/)[0] ||
-    "there";
   const [petsWithPhotos, healthLogs, reminder, careReminders, weightEntries] =
     await Promise.all([
       Promise.all(

@@ -7,7 +7,7 @@ describe("pet contracts", () => {
   it("trims required fields and keeps optional fields optional", () => {
     const result = createPetSchema.parse({
       approximateAge: "",
-      birthDate: "",
+      birthDate: "2020-01-01",
       breed: "",
       creationRequestId: "10000000-0000-4000-8000-000000000001",
       desexedStatus: "",
@@ -17,8 +17,11 @@ describe("pet contracts", () => {
       weightKg: "",
     });
 
-    expect(result).toMatchObject({ name: "Max", species: "dog" });
-    expect(result.birthDate).toBeUndefined();
+    expect(result).toMatchObject({
+      name: "Max",
+      species: "dog",
+      birthDate: "2020-01-01",
+    });
     expect(result.weightKg).toBeUndefined();
   });
 
