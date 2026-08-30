@@ -157,7 +157,7 @@ export function FirstPetForm() {
       <form className="mt-3" noValidate onSubmit={submit}>
         <section aria-labelledby="pet-basics-heading">
           <h1 className="text-2xl font-bold" id="pet-basics-heading">
-            Let's meet your pet!
+            Let&apos;s meet your pet!
           </h1>
 
           <div className="mt-6 text-center">
@@ -205,7 +205,7 @@ export function FirstPetForm() {
               className="mb-2 block text-sm font-medium"
               htmlFor="pet-name"
             >
-              Pet's name <RequiredMark />
+              Pet&apos;s name <RequiredMark />
             </label>
             <div className="relative">
               <PawPrint
@@ -378,7 +378,7 @@ export function FirstPetForm() {
                 }}
                 type="checkbox"
               />
-              I don't know the exact date
+              I don&apos;t know the exact date
             </label>
             {unknownBirthDate ? (
               <AgeSelect
