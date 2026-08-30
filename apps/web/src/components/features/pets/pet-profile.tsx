@@ -8,6 +8,7 @@ import {
   CircleHelp,
   Mars,
   Pencil,
+  Scale,
   Scissors,
 } from "lucide-react";
 import Link from "next/link";
@@ -43,6 +44,13 @@ export function PetProfile({
       : age
         ? { icon: CircleHelp, label: "Approximate age", value: age }
         : null,
+    pet.weightKg
+      ? {
+          icon: Scale,
+          label: "Weight",
+          value: formatWeight(pet.weightKg, weightUnit),
+        }
+      : null,
     pet.sex
       ? {
           icon: Mars,

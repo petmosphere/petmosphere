@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   MAX_PET_PHOTO_BYTES,
   PET_PHOTO_TYPES,
-  createUpdatePetFormSchema,
+  updatePetSchema,
   type UpdatePetFormInput,
   type UpdatePetInput,
 } from "@petmosphere/api-contracts";
@@ -19,11 +19,9 @@ import { useForm, useWatch } from "react-hook-form";
 export function EditPetForm({
   pet,
   photoUrl,
-  weightUnit = "kg",
 }: {
   pet: Pet;
   photoUrl: string | null;
-  weightUnit?: WeightUnit;
 }) {
   const router = useRouter();
   const [photo, setPhoto] = useState<File | null>(null);
@@ -44,14 +42,10 @@ export function EditPetForm({
       name: pet.name,
       sex: pet.sex ?? "",
       species: pet.species,
-      weightKg: pet.weightKg
-        ? Number(
-            weightFromKilograms(pet.weightKg, weightUnit).toFixed(2),
-          ).toString()
-        : "",
+      weightKg: pet.weightKg?.toString() ?? "",
     },
     mode: "onChange",
-    resolver: zodResolver(createUpdatePetFormSchema(weightUnit)),
+    resolver: zodResolver(updatePetSchema),
   });
   const [sex, desexedStatus] = useWatch({
     control,
@@ -89,13 +83,7 @@ export function EditPetForm({
     setServerError(undefined);
     const formData = new FormData();
     Object.entries(values).forEach(([key, value]) => {
-      if (value === undefined) return;
-      formData.set(
-        key,
-        key === "weightKg" && typeof value === "number"
-          ? Number(weightToKilograms(value, weightUnit).toFixed(2)).toString()
-          : value.toString(),
-      );
+      if (value !== undefined) formData.set(key, value.toString());
     });
     if (photo) formData.set("photo", photo);
 
