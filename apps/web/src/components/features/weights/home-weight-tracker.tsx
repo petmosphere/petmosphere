@@ -1,4 +1,10 @@
-import type { Pet, WeightEntry } from "@petmosphere/domain";
+import {
+  formatWeight,
+  weightFromKilograms,
+  type Pet,
+  type WeightEntry,
+  type WeightUnit,
+} from "@petmosphere/domain";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 
@@ -44,9 +50,11 @@ function Sparkline({ entries }: { entries: WeightEntry[] }) {
 export function HomeWeightTracker({
   entries,
   pet,
+  weightUnit = "kg",
 }: {
   entries: WeightEntry[];
   pet: Pet;
+  weightUnit?: WeightUnit;
 }) {
   const latest = entries.at(-1);
   const monthPrefix = latest?.localDate.slice(0, 7);
@@ -68,7 +76,7 @@ export function HomeWeightTracker({
           <p className="text-xs text-[#7a7a7a]">
             <span className="font-semibold text-[#65bcb5]">
               {change > 0 ? "+" : ""}
-              {change.toFixed(1)} kg
+              {weightFromKilograms(change, weightUnit).toFixed(1)} {weightUnit}
             </span>{" "}
             this month
           </p>
@@ -78,8 +86,10 @@ export function HomeWeightTracker({
         <div className="mt-3 flex items-end justify-between gap-3">
           <div>
             <p className="text-3xl font-bold tracking-[-0.03em]">
-              {latest.weightKg}{" "}
-              <span className="text-lg font-medium text-[#7a7a7a]">kg</span>
+              {formatWeight(latest.weightKg, weightUnit).split(" ")[0]}{" "}
+              <span className="text-lg font-medium text-[#7a7a7a]">
+                {weightUnit}
+              </span>
             </p>
             <p className="mt-1 text-xs text-[#7a7a7a]">
               Last recorded on {formatDate(latest.localDate)}

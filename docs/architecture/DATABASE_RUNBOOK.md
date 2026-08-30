@@ -134,6 +134,7 @@ Open local Supabase Studio at <http://127.0.0.1:54323>. Useful locations are:
   write-only Journey A event counts; it intentionally stores no user, pet,
   note, filename, media or request identifiers
 - **Storage → pet-photos** for private pet profile images
+- **Storage → profile-avatars** for private account profile images
 - **Storage → health-log-images** for private health-log images
 
 The Studio SQL Editor can also inspect local development records:

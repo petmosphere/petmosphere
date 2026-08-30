@@ -1,4 +1,9 @@
-import { weightTrendWindow, type WeightEntry } from "@petmosphere/domain";
+import {
+  weightFromKilograms,
+  weightTrendWindow,
+  type WeightEntry,
+  type WeightUnit,
+} from "@petmosphere/domain";
 
 function formatDate(localDate: string) {
   return new Intl.DateTimeFormat("en-AU", {
@@ -7,7 +12,13 @@ function formatDate(localDate: string) {
   }).format(new Date(`${localDate}T12:00:00Z`));
 }
 
-export function WeightTrendChart({ entries }: { entries: WeightEntry[] }) {
+export function WeightTrendChart({
+  entries,
+  weightUnit = "kg",
+}: {
+  entries: WeightEntry[];
+  weightUnit?: WeightUnit;
+}) {
   const windowDays = weightTrendWindow(entries);
   const newest = entries.at(-1);
   const cutoff = newest
@@ -61,7 +72,7 @@ export function WeightTrendChart({ entries }: { entries: WeightEntry[] }) {
   return (
     <figure>
       <svg
-        aria-label={`${windowDays}-day weight trend from ${minimum} to ${maximum} kilograms.`}
+        aria-label={`${windowDays}-day weight trend from ${Number(weightFromKilograms(minimum, weightUnit).toFixed(2))} to ${Number(weightFromKilograms(maximum, weightUnit).toFixed(2))} ${weightUnit}.`}
         className="h-32 w-full overflow-visible"
         role="img"
         viewBox="0 0 300 170"
@@ -104,7 +115,9 @@ export function WeightTrendChart({ entries }: { entries: WeightEntry[] }) {
                   x={x}
                   y={Math.max(18, y - 11)}
                 >
-                  {entry.weightKg}
+                  {Number(
+                    weightFromKilograms(entry.weightKg, weightUnit).toFixed(2),
+                  )}
                 </text>
                 <text
                   fill="#8a837c"

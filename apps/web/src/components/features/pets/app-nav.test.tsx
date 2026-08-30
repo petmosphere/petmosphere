@@ -6,11 +6,7 @@ import { AppNav } from "./app-nav";
 describe("AppNav", () => {
   it("uses Profile instead of a separate Settings destination", () => {
     render(
-      <AppNav
-        diaryHref="/pets/pet-1/health-logs"
-        profileHref="/pets/pet-1"
-        reminderHref="/reminders"
-      />,
+      <AppNav diaryHref="/pets/pet-1/health-logs" reminderHref="/reminders" />,
     );
 
     expect(screen.getByRole("link", { name: "Home" })).toHaveAttribute(
@@ -25,7 +21,7 @@ describe("AppNav", () => {
     );
     expect(screen.getByRole("link", { name: "Profile" })).toHaveAttribute(
       "href",
-      "/pets/pet-1",
+      "/profile",
     );
     expect(screen.queryByText("Settings")).not.toBeInTheDocument();
   });

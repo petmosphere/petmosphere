@@ -295,7 +295,6 @@ export function HealthDiary({
       <AppNav
         active="diary"
         diaryHref={`/pets/${pet.id}/health-logs`}
-        profileHref={`/pets/${pet.id}`}
         reminderHref="/reminders"
       />
     </main>

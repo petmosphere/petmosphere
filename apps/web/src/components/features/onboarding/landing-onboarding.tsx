@@ -31,6 +31,13 @@ export function LandingOnboarding() {
 
   return (
     <main className="relative min-h-dvh overflow-hidden bg-[#fdf8f2] text-[#2d2d2d]">
+      <Link
+        className="absolute top-[max(1rem,env(safe-area-inset-top))] right-4 z-[1] flex min-h-11 items-center rounded-full px-4 font-semibold text-[#c87331] underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a]"
+        href="/auth/sign-in"
+      >
+        Log in
+      </Link>
+
       <section
         aria-labelledby="onboarding-title"
         className="mx-auto grid min-h-dvh w-full max-w-2xl grid-rows-[minmax(18rem,1fr)_auto] md:px-8 md:py-8"

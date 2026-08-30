@@ -12,6 +12,7 @@ import {
   toReminderResponse,
 } from "@/lib/reminders/supabase-reminders";
 import { createWeightRepository } from "@/lib/weights/supabase-weights";
+import { getProfile } from "@/lib/profile/supabase-profile";
 import { listWeights } from "@petmosphere/services";
 
 export const metadata: Metadata = {
@@ -39,13 +40,9 @@ export default async function AppHomePage({
   const today = deriveLocalDate(now, "Australia/Melbourne");
   const localTime = deriveLocalTime(now, "Australia/Melbourne");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("display_name")
-    .eq("id", user.id)
-    .maybeSingle();
+  const profile = await getProfile(supabase, user.id);
   const displayName =
-    profile?.display_name?.trim().split(/\s+/)[0] ||
+    profile.displayName.trim().split(/\s+/)[0] ||
     user.user_metadata.display_name?.trim().split(/\s+/)[0] ||
     "there";
   const [petsWithPhotos, healthLogs, reminder, careReminders, weightEntries] =
@@ -88,6 +85,7 @@ export default async function AppHomePage({
       careReminders={careReminders.slice(0, 3).map(toReminderResponse)}
       today={today}
       weightEntries={weightEntries}
+      weightUnit={profile.weightUnit}
     />
   );
 }
