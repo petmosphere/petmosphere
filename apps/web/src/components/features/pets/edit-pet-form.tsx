@@ -8,21 +8,8 @@ import {
   type UpdatePetFormInput,
   type UpdatePetInput,
 } from "@petmosphere/api-contracts";
-import {
-  weightFromKilograms,
-  weightToKilograms,
-  type Pet,
-  type PetDesexedStatus,
-  type PetSex,
-  type WeightUnit,
-} from "@petmosphere/domain";
-import {
-  ArrowLeft,
-  CalendarDays,
-  Camera,
-  ChevronDown,
-  Scale,
-} from "lucide-react";
+import type { Pet, PetDesexedStatus, PetSex } from "@petmosphere/domain";
+import { ArrowLeft, CalendarDays, Camera, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -256,7 +243,10 @@ export function EditPetForm({
                 })}
                 className={`${inputClass} pl-12`}
                 id="edit-birth-date"
-                type="date"
+                inputMode="numeric"
+                pattern="\d{4}-\d{2}-\d{2}"
+                placeholder="YYYY-MM-DD"
+                type="text"
               />
             </div>
           </Field>
@@ -276,31 +266,6 @@ export function EditPetForm({
             ]}
             value={sex}
           />
-
-          <Field
-            label="Weight"
-            error={errors.weightKg?.message}
-            id="edit-weight"
-          >
-            <div className="relative">
-              <Scale
-                aria-hidden="true"
-                className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-[#7a7a7a]"
-              />
-              <input
-                {...register("weightKg")}
-                className={`${inputClass} pr-12 pl-12`}
-                id="edit-weight"
-                inputMode="decimal"
-                min="0.01"
-                step="0.1"
-                type="number"
-              />
-              <span className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-[#7a7a7a]">
-                {weightUnit}
-              </span>
-            </div>
-          </Field>
 
           <ChoiceGroup<PetDesexedStatus>
             label="Desexed"

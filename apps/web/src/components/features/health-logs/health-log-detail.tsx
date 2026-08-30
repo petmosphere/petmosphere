@@ -160,7 +160,7 @@ export function HealthLogDetail({
           className="fixed inset-0 z-50 grid place-items-end bg-stone-950/55 p-4 sm:place-items-center"
           role="dialog"
         >
-          <div className="w-full max-w-sm rounded-3xl bg-white/60 p-6 text-center shadow-2xl">
+          <div className="w-full max-w-sm rounded-3xl bg-white p-6 text-center shadow-2xl">
             <span className="mx-auto grid size-16 place-items-center rounded-full bg-[#ffebee] text-[#ffa959]">
               <Trash2 aria-hidden="true" />
             </span>

@@ -17,6 +17,7 @@ test-results/
 .env.*
 !.env.example
 .env.sentry-build-plugin
+.claude/*
 
 # Supabase local state
 supabase/.branches/
