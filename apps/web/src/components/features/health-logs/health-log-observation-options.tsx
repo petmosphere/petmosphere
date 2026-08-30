@@ -3,7 +3,10 @@ import {
   type HealthLogObservation,
   type HealthLogStatus,
 } from "@petmosphere/domain";
-import { healthLogObservationDetails } from "./health-log-status-options";
+import {
+  healthLogObservationDetails,
+  healthLogStatusDetails,
+} from "./health-log-status-options";
 
 export function HealthLogObservationOptions({
   onChange,
@@ -15,20 +18,23 @@ export function HealthLogObservationOptions({
   value: HealthLogObservation[];
 }) {
   const allObservations = healthLogObservationsByStatus[status];
+  const { pillClass } = healthLogStatusDetails[status];
 
   return (
-    <fieldset className="mt-9">
-      <legend className="sr-only">Quick observations (optional)</legend>
-      <div className="grid grid-cols-2 gap-3">
+    <fieldset className="mt-6">
+      <legend className="mb-2 block text-[14px] font-semibold text-[#7a7a7a]">
+        Tags
+      </legend>
+      <div className="grid grid-cols-2 gap-[10px]">
         {allObservations.map((observation) => {
           const selected = value.includes(observation);
           return (
             <button
               aria-pressed={selected}
-              className={`flex min-h-13 items-center gap-2 rounded-full border px-4 text-left font-medium transition-[border-color,background-color,transform] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a96225] ${
+              className={`flex min-h-11 items-center gap-2 rounded-full border px-[14px] text-left transition-[border-color,background-color,transform] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.98] ${
                 selected
-                  ? "border-[#a96225] bg-[#a96225] text-white"
-                  : "border-stone-300 bg-white text-stone-900 hover:border-stone-400"
+                  ? `${pillClass} border-transparent`
+                  : "border-[#f0e6d8] bg-white/60 text-[#2d2d2d]"
               }`}
               key={observation}
               onClick={() =>
@@ -43,7 +49,11 @@ export function HealthLogObservationOptions({
               <span aria-hidden="true" className="text-base leading-none">
                 {healthLogObservationDetails[observation].emoji}
               </span>
-              <span>{healthLogObservationDetails[observation].label}</span>
+              <span
+                className={`text-[14px] ${selected ? "font-semibold" : "font-medium"}`}
+              >
+                {healthLogObservationDetails[observation].label}
+              </span>
             </button>
           );
         })}
