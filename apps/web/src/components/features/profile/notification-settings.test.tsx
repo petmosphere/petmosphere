@@ -77,7 +77,7 @@ describe("NotificationSettings", () => {
     ).toHaveAttribute("href", "/notifications");
   });
 
-  it("shows setup actions until feature schedules exist", () => {
+  it("shows setup actions until feature schedules exist", async () => {
     render(
       <NotificationSettings
         pets={[
@@ -101,6 +101,12 @@ describe("NotificationSettings", () => {
     expect(
       screen.queryByRole("button", { name: /Manage:/ }),
     ).not.toBeInTheDocument();
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole("switch", { name: "All notifications" }),
+      ).toHaveAttribute("aria-checked", "true"),
+    );
 
     fireEvent.click(
       screen.getByRole("button", { name: "Set up Daily check-in" }),
