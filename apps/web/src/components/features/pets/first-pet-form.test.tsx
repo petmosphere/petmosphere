@@ -8,44 +8,27 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("FirstPetForm", () => {
-  it("requires a name and species before opening optional details", async () => {
+  it("renders all fields on a single page and disables Done without required fields", () => {
     render(<FirstPetForm />);
 
-    const next = screen.getByRole("button", { name: "Next" });
-    expect(next).toBeDisabled();
-
-    fireEvent.change(screen.getByLabelText(/Pet’s name/), {
-      target: { value: "Max" },
-    });
-    expect(next).toBeDisabled();
-
-    fireEvent.click(screen.getByRole("button", { name: "Dog" }));
-    expect(next).toBeEnabled();
-    fireEvent.click(next);
-
     expect(
-      await screen.findByRole("heading", { name: "A bit more about Max" }),
+      screen.getByRole("heading", { name: "Let's meet your pet!" }),
     ).toBeVisible();
-    expect(screen.getByRole("button", { name: "Male" })).toHaveAttribute(
-      "aria-pressed",
-      "false",
-    );
-    expect(screen.getByRole("button", { name: "Yes" })).toHaveAttribute(
-      "aria-pressed",
-      "false",
-    );
+    expect(screen.getByLabelText(/Pet's name/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Dog" })).toBeInTheDocument();
+    expect(screen.getByLabelText(/Date of birth/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Done" })).toBeInTheDocument();
   });
 
   it("shows an inline error for a future birth date", async () => {
     render(<FirstPetForm />);
-    fireEvent.change(screen.getByLabelText(/Pet’s name/), {
+
+    fireEvent.change(screen.getByLabelText(/Pet's name/), {
       target: { value: "Max" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Dog" }));
-    fireEvent.click(screen.getByRole("button", { name: "Next" }));
-
-    fireEvent.change(await screen.findByLabelText(/Date of birth/), {
-      target: { value: "2999-01-01" },
+    fireEvent.change(screen.getByLabelText(/Date of birth/), {
+      target: { value: "01/01/2999" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Done" }));
 

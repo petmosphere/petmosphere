@@ -107,7 +107,16 @@ export const createPetSchema = z
     ...petFields,
     creationRequestId: z.uuid(),
   })
-  .superRefine(validateAge);
+  .superRefine(validateAge)
+  .superRefine(({ birthDate, approximateAge }, ctx) => {
+    if (!birthDate && !approximateAge) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Enter your pet's date of birth or select an approximate age.",
+        path: ["birthDate"],
+      });
+    }
+  });
 
 export const petResponseSchema = z.object({
   approximateAge: z.enum(petAgeBands).nullable(),
