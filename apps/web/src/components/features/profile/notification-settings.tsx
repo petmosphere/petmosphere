@@ -4,7 +4,7 @@ import {
   deriveLocalDate,
   type WeightReminderFrequency,
 } from "@petmosphere/domain";
-import { ArrowLeft, Bell, ChevronRight } from "lucide-react";
+import { ArrowLeft, Bell } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 
@@ -38,12 +38,6 @@ const frequencyOptions: Array<{
   { label: "Monthly", value: "monthly" },
   { label: "Every 3 months", value: "quarterly" },
 ];
-
-function formatTime(value: string) {
-  const [hours = 0, minutes = 0] = value.split(":").map(Number);
-  const period = hours >= 12 ? "PM" : "AM";
-  return `${hours % 12 || 12}:${String(minutes).padStart(2, "0")} ${period}`;
-}
 
 function Toggle({
   checked,
@@ -152,29 +146,6 @@ function ScheduleSettingCard({
         Set up
       </button>
     </section>
-  );
-}
-
-function SettingRow({
-  label,
-  onClick,
-  value,
-}: {
-  label: string;
-  onClick: () => void;
-  value: string;
-}) {
-  return (
-    <button
-      aria-label={`${label}: ${value}`}
-      className="mt-4 flex min-h-12 w-full items-center border-t border-[#eadfd2] pt-3 text-left focus-visible:outline-2 focus-visible:outline-[#ed802a]"
-      onClick={onClick}
-      type="button"
-    >
-      <span className="flex-1 font-medium">{label}</span>
-      <span className="text-sm">{value}</span>
-      <ChevronRight aria-hidden="true" className="ml-2 size-5 text-[#8a837c]" />
-    </button>
   );
 }
 
