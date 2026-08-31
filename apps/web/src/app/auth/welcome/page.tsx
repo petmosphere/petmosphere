@@ -20,7 +20,11 @@ export default async function WelcomePage() {
   return (
     <main className="grid min-h-dvh place-items-center bg-[#fdf8f2] px-6 py-10 text-stone-950">
       <section className="w-full max-w-md text-center">
-        <Link aria-label="Petmosphere home" className="mx-auto block w-fit" href="/">
+        <Link
+          aria-label="Petmosphere home"
+          className="mx-auto block w-fit"
+          href="/"
+        >
           <Image
             alt="Petmosphere"
             className="rounded-[22%] shadow-sm"
