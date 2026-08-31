@@ -3,8 +3,6 @@ import { redirect } from "next/navigation";
 
 import { requireUser } from "@/lib/auth/require-user";
 import { listOwnedPets } from "@/lib/pets/supabase-pets";
-import { createNotificationRepository } from "@/lib/notifications/supabase-notifications";
-import { listNotifications } from "@petmosphere/services";
 
 export const metadata: Metadata = {
   title: "Add your first pet",

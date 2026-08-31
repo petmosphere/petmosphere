@@ -1,5 +1,6 @@
 import { Lock, Plus, PawPrint } from "lucide-react";
 import Link from "next/link";
+
 import { NotificationBell } from "@/components/features/notifications/notification-bell";
 import { AppNav } from "./app-nav";
 

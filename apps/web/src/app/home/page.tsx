@@ -79,12 +79,7 @@ export default async function AppHomePage({
       today,
       localTime,
     ),
-    listWeights(
-      user.id,
-      currentPet.id,
-      createWeightRepository(supabase),
-      now,
-    ),
+    listWeights(user.id, currentPet.id, createWeightRepository(supabase), now),
     listNotifications(user.id, createNotificationRepository(supabase), now),
   ]);
 
