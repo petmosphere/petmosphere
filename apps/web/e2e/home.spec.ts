@@ -9,7 +9,7 @@ test("shows the Petmosphere homepage", async ({ page, request }) => {
       name: "Track your pet’s wellness in 10 seconds a day",
     }),
   ).toBeVisible();
-  await expect(page.getByRole("link", { name: "Log in" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Skip" })).toBeVisible();
 
   const manifestResponse = await request.get("/manifest.webmanifest");
   expect(manifestResponse.ok()).toBe(true);

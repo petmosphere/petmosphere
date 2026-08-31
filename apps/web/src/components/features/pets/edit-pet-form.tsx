@@ -9,12 +9,13 @@ import {
   type UpdatePetInput,
 } from "@petmosphere/api-contracts";
 import type { Pet, PetDesexedStatus, PetSex } from "@petmosphere/domain";
-import { ArrowLeft, CalendarDays, Camera, ChevronDown } from "lucide-react";
+import { ArrowLeft, CalendarDays, Camera } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { BreedSelect } from "./breed-select";
 
 export function EditPetForm({
   pet,
@@ -27,6 +28,15 @@ export function EditPetForm({
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoError, setPhotoError] = useState<string>();
   const [serverError, setServerError] = useState<string>();
+  const [birthDateDisplay, setBirthDateDisplay] = useState(() => {
+    const v = pet.birthDate;
+    if (!v) return "";
+    const [y, m, d] = v.split("-");
+    return d && m && y ? `${d}/${m}/${y}` : "";
+  });
+  const [birthDateFormatError, setBirthDateFormatError] = useState<
+    string | undefined
+  >();
   const {
     control,
     formState: { errors, isSubmitting, isValid },
@@ -135,7 +145,12 @@ export function EditPetForm({
           </Link>
           <button
             className="min-h-11 px-1 text-lg font-medium text-[#ed802a] disabled:cursor-not-allowed disabled:opacity-45"
-            disabled={isSubmitting || !isValid || Boolean(photoError)}
+            disabled={
+              isSubmitting ||
+              !isValid ||
+              Boolean(photoError) ||
+              Boolean(birthDateFormatError)
+            }
             type="submit"
           >
             {isSubmitting ? "Saving…" : "Save"}
@@ -199,23 +214,24 @@ export function EditPetForm({
           </Field>
 
           <Field label="Breed" error={errors.breed?.message} id="edit-breed">
-            <div className="relative">
-              <input
-                {...register("breed")}
-                className={`${inputClass} pr-11`}
-                id="edit-breed"
-                placeholder="Breed"
-              />
-              <ChevronDown
-                aria-hidden="true"
-                className="pointer-events-none absolute top-1/2 right-4 size-5 -translate-y-1/2 text-[#7a7a7a]"
-              />
-            </div>
+            <Controller
+              control={control}
+              name="breed"
+              render={({ field }) => (
+                <BreedSelect
+                  disabled={false}
+                  id="edit-breed"
+                  onChange={field.onChange}
+                  species={pet.species}
+                  value={field.value ?? ""}
+                />
+              )}
+            />
           </Field>
 
           <Field
             label="Date of birth"
-            error={errors.birthDate?.message}
+            error={birthDateFormatError ?? errors.birthDate?.message}
             id="edit-birth-date"
           >
             <div className="relative">
@@ -224,17 +240,37 @@ export function EditPetForm({
                 className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-[#7a7a7a]"
               />
               <input
-                {...register("birthDate", {
-                  onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
-                    if (event.target.value) setValue("approximateAge", "");
-                  },
-                })}
                 className={`${inputClass} pl-12`}
                 id="edit-birth-date"
                 inputMode="numeric"
-                pattern="\d{4}-\d{2}-\d{2}"
-                placeholder="YYYY-MM-DD"
+                onChange={(e) => {
+                  const display = e.target.value;
+                  setBirthDateDisplay(display);
+                  if (display === "") {
+                    setBirthDateFormatError(undefined);
+                    setValue("birthDate", "", { shouldValidate: true });
+                    return;
+                  }
+                  const match = display.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+                  if (match) {
+                    setBirthDateFormatError(undefined);
+                    setValue(
+                      "birthDate",
+                      `${match[3]}-${match[2]}-${match[1]}`,
+                      { shouldValidate: true },
+                    );
+                    setValue("approximateAge", "");
+                  } else {
+                    setBirthDateFormatError(
+                      "Please enter the correct format DD/MM/YYYY",
+                    );
+                    setValue("birthDate", "", { shouldValidate: false });
+                  }
+                }}
+                pattern="\d{2}/\d{2}/\d{4}"
+                placeholder="DD/MM/YYYY"
                 type="text"
+                value={birthDateDisplay}
               />
             </div>
           </Field>
