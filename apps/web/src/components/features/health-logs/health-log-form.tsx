@@ -11,20 +11,16 @@ import {
   type CreateHealthLogInput,
   type HealthLogResponse,
 } from "@petmosphere/api-contracts";
-import {
-  deriveLocalDate,
-  type HealthLogObservation,
-  type Pet,
-} from "@petmosphere/domain";
+import { type HealthLogObservation, type Pet } from "@petmosphere/domain";
 import { ImagePlus, LoaderCircle, WifiOff, X } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
+import { DatePicker } from "@/components/ui/date-picker";
 import { PetAvatar } from "@/components/features/pets/pet-avatar";
 import { trackHealthLogEvent } from "@/lib/health-logs/analytics";
-import { HealthLogDatePicker } from "./health-log-date-picker";
 import { HealthLogObservationOptions } from "./health-log-observation-options";
 import { HealthLogStatusOptions } from "./health-log-status-options";
 
@@ -63,7 +59,6 @@ export function HealthLogForm({
   const [serverError, setServerError] = useState<string>();
   const timezone =
     Intl.DateTimeFormat().resolvedOptions().timeZone || "Australia/Melbourne";
-  const today = deriveLocalDate(new Date(), timezone);
   const {
     clearErrors,
     control,
@@ -226,15 +221,14 @@ export function HealthLogForm({
         <span className="pb-1 text-[14px] font-semibold text-[#7a7a7a]">
           Date
         </span>
-        <HealthLogDatePicker
+        <DatePicker
           onChange={(date) =>
             setValue("localDate", date, {
               shouldDirty: true,
               shouldValidate: true,
             })
           }
-          today={today}
-          value={localDate ?? ""}
+          value={localDate}
         />
         {errors.localDate ? (
           <p className="text-sm text-red-600" role="alert">

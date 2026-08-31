@@ -1,23 +1,14 @@
 "use client";
 
 import type { HealthLogReminder } from "@petmosphere/api-contracts";
-import { Bell, Clock, LoaderCircle } from "lucide-react";
+import { Bell, LoaderCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import {
   enablePushNotifications,
   pushSetupErrorMessages,
 } from "@/lib/health-logs/push-notifications";
-import { TimePickerSheet } from "./time-picker-sheet";
-
-function formatTimeLabel(localTime: string) {
-  const parts = localTime.split(":").map(Number);
-  const h24 = parts[0] ?? 0;
-  const m = parts[1] ?? 0;
-  const period = h24 < 12 ? "AM" : "PM";
-  const hour12 = h24 % 12 === 0 ? 12 : h24 % 12;
-  return `${hour12}:${String(m).padStart(2, "0")} ${period}`;
-}
+import { TimePicker } from "@/components/ui/time-picker";
 
 const MELBOURNE_TIMEZONE = "Australia/Melbourne";
 
@@ -33,7 +24,6 @@ export function HealthLogReminderSettings({ petId }: { petId: string }) {
   const [errorMessage, setErrorMessage] = useState(
     "We could not save the reminder. Try again.",
   );
-  const [timePickerOpen, setTimePickerOpen] = useState(false);
 
   useEffect(() => {
     void fetch("/api/v1/health-log-reminders", {
@@ -156,32 +146,20 @@ export function HealthLogReminderSettings({ petId }: { petId: string }) {
         </button>
       </div>
       {reminder.enabled ? (
-        <div className="mt-4 flex items-center justify-between gap-3 text-sm font-medium">
-          <label htmlFor="reminder-time">Reminder time</label>
-          <button
-            className="flex min-h-11 items-center gap-2 rounded-xl border border-[#ead9c7] bg-white/60 px-3 text-[#2d2d2d] transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-[#ed802a] active:scale-[0.98] motion-reduce:transition-none"
-            id="reminder-time"
-            onClick={() => setTimePickerOpen(true)}
-            type="button"
-          >
-            <Clock aria-hidden="true" className="size-4 text-[#ed802a]" />
-            {formatTimeLabel(reminder.localTime)}
-          </button>
-          <span className="sr-only">
+        <div className="mt-4">
+          <TimePicker
+            label="Reminder time"
+            onChange={(localTime) => {
+              setReminder((current) => ({ ...current, localTime }));
+              setState("idle");
+            }}
+            value={reminder.localTime}
+          />
+          <p className="sr-only">
             Melbourne time; daylight saving adjusts automatically.
-          </span>
+          </p>
         </div>
       ) : null}
-      <TimePickerSheet
-        key={`time-picker-${timePickerOpen}`}
-        onClose={() => setTimePickerOpen(false)}
-        onConfirm={(localTime) => {
-          setReminder((current) => ({ ...current, localTime }));
-          setState("idle");
-        }}
-        open={timePickerOpen}
-        value={reminder.localTime}
-      />
       <button
         className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#e8d0b3] font-semibold text-[#a96225] disabled:opacity-50"
         disabled={state === "loading" || state === "saving"}

@@ -12,30 +12,30 @@ import type {
 } from "@petmosphere/domain";
 import { weightFromKilograms, weightToKilograms } from "@petmosphere/domain";
 import { ArrowLeft, Bell, LoaderCircle, Minus, Plus } from "lucide-react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import {
   enablePushNotifications,
   pushSetupErrorMessages,
 } from "@/lib/health-logs/push-notifications";
+import { TimePicker } from "@/components/ui/time-picker";
+
+import { DaySelector } from "@/components/ui/day-selector";
+import { RepeatSelector } from "@/components/ui/repeat-selector";
 
 import { WeightTrendChart } from "./weight-trend-chart";
+
+const DAY_OF_MONTH_OPTIONS = Array.from({ length: 31 }, (_, i) => ({
+  label: String(i + 1),
+  value: String(i + 1),
+}));
 
 const frequencies: { label: string; value: WeightReminderFrequency }[] = [
   { label: "Weekly", value: "weekly" },
   { label: "Fortnightly", value: "fortnightly" },
   { label: "Monthly", value: "monthly" },
   { label: "Quarterly", value: "quarterly" },
-];
-const weekdays = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
 ];
 
 function formatFrequencyLabel(frequency: WeightReminderFrequency) {
@@ -68,6 +68,7 @@ export function LogWeight({
   reminder: WeightReminderResponse | null;
   weightUnit?: WeightUnit;
 }) {
+  const router = useRouter();
   const latest = initialEntries.at(-1);
   const [entries, setEntries] = useState(initialEntries);
   const [weightInput, setWeightInput] = useState(
@@ -169,6 +170,7 @@ export function LogWeight({
       }
       setState("saved");
       setMessage("Weight and reminder preferences saved.");
+      router.refresh();
     } catch (error) {
       setState("error");
       setMessage(
@@ -182,13 +184,14 @@ export function LogWeight({
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-[393px] flex-col bg-[#fdf8f2] pt-[max(1.5rem,env(safe-area-inset-top))] pb-0 text-[#2d2d2d]">
       <header className="flex items-center gap-4 px-6">
-        <Link
-          aria-label={`Back to ${pet.name}'s profile`}
+        <button
+          aria-label="Go back"
           className="grid size-11 place-items-center rounded-full focus-visible:outline-2 focus-visible:outline-[#ed802a] active:scale-[0.97]"
-          href={`/pets/${pet.id}`}
+          onClick={() => router.back()}
+          type="button"
         >
           <ArrowLeft aria-hidden="true" className="size-6" />
-        </Link>
+        </button>
         <h1 className="text-2xl font-bold tracking-[-0.02em]">Log weight</h1>
       </header>
 
@@ -349,59 +352,57 @@ export function LogWeight({
                   </button>
                 ))}
               </div>
-              <label className="mt-2 flex min-h-11 items-center justify-between gap-4 text-sm font-medium">
-                Time
-                <input
-                  className="min-h-11 rounded-xl bg-transparent px-2 text-right text-sm font-semibold text-[#ed802a]"
-                  onChange={(event) => {
-                    setReminder((current) => ({
-                      ...current,
-                      localTime: event.target.value,
-                    }));
-                    setReminderDirty(true);
-                  }}
-                  type="time"
-                  value={reminder.localTime}
-                />
-              </label>
-              <label className="flex min-h-11 items-center justify-between gap-4 text-sm font-medium">
-                Day
-                {weekly ? (
-                  <select
-                    className="min-h-11 rounded-xl bg-transparent px-2 text-right text-sm font-semibold text-[#ed802a]"
-                    onChange={(event) => {
+              <div className="mt-2">
+                <span className="block text-sm font-medium">Time</span>
+                <div className="mt-2">
+                  <TimePicker
+                    label="Time"
+                    onChange={(value) => {
                       setReminder((current) => ({
                         ...current,
-                        scheduleDay: Number(event.target.value),
+                        localTime: value,
                       }));
                       setReminderDirty(true);
                     }}
-                    value={reminder.scheduleDay}
-                  >
-                    {weekdays.map((day, index) => (
-                      <option key={day} value={index}>
-                        {day}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    aria-label="Day of month"
-                    className="min-h-11 w-20 rounded-xl bg-transparent px-2 text-right text-sm font-semibold text-[#ed802a]"
-                    max="31"
-                    min="1"
-                    onChange={(event) => {
-                      setReminder((current) => ({
-                        ...current,
-                        scheduleDay: Number(event.target.value),
-                      }));
-                      setReminderDirty(true);
-                    }}
-                    type="number"
-                    value={reminder.scheduleDay}
+                    value={reminder.localTime || undefined}
                   />
-                )}
-              </label>
+                </div>
+              </div>
+              {weekly ? (
+                <div className="mt-2">
+                  <span className="block text-sm font-medium">Day</span>
+                  <div className="mt-2">
+                    <DaySelector
+                      onChange={(day) => {
+                        setReminder((current) => ({
+                          ...current,
+                          scheduleDay: day,
+                        }));
+                        setReminderDirty(true);
+                      }}
+                      value={reminder.scheduleDay}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-2">
+                  <span className="block text-sm font-medium">Day of month</span>
+                  <div className="mt-2">
+                    <RepeatSelector
+                      label="Day of month"
+                      onChange={(v) => {
+                        setReminder((current) => ({
+                          ...current,
+                          scheduleDay: Number(v),
+                        }));
+                        setReminderDirty(true);
+                      }}
+                      options={DAY_OF_MONTH_OPTIONS}
+                      value={String(reminder.scheduleDay)}
+                    />
+                  </div>
+                </div>
+              )}
               <p className="mt-1 text-[11px] text-[#7a7a7a]">
                 Melbourne time; daylight saving adjusts automatically.
               </p>

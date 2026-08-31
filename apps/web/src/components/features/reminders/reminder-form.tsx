@@ -6,17 +6,14 @@ import {
   reminderRepeatRules,
   type Pet,
 } from "@petmosphere/domain";
-import {
-  CalendarDays,
-  ChevronDown,
-  Clock3,
-  LoaderCircle,
-  type LucideIcon,
-} from "lucide-react";
+import { ChevronDown, ChevronRight, LoaderCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type FormEvent, useMemo, useRef, useState } from "react";
+import { type FormEvent, useMemo, useState } from "react";
 
+import { DatePicker } from "@/components/ui/date-picker";
+import { RepeatSelector } from "@/components/ui/repeat-selector";
+import { TimePicker } from "@/components/ui/time-picker";
 import { PetAvatar } from "@/components/features/pets/pet-avatar";
 import { enablePushNotifications } from "@/lib/health-logs/push-notifications";
 import {
@@ -28,98 +25,6 @@ import {
 const timezone = "Australia/Melbourne" as const;
 
 export type ReminderPetOption = { pet: Pet; photoUrl: string | null };
-
-function formatDate(value: string) {
-  if (!value) return "Select date";
-  const [year, month, day] = value.split("-").map(Number);
-  return new Intl.DateTimeFormat("en-AU", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(Date.UTC(year!, month! - 1, day!)));
-}
-
-function formatTime(value: string) {
-  if (!value) return "Select time";
-  const [hours, minutes] = value.split(":").map(Number);
-  return new Intl.DateTimeFormat("en-AU", {
-    hour: "numeric",
-    minute: "2-digit",
-    timeZone: "UTC",
-  }).format(new Date(Date.UTC(2000, 0, 1, hours!, minutes!)));
-}
-
-function NativePickerField({
-  icon: Icon,
-  label,
-  min,
-  onChange,
-  type,
-  value,
-}: {
-  icon: LucideIcon;
-  label: string;
-  min?: string;
-  onChange: (value: string) => void;
-  type: "date" | "time";
-  value: string;
-}) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const displayValue = type === "date" ? formatDate(value) : formatTime(value);
-
-  function openPicker() {
-    const input = inputRef.current;
-    if (!input) return;
-    if (typeof input.showPicker === "function") {
-      try {
-        input.showPicker();
-        return;
-      } catch {
-        // Some browsers expose showPicker but restrict it; use their click fallback.
-      }
-    }
-    input.focus();
-    input.click();
-  }
-
-  return (
-    <div>
-      <span className="block text-base font-medium">{label}</span>
-      <div className="relative mt-2">
-        <button
-          aria-label={`${label}: ${displayValue}`}
-          className="flex min-h-14 w-full items-center gap-3 rounded-xl border border-[#ead9c7] bg-white/40 px-3 text-left shadow-[0_4px_14px_rgba(205,146,85,0.06)] transition-[border-color,background-color,transform] duration-150 ease-out hover:bg-white/65 focus-visible:border-[#ed802a] focus-visible:ring-2 focus-visible:ring-[#ed802a]/25 focus-visible:outline-none active:scale-[0.99] motion-reduce:transition-none"
-          onClick={openPicker}
-          type="button"
-        >
-          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#fff0e3] text-[#ed802a]">
-            <Icon aria-hidden="true" className="size-5" strokeWidth={2} />
-          </span>
-          <span
-            className={`min-w-0 flex-1 text-base ${value ? "font-medium text-[#2d2d2d]" : "text-[#9b9691]"}`}
-          >
-            {displayValue}
-          </span>
-          <ChevronDown
-            aria-hidden="true"
-            className="size-5 shrink-0 text-[#8b8782]"
-          />
-        </button>
-        <input
-          ref={inputRef}
-          aria-hidden="true"
-          className="pointer-events-none absolute size-px opacity-0"
-          data-testid={`reminder-${type}-input`}
-          min={min}
-          onChange={(event) => onChange(event.target.value)}
-          tabIndex={-1}
-          type={type}
-          value={value}
-        />
-      </div>
-    </div>
-  );
-}
 
 export function ReminderForm({
   pets,
@@ -159,7 +64,7 @@ export function ReminderForm({
         {
           body: JSON.stringify({
             category,
-            creationRequestId: requestId,
+            ...(reminder ? {} : { creationRequestId: requestId }),
             dueDate,
             localTime,
             note,
@@ -253,31 +158,39 @@ export function ReminderForm({
           <legend className="text-sm font-semibold tracking-wide text-[#7a7a7a] uppercase">
             Reminder category
           </legend>
-          <div
-            aria-label="Swipe horizontally to see all reminder categories"
-            className="mt-3 flex w-full max-w-full snap-x snap-mandatory [scrollbar-width:none] gap-2 overflow-x-auto overscroll-x-contain pb-2 motion-safe:scroll-smooth [&::-webkit-scrollbar]:hidden"
-          >
-            {reminderCategories.map((value) => {
-              const { emoji, label } = categoryDetails[value];
-              const selected = category === value;
-              return (
-                <button
-                  aria-pressed={selected}
-                  className={`flex min-h-[88px] shrink-0 basis-[calc(33.333%_-_0.333rem)] snap-start flex-col items-center justify-center rounded-xl border px-2 text-sm font-medium whitespace-nowrap transition-[border-color,background-color,transform] duration-150 ease-out active:scale-[0.98] motion-reduce:transition-none ${selected ? "border-2 border-[#ed802a] bg-[#fff7ed]" : "border-[#ead9c7] bg-transparent"}`}
-                  key={value}
-                  onClick={() => setCategory(value)}
-                  type="button"
-                >
-                  <span
-                    aria-hidden="true"
-                    className="mb-2 text-3xl leading-none"
+          <div className="relative mt-3">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute top-0 right-0 bottom-2 z-10 flex w-12 items-center justify-end rounded-r-xl bg-gradient-to-l from-[#fdf8f2] to-transparent"
+            >
+              <ChevronRight className="size-4 text-[#ed802a]" />
+            </div>
+            <div
+              aria-label="Swipe horizontally to see all reminder categories"
+              className="flex w-full max-w-full snap-x snap-mandatory [scrollbar-width:none] gap-2 overflow-x-auto overscroll-x-contain pb-2 motion-safe:scroll-smooth [&::-webkit-scrollbar]:hidden"
+            >
+              {reminderCategories.map((value) => {
+                const { emoji, label } = categoryDetails[value];
+                const selected = category === value;
+                return (
+                  <button
+                    aria-pressed={selected}
+                    className={`flex min-h-[88px] shrink-0 basis-[calc(33.333%_-_0.333rem)] snap-start flex-col items-center justify-center rounded-xl border px-2 text-sm font-medium whitespace-nowrap transition-[border-color,background-color,transform] duration-150 ease-out active:scale-[0.98] motion-reduce:transition-none ${selected ? "border-2 border-[#ed802a] bg-[#fff7ed]" : "border-[#ead9c7] bg-transparent"}`}
+                    key={value}
+                    onClick={() => setCategory(value)}
+                    type="button"
                   >
-                    {emoji}
-                  </span>
-                  {label}
-                </button>
-              );
-            })}
+                    <span
+                      aria-hidden="true"
+                      className="mb-2 text-3xl leading-none"
+                    >
+                      {emoji}
+                    </span>
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </fieldset>
 
@@ -293,22 +206,18 @@ export function ReminderForm({
           />
         </label>
 
-        <NativePickerField
-          icon={CalendarDays}
-          label="Date"
-          min={today}
-          onChange={setDueDate}
-          type="date"
-          value={dueDate}
-        />
-
-        <NativePickerField
-          icon={Clock3}
-          label="Time"
-          onChange={setLocalTime}
-          type="time"
-          value={localTime}
-        />
+        <div>
+          <span className="block text-base font-medium">Date</span>
+          <div className="mt-2">
+            <DatePicker
+              label="Date"
+              minDate={new Date(today)}
+              onChange={setDueDate}
+              placeholder="Select date"
+              value={dueDate || undefined}
+            />
+          </div>
+        </div>
 
         <label className="block text-base font-medium">
           Notify me
@@ -341,28 +250,33 @@ export function ReminderForm({
           </span>
         </label>
 
-        <label className="block text-base font-medium">
-          Repeat
-          <span className="relative mt-2 block">
-            <select
-              className="min-h-[52px] w-full appearance-none rounded-xl border border-[#ead9c7] bg-transparent px-4 pr-12 text-base focus:border-[#ed802a] focus:ring-1 focus:ring-[#ed802a] focus:outline-none"
-              onChange={(event) =>
-                setRepeatRule(event.target.value as typeof repeatRule)
-              }
-              value={repeatRule}
-            >
-              {reminderRepeatRules.map((value) => (
-                <option key={value} value={value}>
-                  {repeatLabels[value]}
-                </option>
-              ))}
-            </select>
-            <ChevronDown
-              aria-hidden="true"
-              className="pointer-events-none absolute top-1/2 right-4 size-5 -translate-y-1/2 text-[#7a7a7a]"
+        <div>
+          <span className="block text-base font-medium">Time</span>
+          <div className="mt-2">
+            <TimePicker
+              label="Time"
+              onChange={setLocalTime}
+              placeholder="Select time"
+              testId="reminder-time-input"
+              value={localTime || undefined}
             />
-          </span>
-        </label>
+          </div>
+        </div>
+
+        <div>
+          <span className="block text-base font-medium">Repeat</span>
+          <div className="mt-2">
+            <RepeatSelector
+              label="Repeat"
+              onChange={setRepeatRule}
+              options={reminderRepeatRules.map((v) => ({
+                label: repeatLabels[v],
+                value: v,
+              }))}
+              value={repeatRule}
+            />
+          </div>
+        </div>
 
         <label className="block text-base font-normal text-[#7a7a7a]">
           Add a note (optional)

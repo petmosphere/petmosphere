@@ -1,4 +1,5 @@
-import { CircleCheckBig, PawPrint } from "lucide-react";
+import { CircleCheckBig } from "lucide-react";
+import Image from "next/image";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -19,12 +20,14 @@ export default async function WelcomePage() {
   return (
     <main className="grid min-h-dvh place-items-center bg-[#fdf8f2] px-6 py-10 text-stone-950">
       <section className="w-full max-w-md text-center">
-        <Link
-          aria-label="Petmosphere home"
-          className="mx-auto flex h-13 w-13 items-center justify-center rounded-full bg-[#fffaf5] font-bold text-[#dd792d] shadow-sm"
-          href="/"
-        >
-          <PawPrint aria-hidden="true" className="size-6" strokeWidth={1.8} />
+        <Link aria-label="Petmosphere home" className="mx-auto block w-fit" href="/">
+          <Image
+            alt="Petmosphere"
+            className="rounded-[22%] shadow-sm"
+            height={52}
+            src="/app-icon.svg"
+            width={52}
+          />
         </Link>
 
         <div className="mx-auto mt-10 grid size-56 place-items-center rounded-full border border-[#ead9c7] bg-white shadow-xl shadow-[#8b5b30]/8 sm:size-64">

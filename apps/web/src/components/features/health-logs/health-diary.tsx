@@ -6,7 +6,6 @@ import type {
 } from "@petmosphere/api-contracts";
 import { deriveLocalDate, type Pet } from "@petmosphere/domain";
 import { ArrowLeft, RefreshCw } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
@@ -247,13 +246,6 @@ export function HealthDiary({
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-[#fdf8f2] px-6 pt-8 pb-3 text-[#2d2d2d] shadow-xl shadow-stone-900/5">
-      <Link
-        aria-label="Back to Home"
-        className="mb-5 grid size-11 place-items-center rounded-full bg-white active:scale-[0.97]"
-        href="/home"
-      >
-        <ArrowLeft aria-hidden="true" />
-      </Link>
       {loadError ? (
         <div
           className="rounded-3xl border border-[#efb3ae] bg-[#fff0ef] p-6 text-center"

@@ -47,7 +47,6 @@ export function HealthDiaryCalendar({
     <section aria-label="Health diary calendar">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-[#a96225]">Private history</p>
           <h1 className="mt-1 text-4xl font-bold">Health Diary</h1>
         </div>
         <button

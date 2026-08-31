@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { PawPrint } from "lucide-react";
 import { useState } from "react";
 
 const slides = [
@@ -108,8 +107,14 @@ export function LandingOnboarding() {
         className="petmosphere-splash absolute inset-0 z-10 grid min-h-dvh place-items-center bg-[#fdf8f2] px-6"
       >
         <div className="-mt-12 text-center">
-          <div className="mx-auto grid size-30 place-items-center rounded-full bg-white/60 shadow-[0_10px_30px_rgba(80,55,35,0.04)]">
-            <PawPrint className="size-16 text-[#f47d21]" strokeWidth={1.35} />
+          <div className="mx-auto size-30 overflow-hidden rounded-[22%]">
+            <Image
+              alt="Petmosphere"
+              className="size-full object-cover"
+              height={120}
+              src="/app-icon.svg"
+              width={120}
+            />
           </div>
           <p className="mt-8 text-3xl font-bold tracking-[-0.025em]">
             Petmosphere
