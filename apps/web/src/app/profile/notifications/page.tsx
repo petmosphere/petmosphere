@@ -7,10 +7,19 @@ import { listOwnedPets } from "@/lib/pets/supabase-pets";
 import { getProfile } from "@/lib/profile/supabase-profile";
 import { createWeightReminderRepository } from "@/lib/weights/supabase-weights";
 
-export const metadata: Metadata = { title: "Notification settings" };
+export const metadata: Metadata = {
+  title: "Notification settings",
+  robots: { follow: false, index: false },
+};
 
-export default async function NotificationsPage() {
+export default async function NotificationsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ from?: string }>;
+}) {
   const { supabase, user } = await requireUser("/profile/notifications");
+  const from = (await searchParams)?.from;
+  const backHref = from === "/notifications" ? "/notifications" : "/profile";
   const pets = await listOwnedPets(supabase, user.id);
   const healthReminders = createHealthLogReminderRepository(supabase);
   const weightReminders = createWeightReminderRepository(supabase);
@@ -27,9 +36,9 @@ export default async function NotificationsPage() {
   ]);
   return (
     <NotificationSettings
-      alertLeadDays={profile.alertLeadDays}
       pets={reminderSettings}
       reminderNotificationsEnabled={profile.reminderNotificationsEnabled}
+      backHref={backHref}
     />
   );
 }

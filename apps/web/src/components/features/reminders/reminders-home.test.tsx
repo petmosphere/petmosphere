@@ -26,6 +26,7 @@ const expiredReminder = {
   dueDate: "2020-01-01",
   id: "74000000-0000-4000-8000-000000000004",
   localTime: "09:00",
+  notificationLeadMinutes: null,
   note: null,
   petId: pet.id,
   repeatRule: "never" as const,

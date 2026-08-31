@@ -38,6 +38,12 @@ const weekdays = [
   "Saturday",
 ];
 
+function formatFrequencyLabel(frequency: WeightReminderFrequency) {
+  return (
+    frequencies.find((option) => option.value === frequency)?.label ?? frequency
+  );
+}
+
 function formatLastEntry(entry: WeightEntry | undefined, unit: WeightUnit) {
   if (!entry) return "No records yet";
   const date = new Intl.DateTimeFormat("en-AU", {
@@ -73,6 +79,10 @@ export function LogWeight({
     localTime: savedReminder?.localTime ?? "20:00",
     scheduleDay: savedReminder?.scheduleDay ?? 0,
   });
+  const [reminderConfigured, setReminderConfigured] = useState(
+    savedReminder !== null,
+  );
+  const [editingReminder, setEditingReminder] = useState(false);
   const [weightDirty, setWeightDirty] = useState(false);
   const [reminderDirty, setReminderDirty] = useState(false);
   const [state, setState] = useState<"idle" | "saving" | "saved" | "error">(
@@ -145,7 +155,11 @@ export function LogWeight({
         );
         setWeightDirty(false);
       }
-      if (reminderResponse) setReminderDirty(false);
+      if (reminderResponse) {
+        setReminderDirty(false);
+        setReminderConfigured(true);
+        setEditingReminder(false);
+      }
       if (pushFailure) {
         setState("error");
         setMessage(
@@ -250,120 +264,151 @@ export function LogWeight({
         </div>
       </section>
 
-      <section className="mx-6 mt-4 rounded-3xl border border-[#ead9c7] bg-white/55 p-3 shadow-[0_8px_24px_rgba(205,146,85,0.06)]">
-        <div className="flex items-center gap-2.5">
-          <span className="grid size-10 place-items-center rounded-full bg-[#f2e8da] text-[#ed802a]">
-            <Bell aria-hidden="true" className="size-5" />
-          </span>
-          <h2 className="min-w-0 flex-1 text-base font-semibold">
-            Remind me to weigh {pet.name}
-          </h2>
-          <button
-            aria-checked={reminder.enabled}
-            aria-label="Weight reminder"
-            className={`relative h-8 w-14 rounded-full transition-colors ${reminder.enabled ? "bg-[#65bcb5]" : "bg-stone-300"}`}
-            onClick={() => {
-              setReminder((current) => ({
-                ...current,
-                enabled: !current.enabled,
-              }));
-              setReminderDirty(true);
-            }}
-            role="switch"
-            type="button"
-          >
-            <span
-              className={`absolute top-1 left-1 size-6 rounded-full bg-white shadow transition-transform ${reminder.enabled ? "translate-x-6" : ""}`}
-            />
-          </button>
-        </div>
-
-        {reminder.enabled ? (
-          <div className="mt-3 border-t border-[#ead9c7] pt-3">
-            <p className="text-xs font-semibold text-[#7a7a7a] uppercase">
-              Frequency
-            </p>
-            <div className="mt-2 grid grid-cols-4 gap-1.5">
-              {frequencies.map((frequency) => (
-                <button
-                  className={`min-h-11 rounded-full border px-1 text-xs ${reminder.frequency === frequency.value ? "border-[#65bcb5] bg-[#65bcb5] text-white" : "border-[#ead9c7] bg-white/60 text-[#7a7a7a]"}`}
-                  key={frequency.value}
-                  onClick={() => {
-                    const nextWeekly =
-                      frequency.value === "weekly" ||
-                      frequency.value === "fortnightly";
-                    setReminder((current) => ({
-                      ...current,
-                      frequency: frequency.value,
-                      scheduleDay: nextWeekly ? 0 : new Date().getDate(),
-                    }));
-                    setReminderDirty(true);
-                  }}
-                  type="button"
-                >
-                  {frequency.label}
-                </button>
-              ))}
+      {reminderConfigured && !editingReminder ? (
+        <section
+          aria-labelledby="weight-reminder-title"
+          className="mx-6 mt-4 rounded-3xl border border-[#ead9c7] bg-white/55 p-4 shadow-[0_8px_24px_rgba(205,146,85,0.06)]"
+        >
+          <div className="flex items-center gap-3">
+            <span className="grid size-11 shrink-0 place-items-center rounded-full bg-[#f2e8da] text-[#ed802a]">
+              <Bell aria-hidden="true" className="size-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <h2 className="font-semibold" id="weight-reminder-title">
+                Remind me to weigh {pet.name}
+              </h2>
+              <p className="mt-1 text-sm text-[#7a7a7a]">
+                {reminder.enabled
+                  ? `Enabled · ${formatFrequencyLabel(reminder.frequency)}`
+                  : "Paused"}
+              </p>
             </div>
-            <label className="mt-2 flex min-h-11 items-center justify-between gap-4 text-sm font-medium">
-              Time
-              <input
-                className="min-h-11 rounded-xl bg-transparent px-2 text-right text-sm font-semibold text-[#ed802a]"
-                onChange={(event) => {
-                  setReminder((current) => ({
-                    ...current,
-                    localTime: event.target.value,
-                  }));
-                  setReminderDirty(true);
-                }}
-                type="time"
-                value={reminder.localTime}
+            <button
+              aria-label={`Edit weight reminder for ${pet.name}`}
+              className="min-h-11 rounded-full border border-[#e8d0b3] px-4 text-sm font-semibold text-[#a96225] focus-visible:outline-2 focus-visible:outline-[#ed802a]"
+              onClick={() => setEditingReminder(true)}
+              type="button"
+            >
+              Edit
+            </button>
+          </div>
+        </section>
+      ) : (
+        <section className="mx-6 mt-4 rounded-3xl border border-[#ead9c7] bg-white/55 p-3 shadow-[0_8px_24px_rgba(205,146,85,0.06)]">
+          <div className="flex items-center gap-2.5">
+            <span className="grid size-10 place-items-center rounded-full bg-[#f2e8da] text-[#ed802a]">
+              <Bell aria-hidden="true" className="size-5" />
+            </span>
+            <h2 className="min-w-0 flex-1 text-base font-semibold">
+              Remind me to weigh {pet.name}
+            </h2>
+            <button
+              aria-checked={reminder.enabled}
+              aria-label="Weight reminder"
+              className={`relative h-8 w-14 rounded-full transition-colors ${reminder.enabled ? "bg-[#65bcb5]" : "bg-stone-300"}`}
+              onClick={() => {
+                setReminder((current) => ({
+                  ...current,
+                  enabled: !current.enabled,
+                }));
+                setReminderDirty(true);
+              }}
+              role="switch"
+              type="button"
+            >
+              <span
+                className={`absolute top-1 left-1 size-6 rounded-full bg-white shadow transition-transform ${reminder.enabled ? "translate-x-6" : ""}`}
               />
-            </label>
-            <label className="flex min-h-11 items-center justify-between gap-4 text-sm font-medium">
-              Day
-              {weekly ? (
-                <select
+            </button>
+          </div>
+
+          {reminder.enabled ? (
+            <div className="mt-3 border-t border-[#ead9c7] pt-3">
+              <p className="text-xs font-semibold text-[#7a7a7a] uppercase">
+                Frequency
+              </p>
+              <div className="mt-2 grid grid-cols-4 gap-1.5">
+                {frequencies.map((frequency) => (
+                  <button
+                    className={`min-h-11 rounded-full border px-1 text-xs ${reminder.frequency === frequency.value ? "border-[#65bcb5] bg-[#65bcb5] text-white" : "border-[#ead9c7] bg-white/60 text-[#7a7a7a]"}`}
+                    key={frequency.value}
+                    onClick={() => {
+                      const nextWeekly =
+                        frequency.value === "weekly" ||
+                        frequency.value === "fortnightly";
+                      setReminder((current) => ({
+                        ...current,
+                        frequency: frequency.value,
+                        scheduleDay: nextWeekly ? 0 : new Date().getDate(),
+                      }));
+                      setReminderDirty(true);
+                    }}
+                    type="button"
+                  >
+                    {frequency.label}
+                  </button>
+                ))}
+              </div>
+              <label className="mt-2 flex min-h-11 items-center justify-between gap-4 text-sm font-medium">
+                Time
+                <input
                   className="min-h-11 rounded-xl bg-transparent px-2 text-right text-sm font-semibold text-[#ed802a]"
                   onChange={(event) => {
                     setReminder((current) => ({
                       ...current,
-                      scheduleDay: Number(event.target.value),
+                      localTime: event.target.value,
                     }));
                     setReminderDirty(true);
                   }}
-                  value={reminder.scheduleDay}
-                >
-                  {weekdays.map((day, index) => (
-                    <option key={day} value={index}>
-                      {day}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  aria-label="Day of month"
-                  className="min-h-11 w-20 rounded-xl bg-transparent px-2 text-right text-sm font-semibold text-[#ed802a]"
-                  max="31"
-                  min="1"
-                  onChange={(event) => {
-                    setReminder((current) => ({
-                      ...current,
-                      scheduleDay: Number(event.target.value),
-                    }));
-                    setReminderDirty(true);
-                  }}
-                  type="number"
-                  value={reminder.scheduleDay}
+                  type="time"
+                  value={reminder.localTime}
                 />
-              )}
-            </label>
-            <p className="mt-1 text-[11px] text-[#7a7a7a]">
-              Melbourne time; daylight saving adjusts automatically.
-            </p>
-          </div>
-        ) : null}
-      </section>
+              </label>
+              <label className="flex min-h-11 items-center justify-between gap-4 text-sm font-medium">
+                Day
+                {weekly ? (
+                  <select
+                    className="min-h-11 rounded-xl bg-transparent px-2 text-right text-sm font-semibold text-[#ed802a]"
+                    onChange={(event) => {
+                      setReminder((current) => ({
+                        ...current,
+                        scheduleDay: Number(event.target.value),
+                      }));
+                      setReminderDirty(true);
+                    }}
+                    value={reminder.scheduleDay}
+                  >
+                    {weekdays.map((day, index) => (
+                      <option key={day} value={index}>
+                        {day}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    aria-label="Day of month"
+                    className="min-h-11 w-20 rounded-xl bg-transparent px-2 text-right text-sm font-semibold text-[#ed802a]"
+                    max="31"
+                    min="1"
+                    onChange={(event) => {
+                      setReminder((current) => ({
+                        ...current,
+                        scheduleDay: Number(event.target.value),
+                      }));
+                      setReminderDirty(true);
+                    }}
+                    type="number"
+                    value={reminder.scheduleDay}
+                  />
+                )}
+              </label>
+              <p className="mt-1 text-[11px] text-[#7a7a7a]">
+                Melbourne time; daylight saving adjusts automatically.
+              </p>
+            </div>
+          ) : null}
+        </section>
+      )}
 
       {message ? (
         <p

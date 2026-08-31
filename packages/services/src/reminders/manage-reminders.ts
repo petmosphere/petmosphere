@@ -4,6 +4,7 @@ import {
   type NewReminder,
   type Reminder,
   type ReminderCategory,
+  type ReminderNotificationLeadMinutes,
   type ReminderRepeatRule,
 } from "@petmosphere/domain";
 
@@ -37,6 +38,7 @@ export type ReminderRepository = {
     dueDate: string;
     localTime: string;
     note: string | null;
+    notificationLeadMinutes: ReminderNotificationLeadMinutes | null;
     ownerId: string;
     petId: string;
     reminderId: string;
@@ -50,6 +52,7 @@ type ReminderFields = {
   dueDate: string;
   localTime: string;
   note: string | null;
+  notificationLeadMinutes: ReminderNotificationLeadMinutes | null;
   petId: string;
   repeatRule: ReminderRepeatRule;
   timezone: "Australia/Melbourne";

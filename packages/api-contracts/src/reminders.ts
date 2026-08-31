@@ -1,4 +1,8 @@
-import { reminderCategories, reminderRepeatRules } from "@petmosphere/domain";
+import {
+  reminderCategories,
+  reminderNotificationLeadMinutes,
+  reminderRepeatRules,
+} from "@petmosphere/domain";
 import { z } from "zod";
 
 export const reminderStatusSchema = z.enum([
@@ -16,11 +20,28 @@ const noteSchema = z
   .max(1_000, "Keep the note under 1,000 characters.")
   .transform((value) => value || undefined)
   .optional();
+const notificationLeadMinutesSchema = z
+  .union([
+    z.literal(reminderNotificationLeadMinutes[0]),
+    z.literal(reminderNotificationLeadMinutes[1]),
+    z.literal(reminderNotificationLeadMinutes[2]),
+    z.literal(reminderNotificationLeadMinutes[3]),
+    z.literal(reminderNotificationLeadMinutes[4]),
+    z.literal(reminderNotificationLeadMinutes[5]),
+    z.literal(reminderNotificationLeadMinutes[6]),
+    z.literal(reminderNotificationLeadMinutes[7]),
+    z.literal(reminderNotificationLeadMinutes[8]),
+    z.literal(reminderNotificationLeadMinutes[9]),
+  ])
+  .nullable()
+  .optional()
+  .default(0);
 
 const reminderFields = {
   category: z.enum(reminderCategories),
   dueDate: dateSchema,
   localTime: localTimeSchema,
+  notificationLeadMinutes: notificationLeadMinutesSchema,
   note: noteSchema,
   petId: z.uuid(),
   repeatRule: z.enum(reminderRepeatRules),
@@ -53,6 +74,7 @@ export const reminderResponseSchema = z.object({
   dueDate: dateSchema,
   id: z.uuid(),
   localTime: localTimeSchema,
+  notificationLeadMinutes: z.number().int().nullable(),
   note: z.string().nullable(),
   petId: z.uuid(),
   repeatRule: z.enum(reminderRepeatRules),

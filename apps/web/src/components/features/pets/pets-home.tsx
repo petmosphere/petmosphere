@@ -17,6 +17,7 @@ import {
   formatReminderDate,
 } from "@/components/features/reminders/reminder-ui";
 import { HomeWeightTracker } from "@/components/features/weights/home-weight-tracker";
+import { NotificationBell } from "@/components/features/notifications/notification-bell";
 import type { HomeHealthLogSummary } from "@/lib/health-logs/supabase-health-logs";
 
 import { AppNav } from "./app-nav";
@@ -51,6 +52,7 @@ export function PetsHome({
   today,
   weightEntries = [],
   weightUnit = "kg",
+  unreadNotificationCount = 0,
 }: {
   careReminders?: ReminderResponse[];
   currentPetId?: string;
@@ -61,6 +63,7 @@ export function PetsHome({
   today: string;
   weightEntries?: WeightEntry[];
   weightUnit?: WeightUnit;
+  unreadNotificationCount?: number;
 }) {
   const currentPet = pets.find(({ pet }) => pet.id === currentPetId) ?? pets[0];
   if (!currentPet) return null;
@@ -80,41 +83,44 @@ export function PetsHome({
             Here&apos;s {currentPet.pet.name}&apos;s update for today
           </p>
         </div>
-        <nav
-          aria-label="Choose a pet"
-          className="flex max-w-[46%] shrink-0 items-center justify-end gap-2 overflow-x-auto pb-1"
-        >
-          {pets.map(({ pet, photoUrl }) => {
-            const selected = pet.id === currentPet.pet.id;
-            return (
-              <Link
-                aria-current={selected ? "true" : undefined}
-                aria-label={
-                  selected ? `${pet.name}, selected` : `Show ${pet.name}`
-                }
-                className={`flex min-h-11 shrink-0 items-center rounded-full transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.97] ${
-                  selected
-                    ? "gap-1.5 border-2 border-[#ed802a] bg-white/40 pr-3 pl-1"
-                    : "border border-[#e9ceaf] bg-white/60 p-1"
-                }`}
-                href={`/home?pet=${pet.id}`}
-                key={pet.id}
-              >
-                <PetAvatar
-                  className="size-9"
-                  name={pet.name}
-                  photoUrl={photoUrl}
-                  species={pet.species}
-                />
-                {selected ? (
-                  <span className="max-w-16 truncate text-sm font-semibold text-[#ed802a]">
-                    {pet.name}
-                  </span>
-                ) : null}
-              </Link>
-            );
-          })}
-        </nav>
+        <div className="flex max-w-[52%] shrink-0 items-center gap-1">
+          <NotificationBell unreadCount={unreadNotificationCount} />
+          <nav
+            aria-label="Choose a pet"
+            className="flex min-w-0 items-center justify-end gap-2 overflow-x-auto pb-1"
+          >
+            {pets.map(({ pet, photoUrl }) => {
+              const selected = pet.id === currentPet.pet.id;
+              return (
+                <Link
+                  aria-current={selected ? "true" : undefined}
+                  aria-label={
+                    selected ? `${pet.name}, selected` : `Show ${pet.name}`
+                  }
+                  className={`flex min-h-11 shrink-0 items-center rounded-full transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.97] ${
+                    selected
+                      ? "gap-1.5 border-2 border-[#ed802a] bg-white/40 pr-3 pl-1"
+                      : "border border-[#e9ceaf] bg-white/60 p-1"
+                  }`}
+                  href={`/home?pet=${pet.id}`}
+                  key={pet.id}
+                >
+                  <PetAvatar
+                    className="size-9"
+                    name={pet.name}
+                    photoUrl={photoUrl}
+                    species={pet.species}
+                  />
+                  {selected ? (
+                    <span className="max-w-16 truncate text-sm font-semibold text-[#ed802a]">
+                      {pet.name}
+                    </span>
+                  ) : null}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
       </header>
 
       <section className="mx-5 mt-6">

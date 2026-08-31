@@ -8,7 +8,7 @@ import type { ReminderRepository } from "@petmosphere/services";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 const columns =
-  "id, series_id, owner_id, pet_id, creation_request_id, category, title, due_local_date, local_time, timezone, repeat_rule, series_start_date, note, completed_at, notified_at, deleted_at, created_at, updated_at";
+  "id, series_id, owner_id, pet_id, creation_request_id, category, title, due_local_date, local_time, timezone, repeat_rule, series_start_date, note, notification_lead_minutes, completed_at, notified_at, deleted_at, created_at, updated_at";
 
 type ReminderRow = {
   category: ReminderCategory;
@@ -20,6 +20,7 @@ type ReminderRow = {
   id: string;
   local_time: string;
   note: string | null;
+  notification_lead_minutes: number | null;
   notified_at: string | null;
   owner_id: string;
   pet_id: string;
@@ -42,6 +43,8 @@ export function toReminder(row: ReminderRow): Reminder {
     id: row.id,
     localTime: row.local_time.slice(0, 5),
     note: row.note,
+    notificationLeadMinutes:
+      row.notification_lead_minutes as Reminder["notificationLeadMinutes"],
     notifiedAt: row.notified_at,
     ownerId: row.owner_id,
     petId: row.pet_id,
@@ -117,6 +120,7 @@ export function createReminderRepository(
           id: reminder.id,
           local_time: reminder.localTime,
           note: reminder.note,
+          notification_lead_minutes: reminder.notificationLeadMinutes,
           owner_id: reminder.ownerId,
           pet_id: reminder.petId,
           repeat_rule: reminder.repeatRule,
@@ -205,6 +209,7 @@ export function createReminderRepository(
           due_local_date: input.dueDate,
           local_time: input.localTime,
           note: input.note,
+          notification_lead_minutes: input.notificationLeadMinutes,
           notified_at: null,
           pet_id: input.petId,
           repeat_rule: input.repeatRule,
@@ -232,6 +237,7 @@ export function toReminderResponse(reminder: Reminder) {
     id: reminder.id,
     localTime: reminder.localTime,
     note: reminder.note,
+    notificationLeadMinutes: reminder.notificationLeadMinutes,
     petId: reminder.petId,
     repeatRule: reminder.repeatRule,
     seriesId: reminder.seriesId,

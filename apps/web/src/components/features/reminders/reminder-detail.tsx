@@ -3,6 +3,7 @@
 import type { ReminderResponse } from "@petmosphere/api-contracts";
 import {
   ArrowLeft,
+  Bell,
   CalendarDays,
   Check,
   Clock3,
@@ -19,6 +20,7 @@ import {
   categoryDetails,
   formatReminderDate,
   formatReminderTime,
+  formatNotificationLead,
   repeatLabels,
 } from "./reminder-ui";
 
@@ -133,6 +135,11 @@ export function ReminderDetail({
           icon={Clock3}
           label="Time"
           value={formatReminderTime(reminder.localTime)}
+        />
+        <Row
+          icon={Bell}
+          label="Notify"
+          value={formatNotificationLead(reminder.notificationLeadMinutes ?? 0)}
         />
         <Row
           icon={Repeat2}

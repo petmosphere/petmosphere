@@ -4,7 +4,7 @@ import {
   deriveLocalDate,
   type WeightReminderFrequency,
 } from "@petmosphere/domain";
-import { ArrowLeft, Bell, ChevronRight } from "lucide-react";
+import { ArrowLeft, Bell } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 
@@ -14,10 +14,9 @@ import {
   pushSetupErrorMessages,
 } from "@/lib/health-logs/push-notifications";
 
-type AlertLeadDays = 0 | 1 | 2 | 3 | 7;
 type PushStatus =
   "checking" | "enabled" | "disabled" | "blocked" | "unsupported";
-type Sheet = "alert" | "frequency" | "time" | null;
+type Sheet = "frequency" | "time" | null;
 type PetSettings = {
   healthReminder: { enabled: boolean; localTime: string } | null;
   id: string;
@@ -30,13 +29,6 @@ type PetSettings = {
   } | null;
 };
 
-const alertOptions: Array<{ label: string; value: AlertLeadDays }> = [
-  { label: "Same day", value: 0 },
-  { label: "1 day before", value: 1 },
-  { label: "2 days before", value: 2 },
-  { label: "3 days before", value: 3 },
-  { label: "1 week before", value: 7 },
-];
 const frequencyOptions: Array<{
   label: string;
   value: WeightReminderFrequency;
@@ -46,12 +38,6 @@ const frequencyOptions: Array<{
   { label: "Monthly", value: "monthly" },
   { label: "Every 3 months", value: "quarterly" },
 ];
-
-function formatTime(value: string) {
-  const [hours = 0, minutes = 0] = value.split(":").map(Number);
-  const period = hours >= 12 ? "PM" : "AM";
-  return `${hours % 12 || 12}:${String(minutes).padStart(2, "0")} ${period}`;
-}
 
 function Toggle({
   checked,
@@ -84,12 +70,14 @@ function Toggle({
 function SettingCard({
   active,
   children,
+  checked = active,
   description,
   disabled,
   label,
   onToggle,
 }: {
   active: boolean;
+  checked?: boolean;
   children?: ReactNode;
   description: string;
   disabled?: boolean | undefined;
@@ -106,7 +94,7 @@ function SettingCard({
           </p>
         </div>
         <Toggle
-          checked={active}
+          checked={checked}
           disabled={disabled}
           label={label}
           onChange={onToggle}
@@ -117,26 +105,47 @@ function SettingCard({
   );
 }
 
-function SettingRow({
+function ScheduleSettingCard({
+  description,
+  disabled,
+  enabled,
   label,
-  onClick,
-  value,
+  onSetup,
+  onToggle,
 }: {
+  description: string;
+  disabled?: boolean | undefined;
+  enabled: boolean;
   label: string;
-  onClick: () => void;
-  value: string;
+  onSetup: () => void;
+  onToggle: () => void;
 }) {
   return (
-    <button
-      aria-label={`${label}: ${value}`}
-      className="mt-4 flex min-h-12 w-full items-center border-t border-[#eadfd2] pt-3 text-left focus-visible:outline-2 focus-visible:outline-[#ed802a]"
-      onClick={onClick}
-      type="button"
-    >
-      <span className="flex-1 font-medium">{label}</span>
-      <span className="text-sm">{value}</span>
-      <ChevronRight aria-hidden="true" className="ml-2 size-5 text-[#8a837c]" />
-    </button>
+    <section className="rounded-3xl bg-white/70 px-4 py-5 shadow-[0_8px_24px_rgba(205,146,85,0.055)]">
+      <div className="flex items-start gap-3">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-base font-bold">{label}</h2>
+          <p className="mt-0.5 text-sm leading-5 text-[#7a7a7a]">
+            {description}
+          </p>
+        </div>
+        <Toggle
+          checked={enabled}
+          disabled={disabled}
+          label={label}
+          onChange={onToggle}
+        />
+      </div>
+      <button
+        aria-label={`Set up ${label}`}
+        className="mt-4 min-h-11 w-full rounded-full border border-[#ed802a] text-sm font-semibold text-[#ed802a] focus-visible:outline-2 focus-visible:outline-[#ed802a] disabled:cursor-not-allowed disabled:opacity-50"
+        disabled={disabled}
+        onClick={onSetup}
+        type="button"
+      >
+        Set up
+      </button>
+    </section>
   );
 }
 
@@ -296,11 +305,11 @@ function TimeSheet({
 }
 
 export function NotificationSettings({
-  alertLeadDays: initialAlertLeadDays,
+  backHref = "/profile",
   pets,
   reminderNotificationsEnabled,
 }: {
-  alertLeadDays: AlertLeadDays;
+  backHref?: string;
   pets: PetSettings[];
   reminderNotificationsEnabled: boolean;
 }) {
@@ -310,6 +319,12 @@ export function NotificationSettings({
   const firstWeight = pets.find(
     ({ weightReminder }) => weightReminder,
   )?.weightReminder;
+  const [dailyConfigured, setDailyConfigured] = useState(
+    pets.some(({ healthReminder }) => healthReminder !== null),
+  );
+  const [weightConfigured, setWeightConfigured] = useState(
+    pets.some(({ weightReminder }) => weightReminder !== null),
+  );
   const [pushStatus, setPushStatus] = useState<PushStatus>("checking");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -319,7 +334,6 @@ export function NotificationSettings({
     localTime: firstHealth?.localTime ?? "19:00",
   });
   const [upcoming, setUpcoming] = useState({
-    alertLeadDays: initialAlertLeadDays,
     enabled: reminderNotificationsEnabled,
   });
   const [weight, setWeight] = useState({
@@ -395,6 +409,7 @@ export function NotificationSettings({
         ),
       );
       if (responses.some((response) => !response.ok)) throw new Error();
+      setDailyConfigured(true);
       setMessage("Settings saved automatically.");
     } catch {
       setDaily(previous);
@@ -404,14 +419,14 @@ export function NotificationSettings({
     }
   }
 
-  async function saveUpcoming(next: typeof upcoming) {
+  async function saveUpcoming(enabled: boolean) {
     const previous = upcoming;
-    setUpcoming(next);
+    setUpcoming({ enabled });
     setBusy(true);
     setMessage("");
     try {
       const response = await fetch("/api/v1/profile/notification-preferences", {
-        body: JSON.stringify(next),
+        body: JSON.stringify({ enabled }),
         headers: { "Content-Type": "application/json" },
         method: "PATCH",
       });
@@ -419,7 +434,7 @@ export function NotificationSettings({
       setMessage("Settings saved automatically.");
     } catch {
       setUpcoming(previous);
-      setMessage("We could not save reminder alerts. Try again.");
+      setMessage("We could not save reminder notifications. Try again.");
     } finally {
       setBusy(false);
     }
@@ -453,6 +468,7 @@ export function NotificationSettings({
         ),
       );
       if (responses.some((response) => !response.ok)) throw new Error();
+      setWeightConfigured(true);
       setMessage("Settings saved automatically.");
     } catch {
       setWeight(previous);
@@ -462,21 +478,18 @@ export function NotificationSettings({
     }
   }
 
-  const controlsDisabled = !masterEnabled || busy || pets.length === 0;
-  const alertLabel =
-    alertOptions.find(({ value }) => value === upcoming.alertLeadDays)?.label ??
-    "Same day";
-  const frequencyLabel =
-    frequencyOptions.find(({ value }) => value === weight.frequency)?.label ??
-    "Weekly";
-
+  const scheduleControlsDisabled = !masterEnabled || busy || pets.length === 0;
   return (
     <main className="mx-auto min-h-dvh w-full max-w-[393px] bg-[#fdf8f2] px-6 pt-[max(1.5rem,env(safe-area-inset-top))] pb-10 text-[#2d2d2d]">
       <header>
         <Link
-          aria-label="Back to profile"
+          aria-label={
+            backHref === "/notifications"
+              ? "Back to notifications"
+              : "Back to profile"
+          }
           className="grid size-11 place-items-center rounded-full focus-visible:outline-2 focus-visible:outline-[#ed802a]"
-          href="/profile"
+          href={backHref}
         >
           <ArrowLeft aria-hidden="true" className="size-6" />
         </Link>
@@ -513,51 +526,58 @@ export function NotificationSettings({
       </p>
 
       <div className="mt-5 space-y-3">
-        <SettingCard
-          active={masterEnabled && daily.enabled}
-          description="Reminds you to log your pet’s daily mood"
-          disabled={controlsDisabled}
-          label="Daily check-in reminder"
-          onToggle={() => void saveDaily({ ...daily, enabled: !daily.enabled })}
-        >
-          <SettingRow
-            label="Time"
-            onClick={() => setSheet("time")}
-            value={formatTime(daily.localTime)}
+        {dailyConfigured ? (
+          <SettingCard
+            active={false}
+            checked={masterEnabled && daily.enabled}
+            description="Daily check-in notifications"
+            disabled={!masterEnabled || busy}
+            label="Daily check-in"
+            onToggle={() =>
+              void saveDaily({ ...daily, enabled: !daily.enabled })
+            }
           />
-        </SettingCard>
+        ) : (
+          <ScheduleSettingCard
+            description="Reminds you to log your pet’s daily mood"
+            disabled={scheduleControlsDisabled}
+            enabled={false}
+            label="Daily check-in"
+            onSetup={() => setSheet("time")}
+            onToggle={() => setSheet("time")}
+          />
+        )}
 
         <SettingCard
-          active={masterEnabled && upcoming.enabled}
-          description="Get notified before scheduled pet care tasks"
+          active={false}
+          checked={masterEnabled && upcoming.enabled}
+          description="Notifications follow each reminder’s settings"
           disabled={!masterEnabled || busy}
-          label="Upcoming reminders"
-          onToggle={() =>
-            void saveUpcoming({ ...upcoming, enabled: !upcoming.enabled })
-          }
-        >
-          <SettingRow
-            label="Alert timing"
-            onClick={() => setSheet("alert")}
-            value={alertLabel}
-          />
-        </SettingCard>
+          label="Reminders"
+          onToggle={() => void saveUpcoming(!upcoming.enabled)}
+        />
 
-        <SettingCard
-          active={masterEnabled && weight.enabled}
-          description="Track your pet’s weight trends over time"
-          disabled={controlsDisabled}
-          label="Weight log reminder"
-          onToggle={() =>
-            void saveWeight({ ...weight, enabled: !weight.enabled })
-          }
-        >
-          <SettingRow
-            label="Frequency"
-            onClick={() => setSheet("frequency")}
-            value={frequencyLabel}
+        {weightConfigured ? (
+          <SettingCard
+            active={false}
+            checked={masterEnabled && weight.enabled}
+            description="Weight log notifications"
+            disabled={!masterEnabled || busy}
+            label="Weight log"
+            onToggle={() =>
+              void saveWeight({ ...weight, enabled: !weight.enabled })
+            }
           />
-        </SettingCard>
+        ) : (
+          <ScheduleSettingCard
+            description="Track your pet’s weight trends over time"
+            disabled={scheduleControlsDisabled}
+            enabled={false}
+            label="Weight log"
+            onSetup={() => setSheet("frequency")}
+            onToggle={() => setSheet("frequency")}
+          />
+        )}
       </div>
 
       {!masterEnabled && pushStatus !== "checking" ? (
@@ -583,23 +603,14 @@ export function NotificationSettings({
         <TimeSheet
           onConfirm={(localTime) => {
             setSheet(null);
-            void saveDaily({ ...daily, localTime });
+            void saveDaily({
+              ...daily,
+              enabled: dailyConfigured ? daily.enabled : true,
+              localTime,
+            });
           }}
           onDismiss={() => setSheet(null)}
           value={daily.localTime}
-        />
-      ) : null}
-      {sheet === "alert" ? (
-        <ChoiceSheet
-          description="When to notify before a reminder is due"
-          onConfirm={(alertLeadDays) => {
-            setSheet(null);
-            void saveUpcoming({ ...upcoming, alertLeadDays });
-          }}
-          onDismiss={() => setSheet(null)}
-          options={alertOptions}
-          title="Alert Timing"
-          value={upcoming.alertLeadDays}
         />
       ) : null}
       {sheet === "frequency" ? (
@@ -607,7 +618,11 @@ export function NotificationSettings({
           description="How often to remind you to weigh your pet"
           onConfirm={(frequency) => {
             setSheet(null);
-            void saveWeight({ ...weight, frequency });
+            void saveWeight({
+              ...weight,
+              enabled: weightConfigured ? weight.enabled : true,
+              frequency,
+            });
           }}
           onDismiss={() => setSheet(null)}
           options={frequencyOptions}

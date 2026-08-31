@@ -25,9 +25,11 @@ export function HealthLogReminderSettings({ petId }: { petId: string }) {
   const [reminder, setReminder] = useState<
     Pick<HealthLogReminder, "enabled" | "localTime">
   >({ enabled: false, localTime: "19:00" });
-  const [state, setState] = useState<
-    "loading" | "idle" | "saving" | "saved" | "error"
-  >("loading");
+  const [state, setState] = useState<"loading" | "idle" | "saving" | "error">(
+    "loading",
+  );
+  const [configured, setConfigured] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [errorMessage, setErrorMessage] = useState(
     "We could not save the reminder. Try again.",
   );
@@ -42,7 +44,10 @@ export function HealthLogReminderSettings({ petId }: { petId: string }) {
       .then(async (response) => {
         if (!response.ok) throw new Error("reminder lookup failed");
         const saved = (await response.json()) as HealthLogReminder | null;
-        if (saved) setReminder(saved);
+        if (saved) {
+          setReminder(saved);
+          setConfigured(true);
+        }
         setState("idle");
       })
       .catch(() => setState("error"));
@@ -70,11 +75,46 @@ export function HealthLogReminderSettings({ petId }: { petId: string }) {
       });
       if (!response.ok) throw new Error("reminder save failed");
       setReminder((await response.json()) as HealthLogReminder);
-      setState("saved");
+      setConfigured(true);
+      setEditing(false);
+      setState("idle");
     } catch {
       setErrorMessage("We could not save the reminder. Try again.");
       setState("error");
     }
+  }
+
+  if (configured && !editing && state !== "error") {
+    return (
+      <section
+        className="mt-8 rounded-3xl bg-white/60 p-5 shadow-sm"
+        aria-labelledby="daily-reminder-title"
+      >
+        <div className="flex items-center gap-3">
+          <span className="grid size-11 shrink-0 place-items-center rounded-full bg-[#fff3e4] text-[#ed802a]">
+            <Bell aria-hidden="true" className="size-5" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h2 className="font-bold" id="daily-reminder-title">
+              Daily check-in reminder
+            </h2>
+            <p className="mt-1 text-sm text-stone-500">
+              {reminder.enabled
+                ? `Enabled · ${formatTimeLabel(reminder.localTime)}`
+                : "Paused"}
+            </p>
+          </div>
+          <button
+            aria-label="Edit daily check-in reminder"
+            className="min-h-11 rounded-full border border-[#e8d0b3] px-4 text-sm font-semibold text-[#a96225] focus-visible:outline-2 focus-visible:outline-[#ed802a]"
+            onClick={() => setEditing(true)}
+            type="button"
+          >
+            Edit
+          </button>
+        </div>
+      </section>
+    );
   }
 
   return (
@@ -157,11 +197,6 @@ export function HealthLogReminderSettings({ petId }: { petId: string }) {
           "Save reminder"
         )}
       </button>
-      {state === "saved" ? (
-        <p className="mt-2 text-center text-sm text-[#287f7b]" role="status">
-          Reminder preference saved.
-        </p>
-      ) : null}
       {state === "error" ? (
         <p className="mt-2 text-center text-sm text-red-600" role="alert">
           {errorMessage}

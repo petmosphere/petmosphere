@@ -1,13 +1,21 @@
 import { Lock, Plus, PawPrint } from "lucide-react";
 import Link from "next/link";
 
+import { NotificationBell } from "@/components/features/notifications/notification-bell";
 import { AppNav } from "./app-nav";
 
-export function EmptyPetsHome({ displayName }: { displayName: string }) {
+export function EmptyPetsHome({
+  displayName,
+  unreadNotificationCount = 0,
+}: {
+  displayName: string;
+  unreadNotificationCount?: number;
+}) {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-[#fdf8f2] pb-3 text-[#2d2d2d] shadow-xl shadow-stone-900/5">
       <header className="flex items-center px-6 pt-8">
         <p className="text-lg font-medium">Hello, {displayName}</p>
+        <NotificationBell unreadCount={unreadNotificationCount} />
       </header>
 
       <section className="flex flex-1 flex-col items-center justify-center px-7 pb-16 text-center">

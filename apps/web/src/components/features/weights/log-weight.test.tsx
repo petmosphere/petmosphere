@@ -23,6 +23,36 @@ const pet: Pet = {
 describe("LogWeight", () => {
   afterEach(() => vi.unstubAllGlobals());
 
+  it("collapses a saved weight reminder and exposes an edit action", () => {
+    render(
+      <LogWeight
+        entries={[]}
+        pet={pet}
+        reminder={{
+          enabled: true,
+          frequency: "weekly",
+          localTime: "20:00",
+          petId: pet.id,
+          scheduleDay: 0,
+          timezone: "Australia/Melbourne",
+          updatedAt: "2026-08-25T00:00:00.000Z",
+        }}
+      />,
+    );
+
+    expect(screen.getByText("Enabled · Weekly")).toBeVisible();
+    expect(
+      screen.queryByRole("switch", { name: "Weight reminder" }),
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Edit weight reminder for Max" }),
+    );
+    expect(
+      screen.getByRole("switch", { name: "Weight reminder" }),
+    ).toBeVisible();
+  });
+
   it("shows a clear empty state without treating the profile snapshot as history", () => {
     render(<LogWeight entries={[]} pet={pet} reminder={null} />);
 

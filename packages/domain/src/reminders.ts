@@ -15,8 +15,14 @@ export const reminderRepeatRules = [
   "yearly",
 ] as const;
 
+export const reminderNotificationLeadMinutes = [
+  0, 5, 15, 30, 60, 120, 1440, 2880, 10080, 43200,
+] as const;
+
 export type ReminderCategory = (typeof reminderCategories)[number];
 export type ReminderRepeatRule = (typeof reminderRepeatRules)[number];
+export type ReminderNotificationLeadMinutes =
+  (typeof reminderNotificationLeadMinutes)[number];
 
 export type Reminder = {
   completedAt: string | null;
@@ -26,6 +32,7 @@ export type Reminder = {
   dueDate: string;
   id: string;
   localTime: string;
+  notificationLeadMinutes: ReminderNotificationLeadMinutes | null;
   note: string | null;
   notifiedAt: string | null;
   ownerId: string;
