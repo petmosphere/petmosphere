@@ -32,9 +32,7 @@ describe("HealthLogReminderSettings", () => {
     ).not.toBeInTheDocument();
 
     fireEvent.click(editButton);
-    expect(
-      screen.getByRole("button", { name: "Save reminder" }),
-    ).toBeVisible();
+    expect(screen.getByRole("button", { name: "Save reminder" })).toBeVisible();
   });
 
   it("collapses the editor after a new reminder is saved", async () => {

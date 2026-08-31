@@ -507,8 +507,7 @@ export function NotificationSettings({
     }
   }
 
-  const scheduleControlsDisabled =
-    !masterEnabled || busy || pets.length === 0;
+  const scheduleControlsDisabled = !masterEnabled || busy || pets.length === 0;
   return (
     <main className="mx-auto min-h-dvh w-full max-w-[393px] bg-[#fdf8f2] px-6 pt-[max(1.5rem,env(safe-area-inset-top))] pb-10 text-[#2d2d2d]">
       <header>

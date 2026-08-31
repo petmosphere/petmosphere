@@ -25,9 +25,9 @@ export function HealthLogReminderSettings({ petId }: { petId: string }) {
   const [reminder, setReminder] = useState<
     Pick<HealthLogReminder, "enabled" | "localTime">
   >({ enabled: false, localTime: "19:00" });
-  const [state, setState] = useState<
-    "loading" | "idle" | "saving" | "error"
-  >("loading");
+  const [state, setState] = useState<"loading" | "idle" | "saving" | "error">(
+    "loading",
+  );
   const [configured, setConfigured] = useState(false);
   const [editing, setEditing] = useState(false);
   const [errorMessage, setErrorMessage] = useState(

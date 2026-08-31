@@ -46,12 +46,7 @@ describe("NotificationSettings", () => {
   });
 
   it("shows saved notification controls without schedule editors", async () => {
-    render(
-      <NotificationSettings
-        pets={pets}
-        reminderNotificationsEnabled
-      />,
-    );
+    render(<NotificationSettings pets={pets} reminderNotificationsEnabled />);
 
     expect(
       screen.getByRole("heading", { name: "Notification Settings" }),
