@@ -386,7 +386,9 @@ export function LogWeight({
                 </div>
               ) : (
                 <div className="mt-2">
-                  <span className="block text-sm font-medium">Day of month</span>
+                  <span className="block text-sm font-medium">
+                    Day of month
+                  </span>
                   <div className="mt-2">
                     <RepeatSelector
                       label="Day of month"
