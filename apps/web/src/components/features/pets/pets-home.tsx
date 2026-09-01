@@ -74,53 +74,62 @@ export function PetsHome({
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-[393px] flex-col bg-[#fdf8f2] pb-24 text-[#2d2d2d] shadow-xl shadow-stone-900/5">
-      <header className="flex items-start justify-between gap-3 px-5 pt-[max(1.5rem,env(safe-area-inset-top))]">
-        <div className="min-w-0 flex-1 pt-1">
-          <h1 className="truncate text-2xl leading-none font-bold tracking-[-0.025em]">
-            Hello, {displayName}
-          </h1>
-          <p className="mt-1.5 truncate text-sm text-[#7a7a7a]">
-            Here&apos;s {currentPet.pet.name}&apos;s update for today
-          </p>
+      <header className="px-5 pt-[max(1.5rem,env(safe-area-inset-top))]">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1 pt-1">
+            <h1 className="truncate text-2xl leading-none font-bold tracking-[-0.025em]">
+              Hello, {displayName}
+            </h1>
+            <p className="mt-1.5 truncate text-sm text-[#7a7a7a]">
+              Here&apos;s {currentPet.pet.name}&apos;s update for today
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center gap-1">
+            <NotificationBell unreadCount={unreadNotificationCount} />
+            <Link
+              aria-label="Add another pet"
+              className="grid size-11 shrink-0 place-items-center rounded-full border border-[#e9ceaf] bg-white/60 text-[#ed802a] transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.97]"
+              href="/pets/new"
+            >
+              <Plus aria-hidden="true" className="size-5" />
+            </Link>
+          </div>
         </div>
-        <div className="flex max-w-[52%] shrink-0 items-center gap-1">
-          <NotificationBell unreadCount={unreadNotificationCount} />
-          <nav
-            aria-label="Choose a pet"
-            className="flex min-w-0 items-center justify-end gap-2 overflow-x-auto pb-1"
-          >
-            {pets.map(({ pet, photoUrl }) => {
-              const selected = pet.id === currentPet.pet.id;
-              return (
-                <Link
-                  aria-current={selected ? "true" : undefined}
-                  aria-label={
-                    selected ? `${pet.name}, selected` : `Show ${pet.name}`
-                  }
-                  className={`flex min-h-11 shrink-0 items-center rounded-full transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.97] ${
-                    selected
-                      ? "gap-1.5 border-2 border-[#ed802a] bg-white/40 pr-3 pl-1"
-                      : "border border-[#e9ceaf] bg-white/60 p-1"
-                  }`}
-                  href={`/home?pet=${pet.id}`}
-                  key={pet.id}
-                >
-                  <PetAvatar
-                    className="size-9"
-                    name={pet.name}
-                    photoUrl={photoUrl}
-                    species={pet.species}
-                  />
-                  {selected ? (
-                    <span className="max-w-16 truncate text-sm font-semibold text-[#ed802a]">
-                      {pet.name}
-                    </span>
-                  ) : null}
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
+        <nav
+          aria-label="Choose a pet"
+          className="-mx-5 mt-3 flex items-center gap-2 overflow-x-auto overscroll-x-contain px-5 pb-1"
+        >
+          {pets.map(({ pet, photoUrl }) => {
+            const selected = pet.id === currentPet.pet.id;
+            return (
+              <Link
+                aria-current={selected ? "true" : undefined}
+                aria-label={
+                  selected ? `${pet.name}, selected` : `Show ${pet.name}`
+                }
+                className={`flex min-h-11 shrink-0 items-center rounded-full transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.97] ${
+                  selected
+                    ? "max-w-48 gap-1.5 border-2 border-[#ed802a] bg-white/40 pr-3 pl-1"
+                    : "border border-[#e9ceaf] bg-white/60 p-1"
+                }`}
+                href={`/home?pet=${pet.id}`}
+                key={pet.id}
+              >
+                <PetAvatar
+                  className="size-9"
+                  name={pet.name}
+                  photoUrl={photoUrl}
+                  species={pet.species}
+                />
+                {selected ? (
+                  <span className="truncate text-sm font-semibold text-[#ed802a]">
+                    {pet.name}
+                  </span>
+                ) : null}
+              </Link>
+            );
+          })}
+        </nav>
       </header>
 
       <section className="mx-5 mt-6">

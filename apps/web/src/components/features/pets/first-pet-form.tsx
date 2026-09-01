@@ -40,8 +40,14 @@ function RequiredMark() {
   );
 }
 
-export function FirstPetForm() {
+export function FirstPetForm({
+  mode = "onboarding",
+}: {
+  mode?: "onboarding" | "add";
+}) {
   const router = useRouter();
+  const signInRedirect =
+    mode === "onboarding" ? "/onboarding/pet" : "/pets/new";
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoError, setPhotoError] = useState<string>();
   const [birthDateDisplay, setBirthDateDisplay] = useState("");
@@ -125,7 +131,7 @@ export function FirstPetForm() {
         method: "POST",
       });
       if (response.status === 401) {
-        router.replace("/auth/sign-in?next=/onboarding/pet");
+        router.replace(`/auth/sign-in?next=${signInRedirect}`);
         return;
       }
       const body: unknown = await response.json();
@@ -140,7 +146,7 @@ export function FirstPetForm() {
         setServerError(message);
         return;
       }
-      router.replace("/home");
+      router.replace(mode === "onboarding" ? "/home" : "/profile");
       router.refresh();
     } catch {
       setServerError(
@@ -157,7 +163,7 @@ export function FirstPetForm() {
       <form className="mt-3" noValidate onSubmit={submit}>
         <section aria-labelledby="pet-basics-heading">
           <h1 className="text-2xl font-bold" id="pet-basics-heading">
-            Let&apos;s meet your pet!
+            {mode === "onboarding" ? "Let's meet your pet!" : "Add a pet"}
           </h1>
 
           <div className="mt-6 text-center">
@@ -436,9 +442,9 @@ export function FirstPetForm() {
           </button>
           <Link
             className="mx-auto mt-3 flex min-h-11 w-fit items-center px-4 text-sm text-stone-500 underline-offset-4 hover:underline"
-            href="/home"
+            href={mode === "onboarding" ? "/home" : "/profile"}
           >
-            Skip for now
+            {mode === "onboarding" ? "Skip for now" : "Cancel"}
           </Link>
         </section>
       </form>

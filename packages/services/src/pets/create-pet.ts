@@ -1,11 +1,14 @@
-import type { NewPet, Pet } from "@petmosphere/domain";
+import { getMaxPets, type NewPet, type Pet } from "@petmosphere/domain";
 
 export type PetPhoto = {
   bytes: Uint8Array;
   contentType: "image/webp";
 };
 
+export class PetLimitReachedError extends Error {}
+
 export type PetRepository = {
+  countOwned(ownerId: string): Promise<number>;
   create(pet: NewPet): Promise<{ created: boolean; pet: Pet }>;
   findByCreationRequest(
     ownerId: string,
@@ -31,12 +34,18 @@ export async function createPet(
   input: CreatePetInput,
   repository: PetRepository,
   photoStorage: PetPhotoStorage,
+  isSubscribed: boolean,
 ) {
   const existingPet = await repository.findByCreationRequest(
     ownerId,
     input.creationRequestId,
   );
   if (existingPet) return existingPet;
+
+  const ownedCount = await repository.countOwned(ownerId);
+  if (ownedCount >= getMaxPets(isSubscribed)) {
+    throw new PetLimitReachedError();
+  }
 
   const petId = crypto.randomUUID();
   let photoPath: string | null = null;

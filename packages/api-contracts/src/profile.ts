@@ -28,6 +28,10 @@ export const updateReminderNotificationPreferencesSchema = z.object({
   enabled: z.boolean(),
 });
 
+export const updateSubscriptionSchema = z.object({
+  isSubscribed: z.boolean(),
+});
+
 export const changePasswordSchema = z
   .object({
     currentPassword: z.string().min(1, "Enter your current password."),
@@ -51,5 +55,6 @@ export type UpdateUnitsInput = z.infer<typeof updateUnitsSchema>;
 export type UpdateReminderNotificationPreferencesInput = z.infer<
   typeof updateReminderNotificationPreferencesSchema
 >;
+export type UpdateSubscriptionInput = z.infer<typeof updateSubscriptionSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 export type DeleteAccountInput = z.infer<typeof deleteAccountSchema>;

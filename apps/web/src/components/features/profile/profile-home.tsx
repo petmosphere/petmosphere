@@ -104,6 +104,15 @@ export function ProfileHome({
                   </span>
                 </Link>
               ))}
+              <Link
+                aria-label="Add another pet"
+                className="grid min-h-32 w-36 shrink-0 place-items-center rounded-2xl border border-dashed border-[#e5b98d] bg-white/45 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a]"
+                href="/pets/new"
+              >
+                <span className="grid size-11 place-items-center rounded-full bg-[#fff0df] text-[#ed802a]">
+                  <Plus aria-hidden="true" className="size-5" />
+                </span>
+              </Link>
             </div>
           ) : (
             <Link

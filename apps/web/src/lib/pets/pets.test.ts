@@ -1,6 +1,10 @@
 import { createPetSchema, updatePetSchema } from "@petmosphere/api-contracts";
 import { getPetAgeLabel, type Pet } from "@petmosphere/domain";
-import { createPet, updatePet } from "@petmosphere/services";
+import {
+  createPet,
+  PetLimitReachedError,
+  updatePet,
+} from "@petmosphere/services";
 import { describe, expect, it } from "vitest";
 
 describe("pet contracts", () => {
@@ -102,6 +106,9 @@ describe("pet creation", () => {
         weightKg: null,
       },
       {
+        countOwned: async () => {
+          throw new Error("countOwned must not run for a completed request");
+        },
         create: async () => {
           throw new Error("create must not run for a completed request");
         },
@@ -113,9 +120,115 @@ describe("pet creation", () => {
           throw new Error("upload must not run for a completed request");
         },
       },
+      false,
     );
 
     expect(result).toBe(existingPet);
+  });
+
+  it("blocks a free user who already owns a pet", async () => {
+    await expect(
+      createPet(
+        "30000000-0000-4000-8000-000000000003",
+        {
+          approximateAge: null,
+          birthDate: null,
+          breed: null,
+          creationRequestId: "10000000-0000-4000-8000-000000000004",
+          desexedStatus: null,
+          name: "Bella",
+          sex: null,
+          species: "cat",
+          weightKg: null,
+        },
+        {
+          countOwned: async () => 1,
+          create: async () => {
+            throw new Error("create must not run once the limit is reached");
+          },
+          findByCreationRequest: async () => null,
+        },
+        {
+          remove: async () => undefined,
+          upload: async () => {
+            throw new Error("upload must not run once the limit is reached");
+          },
+        },
+        false,
+      ),
+    ).rejects.toThrow(PetLimitReachedError);
+  });
+
+  it("allows a subscribed user with two pets to add a third", async () => {
+    const result = await createPet(
+      "30000000-0000-4000-8000-000000000003",
+      {
+        approximateAge: null,
+        birthDate: null,
+        breed: null,
+        creationRequestId: "10000000-0000-4000-8000-000000000005",
+        desexedStatus: null,
+        name: "Bella",
+        sex: null,
+        species: "cat",
+        weightKg: null,
+      },
+      {
+        countOwned: async () => 2,
+        create: async (pet) => ({
+          created: true,
+          pet: {
+            ...pet,
+            createdAt: "2026-08-15T00:00:00.000Z",
+            photoPath: pet.photoPath ?? null,
+            updatedAt: "2026-08-15T00:00:00.000Z",
+          },
+        }),
+        findByCreationRequest: async () => null,
+      },
+      {
+        remove: async () => undefined,
+        upload: async () => {
+          throw new Error("upload must not run without a photo");
+        },
+      },
+      true,
+    );
+
+    expect(result.name).toBe("Bella");
+  });
+
+  it("blocks a subscribed user who already owns three pets", async () => {
+    await expect(
+      createPet(
+        "30000000-0000-4000-8000-000000000003",
+        {
+          approximateAge: null,
+          birthDate: null,
+          breed: null,
+          creationRequestId: "10000000-0000-4000-8000-000000000006",
+          desexedStatus: null,
+          name: "Bella",
+          sex: null,
+          species: "cat",
+          weightKg: null,
+        },
+        {
+          countOwned: async () => 3,
+          create: async () => {
+            throw new Error("create must not run once the limit is reached");
+          },
+          findByCreationRequest: async () => null,
+        },
+        {
+          remove: async () => undefined,
+          upload: async () => {
+            throw new Error("upload must not run once the limit is reached");
+          },
+        },
+        true,
+      ),
+    ).rejects.toThrow(PetLimitReachedError);
   });
 });
 

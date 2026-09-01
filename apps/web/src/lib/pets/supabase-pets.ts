@@ -64,6 +64,14 @@ export function createPetRepository(
   supabase: SupabaseClient,
 ): DeletePetRepository & PetRepository & UpdatePetRepository {
   return {
+    async countOwned(ownerId: string) {
+      const { count, error } = await supabase
+        .from("pets")
+        .select("id", { count: "exact", head: true })
+        .eq("owner_id", ownerId);
+      if (error) throw error;
+      return count ?? 0;
+    },
     async create(pet: NewPet) {
       const { data, error } = await supabase
         .from("pets")
