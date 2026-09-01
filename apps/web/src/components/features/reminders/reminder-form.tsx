@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { type FormEvent, useMemo, useState } from "react";
 
 import { DatePicker } from "@/components/ui/date-picker";
+import { NotificationLeadSelector } from "@/components/ui/notification-lead-selector";
 import { RepeatSelector } from "@/components/ui/repeat-selector";
 import { TimePicker } from "@/components/ui/time-picker";
 import { PetAvatar } from "@/components/features/pets/pet-avatar";
@@ -219,36 +220,17 @@ export function ReminderForm({
           </div>
         </div>
 
-        <label className="block text-base font-medium">
-          Notify me
-          <span className="relative mt-2 block">
-            <select
-              aria-label="Notify me"
-              className="min-h-[52px] w-full appearance-none rounded-xl border border-[#ead9c7] bg-transparent px-4 pr-12 text-base focus:border-[#ed802a] focus:ring-1 focus:ring-[#ed802a] focus:outline-none"
-              onChange={(event) =>
-                setNotificationLeadMinutes(
-                  event.target.value === "" ? null : Number(event.target.value),
-                )
-              }
-              value={
-                notificationLeadMinutes === null ? "" : notificationLeadMinutes
-              }
-            >
-              {notificationLeadOptions.map((option) => (
-                <option
-                  key={option.value === null ? "none" : option.value}
-                  value={option.value ?? ""}
-                >
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <ChevronDown
-              aria-hidden="true"
-              className="pointer-events-none absolute top-1/2 right-4 size-5 -translate-y-1/2 text-[#7a7a7a]"
+        <div>
+          <span className="block text-base font-medium">Notify me</span>
+          <div className="mt-2">
+            <NotificationLeadSelector
+              label="Notify me"
+              onChange={setNotificationLeadMinutes}
+              options={notificationLeadOptions}
+              value={notificationLeadMinutes}
             />
-          </span>
-        </label>
+          </div>
+        </div>
 
         <div>
           <span className="block text-base font-medium">Time</span>
