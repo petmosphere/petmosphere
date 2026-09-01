@@ -1,6 +1,6 @@
 import * as Sentry from "@sentry/nextjs";
 import { createPetSchema, petResponseSchema } from "@petmosphere/api-contracts";
-import { createPet } from "@petmosphere/services";
+import { createPet, PetLimitReachedError } from "@petmosphere/services";
 import { NextResponse } from "next/server";
 
 import {
@@ -8,6 +8,7 @@ import {
   createPetRepository,
   getPetPhotoUrl,
 } from "@/lib/pets/supabase-pets";
+import { getProfile } from "@/lib/profile/supabase-profile";
 import { InvalidPetPhotoError, preparePetPhoto } from "@/lib/pets/photo";
 import { createClient } from "@/lib/supabase/server";
 
@@ -50,6 +51,8 @@ export async function POST(request: Request) {
       );
     }
 
+    const profile = await getProfile(supabase, authData.user.id);
+
     const photoEntry = formData.get("photo");
     const photo =
       photoEntry instanceof File && photoEntry.size > 0
@@ -69,6 +72,7 @@ export async function POST(request: Request) {
       },
       createPetRepository(supabase),
       createPetPhotoStorage(supabase),
+      profile.isSubscribed,
     );
     const photoUrl = await getPetPhotoUrl(supabase, pet.photoPath);
 
@@ -92,6 +96,15 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof InvalidPetPhotoError) {
       return NextResponse.json({ message: error.message }, { status: 400 });
+    }
+    if (error instanceof PetLimitReachedError) {
+      return NextResponse.json(
+        {
+          code: "PET_LIMIT_REACHED",
+          message: "Subscribe to add more pets.",
+        },
+        { status: 403 },
+      );
     }
     Sentry.captureException(error, { tags: { operation: "create_pet" } });
     return NextResponse.json(

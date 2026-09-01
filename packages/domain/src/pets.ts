@@ -3,6 +3,13 @@ export const petAgeBands = ["baby", "young", "adult", "senior"] as const;
 export const petSexes = ["male", "female", "unknown"] as const;
 export const petDesexedStatuses = ["yes", "no", "unknown"] as const;
 
+export const MAX_PETS_FREE = 1;
+export const MAX_PETS_SUBSCRIBED = 3;
+
+export function getMaxPets(isSubscribed: boolean) {
+  return isSubscribed ? MAX_PETS_SUBSCRIBED : MAX_PETS_FREE;
+}
+
 export type PetSpecies = (typeof petSpecies)[number];
 export type PetAgeBand = (typeof petAgeBands)[number];
 export type PetSex = (typeof petSexes)[number];

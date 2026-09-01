@@ -119,6 +119,13 @@ export function PetsHome({
                 </Link>
               );
             })}
+            <Link
+              aria-label="Add another pet"
+              className="grid size-11 shrink-0 place-items-center rounded-full border border-[#e9ceaf] bg-white/60 text-[#ed802a] transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.97]"
+              href="/pets/new"
+            >
+              <Plus aria-hidden="true" className="size-5" />
+            </Link>
           </nav>
         </div>
       </header>
