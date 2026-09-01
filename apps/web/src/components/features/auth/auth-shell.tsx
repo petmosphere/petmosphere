@@ -1,4 +1,4 @@
-import { PawPrint } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 export function AuthShell({
@@ -15,10 +15,16 @@ export function AuthShell({
       <section className="w-full max-w-md rounded-[2rem] border border-[#ead9c7] bg-white/60 p-6 shadow-xl shadow-[#8b5b30]/8 sm:p-9">
         <Link
           aria-label="Petmosphere home"
-          className="mx-auto flex h-13 w-13 items-center justify-center rounded-full bg-[#fffaf5] font-bold text-[#dd792d] shadow-sm"
+          className="mx-auto block w-fit"
           href="/"
         >
-          <PawPrint aria-hidden="true" className="size-6" strokeWidth={1.8} />
+          <Image
+            alt="Petmosphere"
+            className="rounded-[22%] shadow-sm"
+            height={52}
+            src="/app-icon.svg"
+            width={52}
+          />
         </Link>
         <h1 className="mt-6 text-center text-3xl font-bold tracking-tight text-balance">
           {title}

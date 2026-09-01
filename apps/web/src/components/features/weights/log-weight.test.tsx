@@ -2,6 +2,10 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { Pet } from "@petmosphere/domain";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ back: vi.fn(), refresh: vi.fn() }),
+}));
+
 import { LogWeight } from "./log-weight";
 
 const pet: Pet = {

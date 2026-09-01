@@ -20,18 +20,18 @@ function SegmentedControl<T extends string>({
   value: T;
 }) {
   return (
-    <fieldset className="rounded-2xl border border-[#ead9c7] bg-white/50 p-4">
-      <legend className="px-1 text-sm font-bold tracking-wide text-[#7a7a7a] uppercase">
+    <div className="rounded-3xl bg-white/70 p-4 shadow-[0_2px_16px_rgba(205,146,85,0.10)]">
+      <p className="px-1 text-sm font-bold tracking-wide text-[#7a7a7a] uppercase">
         {label}
-      </legend>
-      <div className="mt-3 grid grid-cols-2 rounded-xl bg-[#f1e6d7] p-1">
+      </p>
+      <div className="mt-3 grid grid-cols-2 rounded-full bg-[#ede3d7] p-1.5">
         {options.map((option) => (
           <button
             aria-pressed={option.value === value}
-            className={`min-h-11 rounded-lg font-semibold transition-[background-color,color] duration-150 ${
+            className={`min-h-12 rounded-full font-semibold transition-[background-color,color] duration-150 ${
               option.value === value
-                ? "bg-[#ed802a] text-white"
-                : "text-[#2d2d2d]"
+                ? "bg-[#ed802a] text-white shadow-[0_2px_8px_rgba(237,128,42,0.25)]"
+                : "text-[#7a7a7a]"
             }`}
             key={option.value}
             onClick={() => onChange(option.value)}
@@ -41,7 +41,7 @@ function SegmentedControl<T extends string>({
           </button>
         ))}
       </div>
-    </fieldset>
+    </div>
   );
 }
 
