@@ -8,7 +8,7 @@ import {
   enablePushNotifications,
   pushSetupErrorMessages,
 } from "@/lib/health-logs/push-notifications";
-import { TimePicker } from "@/components/ui/time-picker";
+import { TimePicker, formatTimeLabel } from "@/components/ui/time-picker";
 
 const MELBOURNE_TIMEZONE = "Australia/Melbourne";
 

@@ -10,7 +10,7 @@ const PERIODS = ["AM", "PM"] as const;
 // Scroll-snap slot height (px). Selected pill is 38px per Figma; 46 adds breathing room.
 const ITEM_HEIGHT = 46;
 
-function formatTimeLabel(time: string): string {
+export function formatTimeLabel(time: string): string {
   const [h24 = 0, m = 0] = time.split(":").map(Number);
   const period = h24 < 12 ? "am" : "pm";
   const hour12 = h24 % 12 === 0 ? 12 : h24 % 12;
