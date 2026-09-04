@@ -209,7 +209,7 @@ export function RemindersHome({
                   href="/reminders/new"
                 >
                   <Plus aria-hidden="true" className="size-5" />
-                  Add Your First Reminder
+                  Add Your Reminders
                 </Link>
                 <p className="mt-3 text-sm text-[#7a7a7a]">
                   It only takes a moment

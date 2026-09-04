@@ -266,7 +266,7 @@ export function HealthDiary({
           <HealthDiaryCalendar
             logs={summaries}
             month={month}
-            onAddToday={() => openDate(today)}
+            onAddToday={() => router.push(`/pets/${pet.id}/health-logs/today`)}
             onMonthChange={changeMonth}
             onSelectDate={openDate}
             today={today}

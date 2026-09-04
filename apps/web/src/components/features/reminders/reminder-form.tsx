@@ -221,18 +221,6 @@ export function ReminderForm({
         </div>
 
         <div>
-          <span className="block text-base font-medium">Notify me</span>
-          <div className="mt-2">
-            <NotificationLeadSelector
-              label="Notify me"
-              onChange={setNotificationLeadMinutes}
-              options={notificationLeadOptions}
-              value={notificationLeadMinutes}
-            />
-          </div>
-        </div>
-
-        <div>
           <span className="block text-base font-medium">Time</span>
           <div className="mt-2">
             <TimePicker
@@ -241,6 +229,18 @@ export function ReminderForm({
               placeholder="Select time"
               testId="reminder-time-input"
               value={localTime || undefined}
+            />
+          </div>
+        </div>
+
+        <div>
+          <span className="block text-base font-medium">Notify me</span>
+          <div className="mt-2">
+            <NotificationLeadSelector
+              label="Notify me"
+              onChange={setNotificationLeadMinutes}
+              options={notificationLeadOptions}
+              value={notificationLeadMinutes}
             />
           </div>
         </div>
