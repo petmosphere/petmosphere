@@ -141,7 +141,7 @@ otp_length = 6
 ```
 
 For each hosted project, set the Auth configuration to six digits. If the
-field is available in **Authentication → Sign In/ Providers → Email**, 
+field is available in **Authentication → Sign In/ Providers → Email**,
 look for `Email OTP length` and set it to `6`.
 Otherwise use the Supabase Management API with a short-lived personal access
 token created at <https://supabase.com/dashboard/account/tokens>:
