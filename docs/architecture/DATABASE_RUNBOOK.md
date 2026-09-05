@@ -51,7 +51,7 @@ configure the web app.
 Use staging as the normal remote link:
 
 ```bash
-supabase link --project-ref voznszbrzjewutugewkt
+supabase link --project-ref akjpcyuxfejhtxrhyuiw
 supabase migration list
 ```
 
@@ -129,6 +129,69 @@ restoring it:
   separately.
 - **Realtime, webhooks, OAuth providers, Edge Functions, and custom domains:**
   inventory and recreate them when applicable.
+
+#### Verification-code length
+
+Petmosphere's verification screen expects a 6-digit email code. The local
+project already sets this in `supabase/config.toml`:
+
+```toml
+[auth.email]
+otp_length = 6
+```
+
+For each hosted project, set the Auth configuration to six digits. If the
+field is available in **Authentication → Sign In/ Providers → Email**,
+look for `Email OTP length` and set it to `6`.
+Otherwise use the Supabase Management API with a short-lived personal access
+token created at <https://supabase.com/dashboard/account/tokens>:
+
+```bash
+export SUPABASE_ACCESS_TOKEN='do-not-commit-this-token'
+export SUPABASE_PROJECT_REF='kjjndqolgzwseffbalog'
+
+curl --fail-with-body --request PATCH \
+  "https://api.supabase.com/v1/projects/$SUPABASE_PROJECT_REF/config/auth" \
+  --header "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+  --header 'Content-Type: application/json' \
+  --data '{"mailer_otp_length":6}'
+```
+
+Run the same operation for staging with its project reference. Never put the
+access token or project secrets in a migration, repository, Vercel variable,
+ticket, or chat. Confirm the deployed confirmation template renders
+`{{ .Token }}` and test signup, resend, password reset, and verification after
+changing the length. Supabase supports email OTP lengths from 6 to 10 digits;
+6 is the application contract. See the [Auth configuration reference](https://supabase.com/docs/guides/local-development/cli/config)
+and [Auth configuration API](https://supabase.com/docs/reference/api/v1-update-auth-service-config).
+
+#### Gmail SMTP verification
+
+When Gmail is the SMTP provider, the password in Supabase Auth must be a
+Google App Password for the exact sender account. Do not use the normal Gmail
+password. For example, with `info.petmosphere@gmail.com`:
+
+1. Enable Google 2-Step Verification for the sender account.
+2. Create a new app password at <https://myaccount.google.com/apppasswords>
+   (for example, name it `Petmosphere Supabase Production`).
+3. Enter the generated 16-character value in the hosted Supabase project's
+   SMTP password field. Never put it in Git, `.env` files, Vercel, tickets, or
+   chat.
+4. Send a test email from the Supabase Auth settings and confirm delivery.
+
+The Gmail error `534 5.7.9 Application-specific password required` means the
+SMTP credential is missing, invalid, revoked, or is the normal account
+password. Check the sender account, regenerate the app password, and update
+the correct hosted project. If app passwords are unavailable, check whether a
+Google Workspace administrator, Advanced Protection, or the account's
+security policy blocks them; use an approved SMTP provider such as Resend,
+Postmark, SendGrid, or Amazon SES if necessary.
+
+After changing SMTP, test signup, email verification, password reset, and
+resend-confirmation flows. A failed SMTP send can leave an Auth user created
+but unconfirmed, so check **Authentication → Users** before retrying with the
+same email. Do not delete a real user merely to retry; remove only confirmed
+test accounts with approval.
 
 Vercel environment variables are scoped independently to **Preview** and
 **Production**. Changing a Vercel variable requires a new deployment before
@@ -305,6 +368,14 @@ Database restoration alone is incomplete:
   Realtime publications, webhooks, Edge Functions, and custom domains. Do not
   copy source secrets into Git or migration files.
 
+If signup returns HTTP 500, inspect the target project's **Auth Logs** before
+changing a migration. A `user_confirmation_requested` event with an SMTP
+error indicates email-delivery configuration, not a schema failure. For
+example, `534 5.7.9 Application-specific password required` requires the Gmail
+App Password procedure above. Trigger, constraint, or missing-table errors
+should instead be investigated against the target migration history and
+database logs.
+
 ### Validate before cutover
 
 Run all checks against the target while the source remains available:
@@ -477,6 +548,20 @@ WEB_PUSH_SUBJECT=mailto:info.petmosphere@gmail.com
 SUPABASE_SECRET_KEY=<matching environment secret API key>
 CRON_SECRET=<random value of at least 32 characters>
 ```
+
+Create a separate cron secret for each environment; it is a shared bearer
+credential between Supabase Cron and the Vercel dispatcher. Generate it on a
+trusted local machine and do not print or commit it:
+
+```bash
+openssl rand -hex 32
+```
+
+Store the generated value in the matching Vercel environment as `CRON_SECRET`
+and in that project's Supabase Vault as `health_log_cron_secret`. The values
+must match within an environment and must differ between staging and
+production. If a secret is exposed, generate a replacement, update Vercel and
+Vault together, redeploy, and then verify a scheduled dispatch.
 
 The public VAPID key is intentionally sent to browsers. The private VAPID key,
 Supabase secret key, and cron secret are server-only. The secret key is the
@@ -665,7 +750,7 @@ staging.
 2. Confirm the CLI is linked to staging:
 
    ```bash
-   supabase link --project-ref voznszbrzjewutugewkt
+   supabase link --project-ref akjpcyuxfejhtxrhyuiw
    supabase migration list
    ```
 
