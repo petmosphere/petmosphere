@@ -58,6 +58,287 @@ supabase migration list
 Confirm the displayed remote project before continuing. Vercel Preview must
 use staging's URL and publishable key; Vercel Production must use production's.
 
+## Environment configuration matrix
+
+The application configuration is environment-specific. Set the values below
+in Vercel for the hosted environments and in `apps/web/.env.local` for local
+development. Never commit a populated environment file.
+
+| Variable                                | Local development                                | Vercel Preview / staging             | Vercel Production                                                             | Source or owner                                                        |
+| --------------------------------------- | ------------------------------------------------ | ------------------------------------ | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `NEXT_PUBLIC_APP_URL`                   | `http://localhost:3000`                          | `https://staging.petmosphere.com.au` | `https://petmosphere.com.au` (or the deliberately chosen canonical `www` URL) | Vercel/domain configuration                                            |
+| `NEXT_PUBLIC_APP_ENV`                   | `development`                                    | `staging`                            | `production`                                                                  | Application configuration                                              |
+| `APP_ENV`                               | `development`                                    | `staging`                            | `production`                                                                  | Application configuration                                              |
+| `NEXT_PUBLIC_SUPABASE_URL`              | Local URL from `supabase status`                 | Staging project API URL              | Production project API URL                                                    | Supabase **Project Settings → API**                                    |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`  | Local publishable key                            | Staging publishable key              | Production publishable key                                                    | Supabase **Project Settings → API**                                    |
+| `SUPABASE_SECRET_KEY`                   | Usually omitted; use only for local server tests | Staging secret key                   | Production secret key                                                         | Supabase **Project Settings → API Keys**; server-only                  |
+| `NEXT_PUBLIC_WEB_PUSH_VAPID_PUBLIC_KEY` | Local/test VAPID public key                      | Staging VAPID public key             | Production VAPID public key                                                   | Generated once per environment                                         |
+| `WEB_PUSH_VAPID_PRIVATE_KEY`            | Local/test private key, if push is tested        | Staging private key                  | Production private key                                                        | Generated once per environment; server-only                            |
+| `WEB_PUSH_SUBJECT`                      | `mailto:info.petmosphere@gmail.com`              | Same sender identity                 | Same sender identity                                                          | Application configuration                                              |
+| `CRON_SECRET`                           | Optional for local manual dispatch               | A unique random secret               | A different unique random secret                                              | Generated and stored in Vercel; also stored in matching Supabase Vault |
+| `NEXT_PUBLIC_SENTRY_DSN`                | Optional local DSN                               | Sentry DSN                           | Sentry DSN                                                                    | Sentry project settings; public project identifier                     |
+| `SENTRY_DSN`                            | Optional local DSN                               | Sentry DSN                           | Sentry DSN                                                                    | Sentry project settings; server-side configuration                     |
+| `SENTRY_AUTH_TOKEN`                     | Omit unless uploading local source maps          | Optional build secret                | Optional build secret                                                         | Sentry token; Vercel secret only                                       |
+
+The Supabase URL, publishable key, and secret key are obtained from each
+Supabase project but are entered into Vercel as deployment variables. The
+secret key must be named `SUPABASE_SECRET_KEY`; do not use the legacy
+`SUPABASE_SERVICE_ROLE_KEY` name and never prefix it with `NEXT_PUBLIC_`.
+
+The VAPID pair must be different between staging and production and must remain
+stable within an environment. Rotating a pair requires users to subscribe
+again. `CRON_SECRET` must match the `health_log_cron_secret` Vault value in the
+same Supabase project; staging and production values must not be reused across
+environments.
+
+These variables are present for future features and are not required by the
+current Hello World or core application deployment:
+
+```env
+AI_PROVIDER=
+AI_API_KEY=
+AI_MODEL=
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+```
+
+`AI_API_KEY`, `STRIPE_SECRET_KEY`, and `STRIPE_WEBHOOK_SECRET` are server-only
+when those integrations are introduced. SMTP is configured in Supabase Auth,
+not through an application environment variable in this repository.
+
+### Platform settings that are not environment variables
+
+Repeat these settings for every hosted Supabase project after creating or
+restoring it:
+
+- **Authentication → URL Configuration:** set the project Site URL and the
+  exact environment callback URL ending in `/auth/callback`.
+- **Authentication → Providers / Email:** enable the intended signup and email
+  confirmation settings.
+- **Authentication → SMTP:** configure the production SMTP host, port,
+  sender, username, and password. These settings are not copied by a schema
+  migration.
+- **Authentication → Email Templates:** deploy and verify the confirmation
+  template using `{{ .Token }}`.
+- **Database → Extensions:** enable `pg_cron` and `pg_net` where reminder
+  dispatch is used.
+- **Vault:** set `petmosphere_app_url` and the matching
+  `health_log_cron_secret`.
+- **Storage:** recreate private buckets and policies, then migrate objects
+  separately.
+- **Realtime, webhooks, OAuth providers, Edge Functions, and custom domains:**
+  inventory and recreate them when applicable.
+
+Vercel environment variables are scoped independently to **Preview** and
+**Production**. Changing a Vercel variable requires a new deployment before
+the running application uses it. Keep the old project configuration available
+until cutover verification is complete.
+
+### Configuration-file ownership
+
+- `.env.example` is the committed, names-only template. Add new variable names
+  here without adding values.
+- `apps/web/.env.local` is the ignored local Next.js configuration. Use the
+  local Supabase URL and publishable key from `supabase status`.
+- Any ignored convenience file such as `.env.staging` is not the deployment
+  source of truth. Keep its names aligned with `.env.example`, and never use
+  legacy `NEXT_PUBLIC_SUPABASE_ANON_KEY` or `SUPABASE_SERVICE_ROLE_KEY` names.
+- `supabase/config.toml` and `supabase/templates/confirmation.html` control
+  local Supabase behavior and email-template source. They do not hold hosted
+  project secrets.
+- `NODE_ENV`, `CI`, and `NEXT_RUNTIME` are managed by the runtime or CI. They
+  are not deployment variables to copy between environments.
+- `E2E_LOCAL_AUTH` is test-only and belongs in the local/CI test environment,
+  not in production Vercel configuration.
+
+The temporary migration variables `SOURCE_DB_URL`, `TARGET_DB_URL`, and
+`BACKUP_DIR` in the examples below are shell variables only. They must not be
+added to `.env.example`, Vercel, or application configuration.
+
+## Hosted project or region migration
+
+Supabase project regions cannot be changed in place. A migration creates a new
+target project, transfers the required data and configuration, verifies the
+target, and only then switches application traffic. Do not delete the source
+project during the migration. Supabase's official guides distinguish database
+backups from Storage objects and project-level Auth/configuration, so a schema
+push alone is not a complete project migration:
+
+- [Migrate within Supabase](https://supabase.com/docs/guides/platform/migrating-within-supabase)
+- [CLI backup and restore](https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore)
+- [Database backups and PITR](https://supabase.com/docs/guides/platform/backups)
+
+### Choose the migration path
+
+Use one of these paths deliberately:
+
+1. **Schema-only replacement:** acceptable only when the target does not need
+   existing users, application rows, or files. Create the target project,
+   apply the committed migrations, and reconfigure all project settings.
+2. **Supabase Restore to a New Project:** preferred when the plan supports
+   physical backups and the feature is available. It can copy database data,
+   database roles, and Auth user records, but Storage objects/settings and
+   several project settings still require separate work. Review the restore
+   summary before confirming.
+3. **Manual logical backup/restore:** use for cross-project or cross-region
+   migration of application data when the managed restore path is unavailable.
+   The CLI dump does not automatically make Auth, Storage objects, SMTP, Vault,
+   cron, or other project configuration portable. Treat Auth users and private
+   files as separate migration workstreams; never manually insert rows into
+   `auth.users`.
+
+### Pre-migration checklist
+
+Before creating the target or copying data:
+
+1. Record source and target project refs, regions, plan, database version,
+   extensions, Storage buckets, Auth providers, SMTP, redirect URLs, Vault
+   secrets, cron jobs, Realtime publications, webhooks, Edge Functions, and
+   Vercel variable scopes.
+2. Confirm the target region and project identity. A project ref is an
+   identifier, not a secret, but a wrong ref can send data to the wrong
+   environment.
+3. Put the source application into a short maintenance/read-only window and
+   pause scheduled dispatch jobs. Do not migrate while writes are occurring.
+4. Capture baseline row counts for every application table and object counts
+   for every Storage bucket. Store the checklist outside Git.
+5. Confirm an off-project backup can be read before proceeding. Keep backups
+   encrypted, access-controlled, and outside the repository.
+
+### Create a logical backup
+
+Use the source database connection string from the Supabase **Connect** panel.
+Keep the connection string in a temporary shell variable only; it contains the
+database password and must never be committed or pasted into logs.
+
+```bash
+export SOURCE_DB_URL='postgresql://...'
+export BACKUP_DIR='/secure/path/petmosphere-migration-YYYYMMDD'
+mkdir -p "$BACKUP_DIR"
+
+supabase db dump --db-url "$SOURCE_DB_URL" \
+  -f "$BACKUP_DIR/roles.sql" --role-only
+supabase db dump --db-url "$SOURCE_DB_URL" \
+  -f "$BACKUP_DIR/schema.sql"
+supabase db dump --db-url "$SOURCE_DB_URL" \
+  -f "$BACKUP_DIR/data.sql" --use-copy --data-only \
+  -x "storage.buckets_vectors" -x "storage.vector_indexes"
+
+shasum -a 256 "$BACKUP_DIR"/*.sql > "$BACKUP_DIR/SHA256SUMS"
+```
+
+If migration history must be preserved in a manually restored project, also
+export it separately:
+
+```bash
+supabase db dump --db-url "$SOURCE_DB_URL" \
+  -f "$BACKUP_DIR/history_schema.sql" --schema supabase_migrations
+supabase db dump --db-url "$SOURCE_DB_URL" \
+  -f "$BACKUP_DIR/history_data.sql" --use-copy --data-only \
+  --schema supabase_migrations
+```
+
+The logical dump is not a substitute for Supabase-managed backups or PITR. On
+paid plans, verify the latest daily backup or PITR recovery point in **Database
+→ Backups** before starting. A backup protects recovery; it does not prove the
+target restore is correct until validation is complete.
+
+### Restore into the target project
+
+1. Create the target project in the required region. Do not reuse the source
+   project's URL or keys.
+2. Configure required extensions, webhooks, and database settings before the
+   restore.
+3. Obtain the target connection string and restore in one transaction:
+
+```bash
+export TARGET_DB_URL='postgresql://...'
+
+psql \
+  --single-transaction \
+  --variable ON_ERROR_STOP=1 \
+  --file "$BACKUP_DIR/roles.sql" \
+  --file "$BACKUP_DIR/schema.sql" \
+  --command 'SET session_replication_role = replica' \
+  --file "$BACKUP_DIR/data.sql" \
+  --dbname "$TARGET_DB_URL"
+```
+
+Do not run this command against an existing target that already contains the
+same schema or data. Restore either into a new empty project or follow a
+reviewed merge procedure. If Vault or column encryption is used, stop and
+follow Supabase's encryption-key procedure instead of using the generic
+command above.
+
+If continuing with the CLI migration workflow, restore the separately exported
+`supabase_migrations` history and then verify it:
+
+```bash
+psql --single-transaction --variable ON_ERROR_STOP=1 \
+  --file "$BACKUP_DIR/history_schema.sql" \
+  --file "$BACKUP_DIR/history_data.sql" \
+  --dbname "$TARGET_DB_URL"
+supabase link --project-ref TARGET_PROJECT_REF
+supabase migration list
+```
+
+Do not use `supabase migration repair` to hide an actual schema mismatch.
+
+### Migrate Auth, Storage, and project configuration
+
+Database restoration alone is incomplete:
+
+- **Auth users:** the managed Restore to a New Project path may include Auth
+  user records. A manual logical dump does not automatically migrate managed
+  Auth data. Verify the target **Authentication → Users** count and test sign
+  in, signup, verification, reset-password, and logout. Never copy or edit
+  `auth.users` with ad-hoc SQL.
+- **Storage:** recreate private buckets and policies, then copy every object
+  using the official Storage migration approach. Verify object counts and
+  downloads with signed URLs. Database backups contain Storage metadata, not
+  the actual object bytes.
+- **Auth configuration:** re-enter Site URL, callback allowlists, email
+  confirmation, templates, SMTP, OAuth credentials, rate limits, and custom
+  claims as applicable.
+- **Secrets and jobs:** recreate Vault secrets, `pg_cron`/`pg_net` jobs,
+  Realtime publications, webhooks, Edge Functions, and custom domains. Do not
+  copy source secrets into Git or migration files.
+
+### Validate before cutover
+
+Run all checks against the target while the source remains available:
+
+1. Verify SHA-256 checksums for the backup files.
+2. Compare row counts and primary-key ranges for every application table.
+3. Check foreign keys and application invariants; investigate every mismatch.
+4. Verify Auth user count and test the full email/password flow.
+5. Verify bucket names, object counts, signed access, and private RLS/storage
+   policies.
+6. Run `supabase migration list` and `supabase test db` against the target.
+7. Run the application smoke tests with the target URL and keys, including
+   RLS, reminders, notifications, and account recovery.
+8. Confirm Vercel runtime logs, Sentry environment, Supabase Auth logs, cron
+   jobs, and SMTP delivery.
+
+### Cut over and retain the source
+
+1. Re-enter the short maintenance window and stop writes and scheduled jobs on
+   the source.
+2. Take a final backup or delta export and restore/validate it on the target.
+3. Update the target environment variables in Vercel, Supabase callback URLs,
+   SMTP, Vault, cron URLs, and any integrations.
+4. Redeploy Vercel and run a non-destructive production smoke test.
+5. Keep the source project intact and read-only for an agreed retention period.
+   Do not route traffic back to it after new writes begin unless you have a
+   documented reconciliation plan; otherwise the two projects diverge.
+6. Delete the source only after the retention period, backup verification,
+   legal/data-retention review, and explicit human approval.
+
+Record source/target refs, backup locations, counts, validation results,
+cutover time, and remaining risks in the release record. Never record database
+passwords, API keys, Auth tokens, private VAPID keys, or customer data.
+
 ## Normal feature workflow
 
 ### 1. Start from the current repository state
@@ -422,7 +703,7 @@ Apply production migrations separately from application deployment so failures
 are visible:
 
 ```bash
-supabase link --project-ref cgrfodgltaliszixosiq
+supabase link --project-ref kjjndqolgzwseffbalog
 supabase migration list
 supabase db push --dry-run
 supabase db push
@@ -435,7 +716,7 @@ Supabase, Vercel, and Sentry. Afterwards, immediately restore the safer default
 link:
 
 ```bash
-supabase link --project-ref voznszbrzjewutugewkt
+supabase link --project-ref kjjndqolgzwseffbalog
 ```
 
 ## Safe schema evolution
