@@ -231,7 +231,7 @@ export function HealthDiary({
             existing={selectedLog}
             initialDate={selectedDate}
             onCancel={() => (selectedLog ? setView("detail") : showCalendar())}
-            onConflict={openDate}
+
             onPetChange={setFormPetId}
             onSaved={(saved) => {
               setSelectedDate(saved.localDate);

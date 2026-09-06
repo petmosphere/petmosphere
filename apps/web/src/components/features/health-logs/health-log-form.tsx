@@ -38,7 +38,6 @@ export function HealthLogForm({
   existing,
   initialDate,
   onCancel,
-  onConflict,
   onPetChange,
   onSaved,
   petOptions,
@@ -47,7 +46,6 @@ export function HealthLogForm({
   existing: HealthLogResponse | null;
   initialDate: string;
   onCancel: () => void;
-  onConflict: (date: string) => void;
   onPetChange: (petId: string) => void;
   onSaved: (healthLog: HealthLogResponse) => void;
   petOptions: { pet: Pet; photoUrl: string | null }[];
