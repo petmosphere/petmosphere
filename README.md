@@ -92,7 +92,12 @@ team password manager; rotating it invalidates existing browser subscriptions.
 Deployment and Supabase Cron setup are documented in the
 [database runbook](docs/architecture/DATABASE_RUNBOOK.md#pwa-push-reminder-operations).
 
-For hosted Supabase projects, enable email confirmation and set the Site URL to the canonical HTTPS domain. Allowlist each environment's exact `/auth/callback` URL, including the password-recovery callback with `?next=/auth/reset-password`. In both staging and production, deploy the Confirm Signup template from `supabase/templates/confirmation.html` using `{{ .Token }}` and the Reset Password template from `supabase/templates/recovery.html` using `{{ .ConfirmationURL }}`. Configure a six-digit OTP with an expiry of no more than one hour. Deploy the hosted templates before deploying this code. Never expose a Supabase secret key or legacy service-role key to the web application.
+For hosted Supabase projects, enable email confirmation and configure the
+canonical Site URL, callback allowlist, and email templates. The complete
+password-recovery procedure is in the
+[password reset runbook](docs/architecture/RESET_PASSWORD_RUNBOOK.md).
+Configure a six-digit OTP with an expiry of no more than one hour. Never expose
+a Supabase secret key or legacy service-role key to the web application.
 
 ## Error monitoring
 
