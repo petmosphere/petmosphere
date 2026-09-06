@@ -113,19 +113,17 @@ Repeat these settings for every hosted Supabase project after creating or
 restoring it:
 
 - **Authentication → URL Configuration:** set the project Site URL to the
-  environment's public HTTPS origin. Add the exact callback URL ending in
-  `/auth/callback` and the password-recovery callback ending in
-  `/auth/callback?next=/auth/reset-password`. A hosted Site URL must never use
-  localhost.
+  environment's public HTTPS origin and add the exact environment callback
+  URL ending in `/auth/callback`. A hosted Site URL must never use localhost.
 - **Authentication → Providers / Email:** enable the intended signup and email
   confirmation settings.
 - **Authentication → SMTP:** configure the production SMTP host, port,
   sender, username, and password. These settings are not copied by a schema
   migration.
 - **Authentication → Email Templates:** deploy and verify the confirmation
-  template using `{{ .Token }}` and the password-recovery template using
-  `{{ .ConfirmationURL }}` from their matching files under
-  `supabase/templates`.
+  template using `{{ .Token }}`. Follow the
+  [password reset runbook](./RESET_PASSWORD_RUNBOOK.md) for recovery-template
+  and redirect configuration.
 - **Database → Extensions:** enable `pg_cron` and `pg_net` where reminder
   dispatch is used.
 - **Vault:** set `petmosphere_app_url` and the matching
@@ -134,6 +132,10 @@ restoring it:
   separately.
 - **Realtime, webhooks, OAuth providers, Edge Functions, and custom domains:**
   inventory and recreate them when applicable.
+
+Password-recovery configuration is documented separately in the
+[password reset runbook](./RESET_PASSWORD_RUNBOOK.md) so the migration steps
+remain explicit without duplicating the hosted Auth instructions here.
 
 #### Verification-code length
 
