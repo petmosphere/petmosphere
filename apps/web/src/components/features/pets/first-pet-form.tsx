@@ -24,6 +24,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { BreedSelect } from "./breed-select";
+import { RequiredMark } from "@/components/ui/required-mark";
 
 const ageOptions: Array<{ label: string; value: PetAgeBand }> = [
   { label: "Puppy / kitten", value: "baby" },
@@ -31,14 +32,6 @@ const ageOptions: Array<{ label: string; value: PetAgeBand }> = [
   { label: "Adult", value: "adult" },
   { label: "Senior", value: "senior" },
 ];
-
-function RequiredMark() {
-  return (
-    <span aria-hidden="true" className="ml-1 text-red-600">
-      *
-    </span>
-  );
-}
 
 export function FirstPetForm({
   mode = "onboarding",

@@ -22,6 +22,7 @@ import {
   notificationLeadOptions,
   repeatLabels,
 } from "./reminder-ui";
+import { RequiredMark } from "@/components/ui/required-mark";
 
 const timezone = "Australia/Melbourne" as const;
 
@@ -196,7 +197,7 @@ export function ReminderForm({
         </fieldset>
 
         <label className="block text-base font-medium">
-          Title
+          Title <RequiredMark />
           <input
             className="mt-2 min-h-[52px] w-full rounded-xl border border-[#ead9c7] bg-transparent px-4 text-base placeholder:text-[#b5b5b5] focus:border-[#ed802a] focus:ring-1 focus:ring-[#ed802a] focus:outline-none"
             maxLength={100}
@@ -208,7 +209,10 @@ export function ReminderForm({
         </label>
 
         <div>
-          <span className="block text-base font-medium">Date</span>
+          <span className="block text-base font-medium">
+            Date
+            <RequiredMark />
+          </span>
           <div className="mt-2">
             <DatePicker
               label="Date"
@@ -221,19 +225,9 @@ export function ReminderForm({
         </div>
 
         <div>
-          <span className="block text-base font-medium">Notify me</span>
-          <div className="mt-2">
-            <NotificationLeadSelector
-              label="Notify me"
-              onChange={setNotificationLeadMinutes}
-              options={notificationLeadOptions}
-              value={notificationLeadMinutes}
-            />
-          </div>
-        </div>
-
-        <div>
-          <span className="block text-base font-medium">Time</span>
+          <span className="block text-base font-medium">
+            Time <RequiredMark />
+          </span>
           <div className="mt-2">
             <TimePicker
               label="Time"
@@ -241,6 +235,18 @@ export function ReminderForm({
               placeholder="Select time"
               testId="reminder-time-input"
               value={localTime || undefined}
+            />
+          </div>
+        </div>
+
+        <div>
+          <span className="block text-base font-medium">Notify me</span>
+          <div className="mt-2">
+            <NotificationLeadSelector
+              label="Notify me"
+              onChange={setNotificationLeadMinutes}
+              options={notificationLeadOptions}
+              value={notificationLeadMinutes}
             />
           </div>
         </div>
