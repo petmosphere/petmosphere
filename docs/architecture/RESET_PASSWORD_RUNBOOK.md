@@ -1,125 +1,73 @@
 # Password reset runbook
 
-This runbook documents the Petmosphere password-recovery flow and the hosted
-Supabase settings that must be recreated when migrating or creating a project.
-It is an operational companion to the
-[database development and release runbook](./DATABASE_RUNBOOK.md).
+## Recovery flow
 
-## How the flow works
+1. Submit email at `/auth/forgot-password` to request a recovery code.
+2. `/auth/verify-recovery` displays a masked email and six-digit input.
+3. Read the email in Gmail, then return to the original PWA/browser to enter the
+   code. Gmail does not need access to the PWA's cookies.
+4. The server calls Supabase `verifyOtp` with `type: "recovery"`. Only successful
+   verification creates the session used by `/auth/reset-password`.
+5. Submit the new password; the app returns to sign-in.
 
-1. The user submits their email at `/auth/forgot-password`.
-2. The server calls Supabase `resetPasswordForEmail` with this callback:
-   `https://<canonical-host>/auth/callback?next=/auth/reset-password`.
-3. Supabase sends the hosted **Reset Password** email. Its button must use
-   `{{ .ConfirmationURL }}`.
-4. The callback exchanges the one-time `code` for a session and redirects to
-   `/auth/reset-password`.
-5. The user submits a new password. The server calls `auth.updateUser` and
-   redirects to sign-in.
+Pending recovery email is stored in an HttpOnly cookie separately from signup.
+It is not authentication proof. Supabase enforces OTP expiry and single use.
+Resend has a 60-second cooldown and Supabase provider rate limits. Use the latest
+code. Request responses do not reveal whether an account exists.
 
-The request proxy also handles older or misconfigured links that arrive at
-`/?code=...` by routing them through the same callback. This is a compatibility
-fallback, not a replacement for the hosted Supabase configuration below.
+## Manual setup after migration
 
-## Configuration after a Supabase migration
+Repeat for **staging and production separately**. Database migrations do not
+deploy hosted Auth templates or settings.
 
-Repeat these steps for staging and production. Use the canonical hostname for
-that environment; do not use `localhost` in hosted settings.
+1. **Supabase → Authentication → Email Templates → Reset Password**: copy
+   [`recovery.html`](../../supabase/templates/recovery.html). Subject:
+   `Reset your Petmosphere password`. Display `{{ .Token }}`, not a
+   `{{ .ConfirmationURL }}` link.
+2. **Authentication → Sign In / Providers → Email**: set Email OTP Length to
+   **6**, Email OTP Expiration to **600 seconds**. This also affects signup.
+   Update **Email Templates → Confirm signup** from
+   [`confirmation.html`](../../supabase/templates/confirmation.html), which now
+   says 10 minutes. Local equivalents are `otp_length = 6`, `otp_expiry = 600`
+   under `[auth.email]` in `supabase/config.toml`; restart local Supabase.
+3. **Authentication → SMTP Settings**: configure the target project's approved
+   sender and SMTP credentials, then verify delivery.
+4. **Authentication → URL Configuration**: use the canonical environment origin
+   as Site URL. Keep `/auth/callback` and
+   `/auth/callback?next=/auth/reset-password` allowlisted for signup and legacy
+   recovery. The new OTP flow does not depend on callback exchange.
 
-### 1. Vercel environment variable
+| Platform/config                               | Variable/settings                                                  | Environment                                                 |
+| --------------------------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------- |
+| Vercel                                        | `NEXT_PUBLIC_APP_URL`                                              | Production canonical HTTPS origin; Preview staging origin   |
+| Vercel                                        | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Matching target Supabase project for Production and Preview |
+| Supabase dashboard                            | Email templates, OTP length/expiry, SMTP, Site URL, Redirect URLs  | Each project separately                                     |
+| Local `apps/web/.env.local`                   | Public app and Supabase variables above                            | Local development                                           |
+| `supabase/config.toml`, `supabase/templates/` | Auth settings and email bodies                                     | Local; copy settings manually to hosted projects            |
 
-In **Vercel → Project → Settings → Environment Variables**, set:
+Redeploy after Vercel environment changes. No new variables or database migration
+are needed. See the [database runbook](./DATABASE_RUNBOOK.md) for the full
+project migration inventory.
 
-| Variable              | Preview / staging        | Production                                                          |
-| --------------------- | ------------------------ | ------------------------------------------------------------------- |
-| `NEXT_PUBLIC_APP_URL` | The staging HTTPS origin | `https://petmosphere.com.au` or the approved canonical `www` origin |
+## Migration verification checklist
 
-Select the correct Vercel environment when editing the value. Redeploy after
-changing it. The application uses this value to construct the recovery callback;
-if a production deployment receives a localhost value, it falls back to
-Vercel's production hostname.
-
-### 2. Supabase URL Configuration
-
-In **Supabase → Authentication → URL Configuration**:
-
-- Set **Site URL** to the same canonical HTTPS origin as `NEXT_PUBLIC_APP_URL`.
-- Add the exact recovery callback to **Redirect URLs**:
-
-  ```text
-  https://petmosphere.com.au/auth/callback?next=/auth/reset-password
-  ```
-
-- Add the normal signup callback for the same origin:
-
-  ```text
-  https://petmosphere.com.au/auth/callback
-  ```
-
-For staging, replace the hostname with the staging origin. Do not add a broad
-wildcard when an exact URL is sufficient.
-
-### 3. Supabase Reset Password email template
-
-In **Supabase → Authentication → Email Templates → Reset Password**:
-
-- Copy the contents of [`supabase/templates/recovery.html`](../../supabase/templates/recovery.html).
-- Confirm the subject is `Reset your Petmosphere password`.
-- Confirm the action link contains exactly:
-
-  ```html
-  href="{{ .ConfirmationURL }}"
-  ```
-
-Do not replace this with a hard-coded site URL or a manually assembled token
-link. Supabase adds the one-time recovery code and the approved redirect.
-Hosted dashboard templates are not deployed by database migrations.
-
-### 4. Supabase email delivery
-
-In **Supabase → Authentication → SMTP Settings**, configure the approved SMTP
-sender for the target project. Send a test email from the dashboard and verify
-that the reset message arrives with the Petmosphere template.
-
-## Verification checklist
-
-After every project migration or URL/template change:
-
-- Request a new password reset email; do not reuse an old link.
-- Confirm the email button opens `/auth/callback`, then
-  `/auth/reset-password`.
-- Submit a valid new password and confirm the user can sign in with it.
-- Confirm an expired or reused link goes to the safe expired-link screen.
-- Check that no email link contains `localhost`.
-- Check Vercel runtime logs if the callback returns an error.
+- Record target project/environment and confirm all dashboard steps above.
+- Request a fresh code in the installed PWA; read Gmail; return to the PWA,
+  enter the code, change password, and sign in with the new password.
+- Test incorrect, expired and reused codes; resend after 60 seconds; repeated
+  resend; provider failures; and changing the email address.
+- Test signup too: OTP expiry is shared. Verify mobile layout, paste and keyboard.
+- Never log codes, passwords, email bodies or session cookies.
 
 ## Troubleshooting
 
-### The link opens `/?code=...`
-
-The email was generated with the Supabase Site URL fallback or an older
-template. Deploy the current app (which includes the compatibility redirect),
-then correct the Site URL, recovery Redirect URL, and Reset Password template.
-Request a new email after the change.
-
-### The link says it is expired
-
-Recovery codes are one-time and time-limited. Request a new email, use the most
-recent link, and verify the callback URL is allowlisted exactly in Supabase.
-
-### The email is not received
-
-Check Supabase Auth logs, SMTP settings, sender authentication, spam folders,
-and the target project's **Authentication → Users** entry. A reset request does
-not reveal whether an account exists.
-
-## Migration sign-off
-
-Record the following in the migration ticket before switching traffic:
-
-- Target Supabase project reference and environment.
-- Site URL and exact recovery Redirect URL verified.
-- Reset Password template deployed from the repository.
-- SMTP test email received.
-- End-to-end reset completed with a test account.
-- Vercel `NEXT_PUBLIC_APP_URL` updated and redeployed.
+- **Email contains a link:** update the target project's Reset Password template
+  and request a fresh email.
+- **Invalid/expired code:** use the latest message for the exact address,
+  including its `+alias`. Verify project, six-digit length and 600-second expiry.
+- **Missing pending email:** request another code in the PWA/browser where you
+  will enter it. Gmail can remain in a separate browser context.
+- **No email:** inspect SMTP, spam and Supabase Auth rate limits/logs without
+  exposing provider details or account existence to the requester.
+- **Old link fails:** PKCE links need the original verifier cookie. Use the new
+  recovery code flow instead.

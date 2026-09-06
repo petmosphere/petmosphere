@@ -229,10 +229,76 @@ export async function forgotPasswordAction(
     return { status: "error", message: publicError(error) };
   }
 
-  return {
-    status: "success",
-    message: "If an account exists, a password reset link is on its way.",
-  };
+  await rememberPendingSignUp(parsed.data.email, "recovery");
+  redirect("/auth/verify-recovery");
+}
+
+export async function resendRecoveryCodeAction(): Promise<AuthActionState> {
+  const pending = await getPendingSignUp("recovery");
+  if (!pending.email)
+    return {
+      status: "error",
+      message: "Enter your email again to request a recovery code.",
+    };
+  const wait = getResendWaitSeconds(pending.sentAt);
+  if (wait > 0)
+    return {
+      status: "error",
+      message: `Wait ${wait} seconds before requesting another code.`,
+    };
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.resetPasswordForEmail(pending.email);
+    if (error)
+      return {
+        status: "error",
+        message: "We could not send the recovery code. Wait and try again.",
+      };
+    await markVerificationCodeSent("recovery");
+    return {
+      status: "success",
+      message:
+        "If an account exists, a new recovery code is on its way. Use the latest code.",
+    };
+  } catch (error) {
+    return { status: "error", message: publicError(error) };
+  }
+}
+
+export async function verifyRecoveryCodeAction(
+  _previousState: AuthActionState,
+  formData: FormData,
+): Promise<AuthActionState> {
+  const parsed = verifyEmailCodeSchema.safeParse(readForm(formData));
+  if (!parsed.success)
+    return {
+      status: "error",
+      message: "Enter the six-digit code from your email.",
+    };
+  const pending = await getPendingSignUp("recovery");
+  if (!pending.email)
+    return {
+      status: "error",
+      message: "Enter your email again to request a recovery code.",
+    };
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.auth.verifyOtp({
+      email: pending.email,
+      token: parsed.data.code,
+      type: "recovery",
+    });
+    if (error || !data.session)
+      return {
+        status: "error",
+        message:
+          "That code is invalid or expired. Try again or request a new code.",
+      };
+    await clearPendingSignUp("recovery");
+  } catch (error) {
+    return { status: "error", message: publicError(error) };
+  }
+  redirect("/auth/reset-password");
 }
 
 export async function resetPasswordAction(
@@ -254,7 +320,7 @@ export async function resetPasswordAction(
     if (userError || !data.user) {
       return {
         status: "error",
-        message: "This reset link has expired. Request a new one.",
+        message: "Your recovery session has expired. Request a new code.",
       };
     }
     const { error } = await supabase.auth.updateUser({

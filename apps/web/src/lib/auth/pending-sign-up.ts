@@ -2,6 +2,9 @@ import { cookies } from "next/headers";
 
 const pendingEmailCookie = "petmosphere_pending_sign_up_email";
 const codeSentAtCookie = "petmosphere_verification_code_sent_at";
+function cookieName(name: string, purpose: string) {
+  return purpose === "signup" ? name : `${name}_${purpose}`;
+}
 
 const pendingSignUpLifetimeSeconds = 60 * 60;
 export const resendCooldownSeconds = 60;
@@ -14,16 +17,26 @@ const cookieOptions = {
   secure: process.env.NODE_ENV === "production",
 };
 
-export async function rememberPendingSignUp(email: string) {
+export async function rememberPendingSignUp(email: string, purpose = "signup") {
   const cookieStore = await cookies();
-  cookieStore.set(pendingEmailCookie, email, cookieOptions);
-  cookieStore.set(codeSentAtCookie, Date.now().toString(), cookieOptions);
+  cookieStore.set(
+    cookieName(pendingEmailCookie, purpose),
+    email,
+    cookieOptions,
+  );
+  cookieStore.set(
+    cookieName(codeSentAtCookie, purpose),
+    Date.now().toString(),
+    cookieOptions,
+  );
 }
 
-export async function getPendingSignUp() {
+export async function getPendingSignUp(purpose = "signup") {
   const cookieStore = await cookies();
-  const email = cookieStore.get(pendingEmailCookie)?.value;
-  const sentAtValue = cookieStore.get(codeSentAtCookie)?.value;
+  const email = cookieStore.get(cookieName(pendingEmailCookie, purpose))?.value;
+  const sentAtValue = cookieStore.get(
+    cookieName(codeSentAtCookie, purpose),
+  )?.value;
   const sentAt = sentAtValue ? Number(sentAtValue) : Number.NaN;
 
   return {
@@ -32,16 +45,28 @@ export async function getPendingSignUp() {
   };
 }
 
-export async function markVerificationCodeSent() {
+export async function markVerificationCodeSent(purpose = "signup") {
   const cookieStore = await cookies();
-  cookieStore.set(codeSentAtCookie, Date.now().toString(), cookieOptions);
+  cookieStore.set(
+    cookieName(codeSentAtCookie, purpose),
+    Date.now().toString(),
+    cookieOptions,
+  );
 }
 
-export async function clearPendingSignUp() {
+export async function clearPendingSignUp(purpose = "signup") {
   const cookieStore = await cookies();
   const expiredCookieOptions = { ...cookieOptions, maxAge: 0 };
-  cookieStore.set(pendingEmailCookie, "", expiredCookieOptions);
-  cookieStore.set(codeSentAtCookie, "", expiredCookieOptions);
+  cookieStore.set(
+    cookieName(pendingEmailCookie, purpose),
+    "",
+    expiredCookieOptions,
+  );
+  cookieStore.set(
+    cookieName(codeSentAtCookie, purpose),
+    "",
+    expiredCookieOptions,
+  );
 }
 
 export function getResendWaitSeconds(sentAt?: number) {

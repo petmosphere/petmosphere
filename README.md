@@ -96,7 +96,7 @@ For hosted Supabase projects, enable email confirmation and configure the
 canonical Site URL, callback allowlist, and email templates. The complete
 password-recovery procedure is in the
 [password reset runbook](docs/architecture/RESET_PASSWORD_RUNBOOK.md).
-Configure a six-digit OTP with an expiry of no more than one hour. Never expose
+Configure a six-digit OTP with an expiry of 600 seconds (10 minutes). Never expose
 a Supabase secret key or legacy service-role key to the web application.
 
 ## Error monitoring

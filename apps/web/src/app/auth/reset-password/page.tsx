@@ -30,8 +30,8 @@ export default function ResetPasswordPage() {
         ]}
         footer={{
           href: "/auth/forgot-password",
-          label: "Request another link",
-          prompt: "Link expired?",
+          label: "Request another code",
+          prompt: "Session expired?",
         }}
         submitLabel="Update password"
         variant="reset"
