@@ -208,7 +208,7 @@ export function LogWeight({
           <input
             aria-describedby="weight-last-entry weight-type-hint"
             aria-invalid={weightDirty && !validWeight}
-            className="w-[5.5ch] max-w-[11rem] min-w-0 border-b-2 border-[#ED802A66] bg-transparent pb-1 text-center text-5xl leading-none font-bold tracking-[-0.045em] outline-none transition-colors focus:border-[#ED802A]"
+            className="w-[5.5ch] max-w-[11rem] min-w-0 border-b-2 border-[#ED802A66] bg-transparent pb-1 text-center text-5xl leading-none font-bold tracking-[-0.045em] transition-colors outline-none focus:border-[#ED802A]"
             id="weight-value"
             inputMode="decimal"
             maxLength={6}

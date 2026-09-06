@@ -126,11 +126,15 @@ export function EditProfileForm({
           className={`fixed left-1/2 z-50 -translate-x-1/2 transition-opacity duration-500 ${toastFading ? "opacity-0" : "opacity-100"}`}
           style={{ top: "max(1rem, env(safe-area-inset-top))" }}
         >
-          <div className="flex items-center gap-2.5 rounded-full border border-[#65bcb5] bg-[#eaf7f5] py-2.5 pl-4 pr-5 shadow-md">
+          <div className="flex items-center gap-2.5 rounded-full border border-[#65bcb5] bg-[#eaf7f5] py-2.5 pr-5 pl-4 shadow-md">
             <div className="grid size-5 shrink-0 place-items-center rounded-full bg-[#65bcb5]">
-              <Check aria-hidden="true" className="size-3 text-white" strokeWidth={2.5} />
+              <Check
+                aria-hidden="true"
+                className="size-3 text-white"
+                strokeWidth={2.5}
+              />
             </div>
-            <span className="whitespace-nowrap text-sm font-semibold text-[#2e7d73]">
+            <span className="text-sm font-semibold whitespace-nowrap text-[#2e7d73]">
               Password updated successfully
             </span>
           </div>

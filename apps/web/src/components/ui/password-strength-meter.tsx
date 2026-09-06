@@ -1,10 +1,9 @@
-const STRENGTH_META: Record<1 | 2 | 3 | 4, { color: string; label: string }> =
-  {
-    1: { color: "#EF4444", label: "Weak" },
-    2: { color: "#F97316", label: "Fair" },
-    3: { color: "#65BCB5", label: "Good" },
-    4: { color: "#65BCB5", label: "Strong" },
-  };
+const STRENGTH_META: Record<1 | 2 | 3 | 4, { color: string; label: string }> = {
+  1: { color: "#EF4444", label: "Weak" },
+  2: { color: "#F97316", label: "Fair" },
+  3: { color: "#65BCB5", label: "Good" },
+  4: { color: "#65BCB5", label: "Strong" },
+};
 
 export function passwordStrengthScore(pw: string): 1 | 2 | 3 | 4 {
   let s = 0;

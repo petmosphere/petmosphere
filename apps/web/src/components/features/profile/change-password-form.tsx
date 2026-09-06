@@ -104,11 +104,7 @@ export function ChangePasswordForm() {
         Change Password
       </h1>
 
-      <form
-        className="mt-8 flex flex-1 flex-col"
-        noValidate
-        onSubmit={submit}
-      >
+      <form className="mt-8 flex flex-1 flex-col" noValidate onSubmit={submit}>
         <div className="space-y-4">
           {FIELDS.map(({ autoComplete, key, label }) => (
             <div key={key}>
@@ -130,9 +126,7 @@ export function ChangePasswordForm() {
                         : `Show ${label.toLowerCase()}`
                     }
                     className="absolute top-0 right-0 grid h-full w-12 place-items-center text-[#7a7a7a]"
-                    onClick={() =>
-                      setShow((s) => ({ ...s, [key]: !s[key] }))
-                    }
+                    onClick={() => setShow((s) => ({ ...s, [key]: !s[key] }))}
                     type="button"
                   >
                     {show[key] ? (
