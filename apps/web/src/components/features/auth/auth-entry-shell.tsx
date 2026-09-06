@@ -1,4 +1,4 @@
-import { ChevronLeft, MailCheck, PawPrint } from "lucide-react";
+import { ChevronLeft, MailCheck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -57,13 +57,19 @@ export function AuthEntryShell({
               />
             </div>
           ) : variant === "verify" ? (
-            <span className="mx-auto grid size-16 place-items-center rounded-full bg-[#fdf8f2] text-[#ed802a] shadow-[0_6px_16px_rgba(205,146,85,0.1)]">
-              <PawPrint
-                aria-hidden="true"
-                className="size-8"
-                strokeWidth={2.5}
+            <Link
+              aria-label="Petmosphere home"
+              className="mx-auto block w-fit transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.97] motion-reduce:transform-none"
+              href="/"
+            >
+              <Image
+                alt="Petmosphere"
+                className="rounded-[22%] shadow-[0_10px_30px_rgba(80,55,35,0.05)]"
+                height={52}
+                src="/app-icon.svg"
+                width={52}
               />
-            </span>
+            </Link>
           ) : (
             <Link
               aria-label="Petmosphere home"

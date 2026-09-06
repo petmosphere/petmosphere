@@ -1,4 +1,5 @@
 import { Mail } from "lucide-react";
+import Link from "next/link";
 
 import { AppNav } from "@/components/features/pets/app-nav";
 
@@ -26,6 +27,15 @@ export function ContactInfo({ diaryHref }: { diaryHref?: string | undefined }) {
           <Mail aria-hidden="true" className="size-5 text-[#ed802a]" />
           {supportEmail}
         </a>
+        <p className="mt-6 text-base text-[#7a7a7a]">
+          Have a question?{" "}
+          <Link
+            className="font-medium text-[#ed802a] underline-offset-2 hover:underline focus-visible:rounded focus-visible:outline-2 focus-visible:outline-[#ed802a]"
+            href="/profile/help"
+          >
+            Check our Help &amp; FAQ first
+          </Link>
+        </p>
       </section>
       <div aria-hidden="true" className="h-24" />
       <AppNav
