@@ -41,7 +41,7 @@ supabase status
 supabase stop
 ```
 
-After `supabase start`, copy the local API URL and publishable/anon key into `apps/web/.env.local` as `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Local confirmation and reset emails are captured by Mailpit; open the Mailpit URL shown by `supabase status`. New accounts receive a six-digit verification code. The local confirmation template is configured in `supabase/config.toml` and stored at `supabase/templates/confirmation.html`. Restart the local stack after changing authentication templates:
+After `supabase start`, copy the local API URL and publishable/anon key into `apps/web/.env.local` as `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Local confirmation and reset emails are captured by Mailpit; open the Mailpit URL shown by `supabase status`. New accounts receive a six-digit verification code. The local confirmation and password-recovery templates are configured in `supabase/config.toml` and stored under `supabase/templates`. Restart the local stack after changing authentication templates:
 
 ```bash
 supabase stop
@@ -92,7 +92,12 @@ team password manager; rotating it invalidates existing browser subscriptions.
 Deployment and Supabase Cron setup are documented in the
 [database runbook](docs/architecture/DATABASE_RUNBOOK.md#pwa-push-reminder-operations).
 
-For hosted Supabase projects, enable email confirmation and allowlist the exact callback URLs for each Vercel environment, ending in `/auth/callback`. The production callback should use the canonical HTTPS domain. In both staging and production, set the Confirm Signup email template to use `{{ .Token }}` rather than `{{ .ConfirmationURL }}`, matching `supabase/templates/confirmation.html`. Configure a six-digit OTP with an expiry of no more than one hour. Deploy the hosted template before deploying this code so users do not receive a link that the verification screen cannot accept. Never expose a Supabase secret key or legacy service-role key to the web application.
+For hosted Supabase projects, enable email confirmation and configure the
+canonical Site URL, callback allowlist, and email templates. The complete
+password-recovery procedure is in the
+[password reset runbook](docs/architecture/RESET_PASSWORD_RUNBOOK.md).
+Configure a six-digit OTP with an expiry of no more than one hour. Never expose
+a Supabase secret key or legacy service-role key to the web application.
 
 ## Error monitoring
 

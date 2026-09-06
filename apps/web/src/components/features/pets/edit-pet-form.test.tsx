@@ -51,6 +51,11 @@ describe("EditPetForm", () => {
     fireEvent.change(screen.getByLabelText("Pet’s name"), {
       target: { value: "Maxwell" },
     });
+    fireEvent.click(screen.getByRole("button", { name: "Breed" }));
+    fireEvent.click(screen.getByRole("option", { name: "Border Collie" }));
+    const birthDate = screen.getByLabelText("Date of birth");
+    fireEvent.change(birthDate, { target: { value: "12052020" } });
+    expect(birthDate).toHaveValue("12/05/2020");
     const save = screen.getByRole("button", { name: "Save" });
     await waitFor(() => expect(save).toBeEnabled());
     fireEvent.click(save);
@@ -61,6 +66,10 @@ describe("EditPetForm", () => {
         expect.objectContaining({ method: "PATCH" }),
       ),
     );
+    const request = fetchMock.mock.calls[0]?.[1] as RequestInit;
+    const body = request.body as FormData;
+    expect(body.get("birthDate")).toBe("2020-05-12");
+    expect(body.get("breed")).toBe("Border Collie");
     expect(replace).toHaveBeenCalledWith(`/pets/${pet.id}`);
   });
 });

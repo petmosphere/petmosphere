@@ -4,6 +4,12 @@ import { Check, ChevronDown, List, Search } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import type { PetSpecies } from "@petmosphere/domain";
 
+export const OTHER_BREED = "others";
+
+export function isSuggestedBreed(species: PetSpecies, breed: string) {
+  return breedSuggestions[species].includes(breed);
+}
+
 const breedSuggestions: Record<PetSpecies, string[]> = {
   cat: [
     "American Bobtail",
@@ -149,9 +155,14 @@ export function BreedSelect({
 
   const breeds = species ? breedSuggestions[species] : [];
   const normalizedQuery = query.trim().toLowerCase();
+  const options = [...breeds, OTHER_BREED];
   const filtered = normalizedQuery
-    ? breeds.filter((breed) => breed.toLowerCase().includes(normalizedQuery))
-    : breeds;
+    ? options.filter((breed) =>
+        (breed === OTHER_BREED ? "Others" : breed)
+          .toLowerCase()
+          .includes(normalizedQuery),
+      )
+    : options;
 
   useEffect(() => {
     if (!open) return;
@@ -173,6 +184,7 @@ export function BreedSelect({
   }
 
   const placeholder = species ? "Select a breed" : "Choose a species first";
+  const displayValue = value === OTHER_BREED ? "Others" : value;
 
   return (
     <div className="relative">
@@ -200,7 +212,7 @@ export function BreedSelect({
             value ? "text-[#2d2d2d]" : "text-stone-400"
           }`}
         >
-          {value || placeholder}
+          {displayValue || placeholder}
         </span>
         <ChevronDown
           aria-hidden="true"
@@ -257,7 +269,9 @@ export function BreedSelect({
                       role="option"
                       type="button"
                     >
-                      <span className="truncate">{breed}</span>
+                      <span className="truncate">
+                        {breed === OTHER_BREED ? "Others" : breed}
+                      </span>
                       {active ? (
                         <Check
                           aria-hidden="true"

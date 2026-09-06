@@ -36,4 +36,15 @@ describe("FirstPetForm", () => {
       await screen.findByText("Date of birth cannot be in the future."),
     ).toBeVisible();
   });
+
+  it("shows a custom breed field when Others is selected", () => {
+    render(<FirstPetForm />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Dog" }));
+    fireEvent.click(screen.getByRole("button", { name: /Breed/ }));
+    fireEvent.click(screen.getByRole("option", { name: "Others" }));
+
+    expect(screen.getByLabelText("Your pet’s breed")).toBeVisible();
+    expect(screen.getByText("Others")).toBeVisible();
+  });
 });

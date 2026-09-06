@@ -1,7 +1,6 @@
 import type { Pet, WeightUnit } from "@petmosphere/domain";
 import { formatWeight, getPetAgeLabel } from "@petmosphere/domain";
 import {
-  ArrowLeft,
   Cake,
   ChartNoAxesCombined,
   ChevronRight,
@@ -15,6 +14,7 @@ import Link from "next/link";
 
 import { DeletePetButton } from "./delete-pet-button";
 import { PetPhotoViewer } from "./pet-photo-viewer";
+import { PetProfileBackButton } from "./pet-profile-back-button";
 
 const labels = {
   no: "No",
@@ -69,13 +69,7 @@ export function PetProfile({
   return (
     <main className="mx-auto min-h-dvh w-full max-w-[393px] bg-[#fdf8f2] px-6 pt-[max(2rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))] text-[#2d2d2d]">
       <div className="flex items-center justify-between">
-        <Link
-          aria-label="Back to Home"
-          className="-ml-3 grid min-h-11 min-w-11 place-items-center rounded-full focus-visible:outline-2 focus-visible:outline-[#ed802a]"
-          href="/home"
-        >
-          <ArrowLeft aria-hidden="true" className="size-6" />
-        </Link>
+        <PetProfileBackButton />
         <div className="flex items-center gap-1">
           <Link
             aria-label={`Edit ${pet.name}'s profile`}
