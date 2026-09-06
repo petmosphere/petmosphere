@@ -179,7 +179,7 @@ export function ReminderDetail({
         <div
           aria-labelledby="delete-reminder-title"
           aria-modal="true"
-          className="fixed inset-0 z-50 grid place-items-end bg-black/35 p-4 sm:place-items-center"
+          className="fixed inset-0 z-50 grid place-items-center bg-black/35 p-4"
           role="dialog"
         >
           <div className="w-full max-w-sm rounded-[2rem] bg-[#fdf8f2] p-6 shadow-xl">

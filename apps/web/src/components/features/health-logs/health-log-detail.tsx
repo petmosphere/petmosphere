@@ -191,7 +191,7 @@ export function HealthLogDetail({
         <div
           aria-labelledby="delete-log-title"
           aria-modal="true"
-          className="fixed inset-0 z-50 grid place-items-end bg-stone-950/55 p-4 sm:place-items-center"
+          className="fixed inset-0 z-50 grid place-items-center bg-stone-950/55 p-4"
           role="dialog"
         >
           <div className="w-full max-w-sm rounded-3xl bg-white p-6 text-center shadow-2xl">

@@ -6,7 +6,7 @@ import {
   reminderRepeatRules,
   type Pet,
 } from "@petmosphere/domain";
-import { ChevronDown, ChevronRight, LoaderCircle } from "lucide-react";
+import { ChevronRight, LoaderCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useMemo, useState } from "react";
@@ -15,7 +15,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { NotificationLeadSelector } from "@/components/ui/notification-lead-selector";
 import { RepeatSelector } from "@/components/ui/repeat-selector";
 import { TimePicker } from "@/components/ui/time-picker";
-import { PetAvatar } from "@/components/features/pets/pet-avatar";
+import { PetSelector } from "@/components/ui/pet-selector";
 import { enablePushNotifications } from "@/lib/health-logs/push-notifications";
 import {
   categoryDetails,
@@ -51,7 +51,6 @@ export function ReminderForm({
   const [state, setState] = useState<"idle" | "saving" | "error">("idle");
   const [message, setMessage] = useState("");
   const requestId = useMemo(() => crypto.randomUUID(), []);
-  const selectedPet = pets.find((option) => option.pet.id === petId) ?? pets[0];
   const valid = Boolean(petId && title.trim() && dueDate >= today && localTime);
 
   async function save(event: FormEvent) {
@@ -115,46 +114,19 @@ export function ReminderForm({
       </header>
 
       <form className="mt-8 space-y-6" onSubmit={(event) => void save(event)}>
-        <label className="block text-sm font-semibold tracking-wide text-[#7a7a7a] uppercase">
-          Pet
-          <span className="relative mt-3 flex min-h-16 items-center gap-3 rounded-xl border border-[#ead9c7] px-3 normal-case focus-within:border-[#ed802a] focus-within:ring-1 focus-within:ring-[#ed802a]">
-            {selectedPet ? (
-              <>
-                <PetAvatar
-                  className="size-11 border-0"
-                  name={selectedPet.pet.name}
-                  photoUrl={selectedPet.photoUrl}
-                  species={selectedPet.pet.species}
-                />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-base font-semibold text-[#2d2d2d]">
-                    {selectedPet.pet.name}
-                  </span>
-                  <span className="block truncate text-sm font-normal text-[#7a7a7a] capitalize">
-                    {selectedPet.pet.breed || selectedPet.pet.species}
-                  </span>
-                </span>
-                <ChevronDown
-                  aria-hidden="true"
-                  className="size-5 text-[#7a7a7a]"
-                />
-              </>
-            ) : null}
-            <select
-              aria-label="Pet"
-              className="absolute inset-0 cursor-pointer opacity-0"
-              onChange={(event) => setPetId(event.target.value)}
-              required
-              value={petId}
-            >
-              {pets.map(({ pet }) => (
-                <option key={pet.id} value={pet.id}>
-                  {pet.name}
-                </option>
-              ))}
-            </select>
+        <div>
+          <span className="block text-sm font-semibold tracking-wide text-[#7a7a7a] uppercase">
+            Pet
           </span>
-        </label>
+          <div className="mt-3">
+            <PetSelector
+              label="Pet"
+              onChange={setPetId}
+              options={pets}
+              value={petId}
+            />
+          </div>
+        </div>
 
         <fieldset className="max-w-full min-w-0">
           <legend className="text-sm font-semibold tracking-wide text-[#7a7a7a] uppercase">

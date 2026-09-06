@@ -7,7 +7,7 @@ import {
   updateProfileSchema,
   type UpdateProfileInput,
 } from "@petmosphere/api-contracts";
-import { Camera } from "lucide-react";
+import { Camera, Check } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -21,13 +21,27 @@ export function EditProfileForm({
   avatarUrl,
   displayName,
   email,
+  passwordUpdated = false,
 }: {
   avatarUrl: string | null;
   displayName: string;
   email: string;
+  passwordUpdated?: boolean;
 }) {
   const router = useRouter();
+  const [toastVisible, setToastVisible] = useState(passwordUpdated);
+  const [toastFading, setToastFading] = useState(false);
   const [photo, setPhoto] = useState<File | null>(null);
+
+  useEffect(() => {
+    if (!passwordUpdated) return;
+    const fade = setTimeout(() => setToastFading(true), 2500);
+    const hide = setTimeout(() => setToastVisible(false), 3000);
+    return () => {
+      clearTimeout(fade);
+      clearTimeout(hide);
+    };
+  }, [passwordUpdated]);
   const [photoError, setPhotoError] = useState<string>();
   const [serverError, setServerError] = useState<string>();
   const {
@@ -106,6 +120,26 @@ export function EditProfileForm({
 
   return (
     <ProfileShell title="Edit Profile">
+      {toastVisible ? (
+        <div
+          aria-live="polite"
+          className={`fixed left-1/2 z-50 -translate-x-1/2 transition-opacity duration-500 ${toastFading ? "opacity-0" : "opacity-100"}`}
+          style={{ top: "max(1rem, env(safe-area-inset-top))" }}
+        >
+          <div className="flex items-center gap-2.5 rounded-full border border-[#65bcb5] bg-[#eaf7f5] py-2.5 pr-5 pl-4 shadow-md">
+            <div className="grid size-5 shrink-0 place-items-center rounded-full bg-[#65bcb5]">
+              <Check
+                aria-hidden="true"
+                className="size-3 text-white"
+                strokeWidth={2.5}
+              />
+            </div>
+            <span className="text-sm font-semibold whitespace-nowrap text-[#2e7d73]">
+              Password updated successfully
+            </span>
+          </div>
+        </div>
+      ) : null}
       <form className="flex flex-1 flex-col" noValidate onSubmit={submit}>
         <div className="mt-7 text-center">
           <label

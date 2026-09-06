@@ -6,7 +6,7 @@ const weightSchema = z
   .positive("Enter a weight greater than 0 kg.")
   .max(300, "Enter a weight of 300 kg or less.")
   .refine(
-    (value) => Number.isInteger(value * 100),
+    (value) => Math.abs(Math.round(value * 100) - value * 100) < 1e-9,
     "Use no more than two decimal places.",
   );
 

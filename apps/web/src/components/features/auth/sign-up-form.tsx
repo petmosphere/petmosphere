@@ -19,6 +19,7 @@ import { useState, useTransition } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
 import { signUpAction, type AuthActionState } from "@/app/auth/actions";
+import { PasswordStrengthMeter } from "@/components/ui/password-strength-meter";
 
 const initialState: AuthActionState = { status: "idle" };
 
@@ -178,6 +179,9 @@ export function SignUpForm() {
               >
                 {errorMessage}
               </p>
+            ) : null}
+            {field.name === "password" ? (
+              <PasswordStrengthMeter password={password ?? ""} />
             ) : null}
           </div>
         );
