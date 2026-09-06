@@ -45,6 +45,22 @@ describe("password recovery actions", () => {
     });
   });
 
+  it("sends recovery users through the application callback", async () => {
+    const resetPasswordForEmail = vi.fn().mockResolvedValue({ error: null });
+    createClientMock.mockResolvedValue({
+      auth: { resetPasswordForEmail },
+    });
+    const formData = new FormData();
+    formData.set("email", "owner@example.com");
+
+    await forgotPasswordAction({ status: "idle" }, formData);
+
+    expect(resetPasswordForEmail).toHaveBeenCalledWith("owner@example.com", {
+      redirectTo:
+        "http://localhost:3000/auth/callback?next=/auth/reset-password",
+    });
+  });
+
   it("rejects an expired recovery session", async () => {
     createClientMock.mockResolvedValue({
       auth: {

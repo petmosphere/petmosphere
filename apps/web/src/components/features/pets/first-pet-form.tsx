@@ -23,7 +23,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
-import { BreedSelect } from "./breed-select";
+
+import { formatBirthDateInput } from "@/lib/pets/birth-date-input";
+import { BreedSelect, OTHER_BREED } from "./breed-select";
 import { RequiredMark } from "@/components/ui/required-mark";
 
 const ageOptions: Array<{ label: string; value: PetAgeBand }> = [
@@ -49,6 +51,8 @@ export function FirstPetForm({
   >();
   const [serverError, setServerError] = useState<string>();
   const [unknownBirthDate, setUnknownBirthDate] = useState(false);
+  const [customBreed, setCustomBreed] = useState("");
+  const [isCustomBreed, setIsCustomBreed] = useState(false);
   const {
     clearErrors,
     control,
@@ -74,6 +78,10 @@ export function FirstPetForm({
     control,
     name: ["species", "sex", "desexedStatus", "approximateAge"],
   });
+  const customBreedError =
+    isCustomBreed && !customBreed.trim()
+      ? "Enter your pet's breed."
+      : undefined;
 
   useEffect(() => {
     setValue("creationRequestId", crypto.randomUUID());
@@ -255,6 +263,8 @@ export function FirstPetForm({
                         shouldValidate: true,
                       });
                       setValue("breed", "");
+                      setCustomBreed("");
+                      setIsCustomBreed(false);
                     }}
                     type="button"
                   >
@@ -290,12 +300,53 @@ export function FirstPetForm({
                 <BreedSelect
                   disabled={!species}
                   id="pet-breed"
-                  onChange={field.onChange}
+                  onChange={(value) => {
+                    const custom = value === OTHER_BREED;
+                    setIsCustomBreed(custom);
+                    if (!custom) setCustomBreed("");
+                    field.onChange(custom ? customBreed : value);
+                  }}
                   species={species}
-                  value={field.value ?? ""}
+                  value={isCustomBreed ? OTHER_BREED : (field.value ?? "")}
                 />
               )}
             />
+            {isCustomBreed ? (
+              <div className="mt-3">
+                <label
+                  className="mb-2 block text-sm font-medium"
+                  htmlFor="pet-custom-breed"
+                >
+                  Your pet’s breed
+                </label>
+                <input
+                  aria-describedby={
+                    customBreedError ? "pet-custom-breed-error" : undefined
+                  }
+                  aria-invalid={Boolean(customBreedError)}
+                  className={inputClass}
+                  id="pet-custom-breed"
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setCustomBreed(value);
+                    setValue("breed", value, {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    });
+                  }}
+                  placeholder="Enter breed"
+                  value={customBreed}
+                />
+                {customBreedError ? (
+                  <p
+                    className="mt-1.5 text-sm text-red-600"
+                    id="pet-custom-breed-error"
+                  >
+                    {customBreedError}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
           </div>
 
           <div className="mt-5">
@@ -322,7 +373,7 @@ export function FirstPetForm({
                 id="birth-date"
                 inputMode="numeric"
                 onChange={(e) => {
-                  const display = e.target.value;
+                  const display = formatBirthDateInput(e.target.value);
                   setBirthDateDisplay(display);
                   if (display === "") {
                     setBirthDateFormatError(undefined);
@@ -345,6 +396,7 @@ export function FirstPetForm({
                   }
                 }}
                 placeholder="DD/MM/YYYY"
+                maxLength={10}
                 type="text"
                 value={birthDateDisplay}
               />
@@ -427,7 +479,8 @@ export function FirstPetForm({
             disabled={
               isSubmitting ||
               Boolean(photoError) ||
-              Boolean(birthDateFormatError)
+              Boolean(birthDateFormatError) ||
+              Boolean(customBreedError)
             }
             type="submit"
           >
