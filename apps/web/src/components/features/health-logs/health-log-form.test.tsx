@@ -3,6 +3,22 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { HealthLogForm } from "./health-log-form";
 
+const pet = {
+  approximateAge: null,
+  birthDate: null,
+  breed: null,
+  createdAt: "2026-08-15T00:00:00.000Z",
+  desexedStatus: null,
+  id: "30000000-0000-4000-8000-000000000003",
+  name: "Max",
+  ownerId: "20000000-0000-4000-8000-000000000002",
+  photoPath: null,
+  sex: null,
+  species: "dog" as const,
+  updatedAt: "2026-08-15T00:00:00.000Z",
+  weightKg: null,
+};
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
@@ -19,11 +35,10 @@ describe("HealthLogForm", () => {
         initialDate="2026-08-15"
         onCancel={vi.fn()}
         onConflict={vi.fn()}
+        onPetChange={vi.fn()}
         onSaved={vi.fn()}
-        petId="30000000-0000-4000-8000-000000000003"
-        petName="Max"
-        petPhotoUrl={null}
-        petSpecies="dog"
+        petOptions={[{ pet, photoUrl: null }]}
+        selectedPetId={pet.id}
       />,
     );
 
@@ -55,11 +70,10 @@ describe("HealthLogForm", () => {
         initialDate="2026-08-15"
         onCancel={vi.fn()}
         onConflict={vi.fn()}
+        onPetChange={vi.fn()}
         onSaved={vi.fn()}
-        petId="30000000-0000-4000-8000-000000000003"
-        petName="Max"
-        petPhotoUrl={null}
-        petSpecies="dog"
+        petOptions={[{ pet, photoUrl: null }]}
+        selectedPetId={pet.id}
       />,
     );
     fireEvent.click(screen.getByRole("button", { name: "Okay" }));
@@ -74,5 +88,36 @@ describe("HealthLogForm", () => {
     ).toBeVisible();
     expect(note).toHaveValue("Max was quieter after lunch.");
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+  });
+
+  it("lets a user choose another owned pet for a new entry", () => {
+    const onPetChange = vi.fn();
+    const luna = {
+      ...pet,
+      id: "40000000-0000-4000-8000-000000000004",
+      name: "Luna",
+    };
+
+    render(
+      <HealthLogForm
+        existing={null}
+        initialDate="2026-08-15"
+        onCancel={vi.fn()}
+        onConflict={vi.fn()}
+        onPetChange={onPetChange}
+        onSaved={vi.fn()}
+        petOptions={[
+          { pet, photoUrl: null },
+          { pet: luna, photoUrl: null },
+        ]}
+        selectedPetId={pet.id}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("Pet"), {
+      target: { value: luna.id },
+    });
+
+    expect(onPetChange).toHaveBeenCalledWith(luna.id);
   });
 });
