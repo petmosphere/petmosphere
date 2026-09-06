@@ -21,9 +21,21 @@ export function hasSupabaseConfig() {
 
 export function getAppUrl() {
   const configuredUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const normalizedConfiguredUrl = configuredUrl?.replace(/\/$/, "");
+  const vercelProductionUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL;
 
-  if (configuredUrl) {
-    return configuredUrl.replace(/\/$/, "");
+  if (
+    normalizedConfiguredUrl &&
+    (process.env.NODE_ENV === "development" ||
+      !/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(
+        normalizedConfiguredUrl,
+      ))
+  ) {
+    return normalizedConfiguredUrl;
+  }
+
+  if (vercelProductionUrl) {
+    return `https://${vercelProductionUrl.replace(/^https?:\/\//, "").replace(/\/$/, "")}`;
   }
 
   if (process.env.NODE_ENV === "development") {

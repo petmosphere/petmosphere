@@ -4,8 +4,10 @@ import { describe, expect, it, vi } from "vitest";
 
 import { PetProfile } from "./pet-profile";
 
+const { back } = vi.hoisted(() => ({ back: vi.fn() }));
+
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ refresh: vi.fn(), replace: vi.fn() }),
+  useRouter: () => ({ back, refresh: vi.fn(), replace: vi.fn() }),
 }));
 
 describe("PetProfile", () => {
@@ -35,6 +37,9 @@ describe("PetProfile", () => {
     ).toHaveAttribute("href", `/pets/${pet.id}/edit`);
     expect(screen.getByText("Weight History")).toBeVisible();
     expect(screen.queryByText("Sign out")).not.toBeInTheDocument();
+    window.history.pushState({}, "", `/pets/${pet.id}`);
+    fireEvent.click(screen.getByRole("button", { name: "Back" }));
+    expect(back).toHaveBeenCalledOnce();
 
     fireEvent.click(screen.getByRole("button", { name: "Delete pet" }));
     expect(

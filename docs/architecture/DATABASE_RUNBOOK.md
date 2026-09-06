@@ -112,15 +112,20 @@ not through an application environment variable in this repository.
 Repeat these settings for every hosted Supabase project after creating or
 restoring it:
 
-- **Authentication → URL Configuration:** set the project Site URL and the
-  exact environment callback URL ending in `/auth/callback`.
+- **Authentication → URL Configuration:** set the project Site URL to the
+  environment's public HTTPS origin. Add the exact callback URL ending in
+  `/auth/callback` and the password-recovery callback ending in
+  `/auth/callback?next=/auth/reset-password`. A hosted Site URL must never use
+  localhost.
 - **Authentication → Providers / Email:** enable the intended signup and email
   confirmation settings.
 - **Authentication → SMTP:** configure the production SMTP host, port,
   sender, username, and password. These settings are not copied by a schema
   migration.
 - **Authentication → Email Templates:** deploy and verify the confirmation
-  template using `{{ .Token }}`.
+  template using `{{ .Token }}` and the password-recovery template using
+  `{{ .ConfirmationURL }}` from their matching files under
+  `supabase/templates`.
 - **Database → Extensions:** enable `pg_cron` and `pg_net` where reminder
   dispatch is used.
 - **Vault:** set `petmosphere_app_url` and the matching
@@ -207,9 +212,10 @@ until cutover verification is complete.
 - Any ignored convenience file such as `.env.staging` is not the deployment
   source of truth. Keep its names aligned with `.env.example`, and never use
   legacy `NEXT_PUBLIC_SUPABASE_ANON_KEY` or `SUPABASE_SERVICE_ROLE_KEY` names.
-- `supabase/config.toml` and `supabase/templates/confirmation.html` control
-  local Supabase behavior and email-template source. They do not hold hosted
-  project secrets.
+- `supabase/config.toml` and the files under `supabase/templates` control local
+  Supabase behavior and email-template source. Copy those templates into every
+  hosted project's Auth email-template settings; CLI migrations do not deploy
+  them. They do not hold hosted project secrets.
 - `NODE_ENV`, `CI`, and `NEXT_RUNTIME` are managed by the runtime or CI. They
   are not deployment variables to copy between environments.
 - `E2E_LOCAL_AUTH` is test-only and belongs in the local/CI test environment,

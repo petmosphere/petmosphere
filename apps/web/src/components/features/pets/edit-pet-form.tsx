@@ -15,7 +15,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
-import { BreedSelect } from "./breed-select";
+
+import { formatBirthDateInput } from "@/lib/pets/birth-date-input";
+import { BreedSelect, isSuggestedBreed, OTHER_BREED } from "./breed-select";
 
 export function EditPetForm({
   pet,
@@ -37,6 +39,14 @@ export function EditPetForm({
   const [birthDateFormatError, setBirthDateFormatError] = useState<
     string | undefined
   >();
+  const hasCustomBreed = Boolean(
+    pet.breed &&
+    (pet.breed === OTHER_BREED || !isSuggestedBreed(pet.species, pet.breed)),
+  );
+  const initialCustomBreed =
+    hasCustomBreed && pet.breed !== OTHER_BREED ? (pet.breed ?? "") : "";
+  const [customBreed, setCustomBreed] = useState(initialCustomBreed);
+  const [isCustomBreed, setIsCustomBreed] = useState(hasCustomBreed);
   const {
     control,
     formState: { errors, isSubmitting, isValid },
@@ -47,7 +57,7 @@ export function EditPetForm({
     defaultValues: {
       approximateAge: pet.approximateAge ?? "",
       birthDate: pet.birthDate ?? "",
-      breed: pet.breed ?? "",
+      breed: initialCustomBreed || (pet.breed ?? ""),
       desexedStatus: pet.desexedStatus ?? "",
       name: pet.name,
       sex: pet.sex ?? "",
@@ -61,6 +71,10 @@ export function EditPetForm({
     control,
     name: ["sex", "desexedStatus"],
   });
+  const customBreedError =
+    isCustomBreed && !customBreed.trim()
+      ? "Enter your pet's breed."
+      : undefined;
   const photoPreview = useMemo(
     () => (photo ? URL.createObjectURL(photo) : (photoUrl ?? undefined)),
     [photo, photoUrl],
@@ -149,7 +163,8 @@ export function EditPetForm({
               isSubmitting ||
               !isValid ||
               Boolean(photoError) ||
-              Boolean(birthDateFormatError)
+              Boolean(birthDateFormatError) ||
+              Boolean(customBreedError)
             }
             type="submit"
           >
@@ -221,12 +236,53 @@ export function EditPetForm({
                 <BreedSelect
                   disabled={false}
                   id="edit-breed"
-                  onChange={field.onChange}
+                  onChange={(value) => {
+                    const custom = value === OTHER_BREED;
+                    setIsCustomBreed(custom);
+                    if (!custom) setCustomBreed("");
+                    field.onChange(custom ? customBreed : value);
+                  }}
                   species={pet.species}
-                  value={field.value ?? ""}
+                  value={isCustomBreed ? OTHER_BREED : (field.value ?? "")}
                 />
               )}
             />
+            {isCustomBreed ? (
+              <div className="mt-3">
+                <label
+                  className="mb-2 block text-sm font-medium"
+                  htmlFor="edit-custom-breed"
+                >
+                  Your pet’s breed
+                </label>
+                <input
+                  aria-describedby={
+                    customBreedError ? "edit-custom-breed-error" : undefined
+                  }
+                  aria-invalid={Boolean(customBreedError)}
+                  className={inputClass}
+                  id="edit-custom-breed"
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setCustomBreed(value);
+                    setValue("breed", value, {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    });
+                  }}
+                  placeholder="Enter breed"
+                  value={customBreed}
+                />
+                {customBreedError ? (
+                  <p
+                    className="mt-1.5 text-sm text-red-600"
+                    id="edit-custom-breed-error"
+                  >
+                    {customBreedError}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
           </Field>
 
           <Field
@@ -244,7 +300,7 @@ export function EditPetForm({
                 id="edit-birth-date"
                 inputMode="numeric"
                 onChange={(e) => {
-                  const display = e.target.value;
+                  const display = formatBirthDateInput(e.target.value);
                   setBirthDateDisplay(display);
                   if (display === "") {
                     setBirthDateFormatError(undefined);
@@ -254,12 +310,12 @@ export function EditPetForm({
                   const match = display.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
                   if (match) {
                     setBirthDateFormatError(undefined);
+                    setValue("approximateAge", "");
                     setValue(
                       "birthDate",
                       `${match[3]}-${match[2]}-${match[1]}`,
                       { shouldValidate: true },
                     );
-                    setValue("approximateAge", "");
                   } else {
                     setBirthDateFormatError(
                       "Please enter the correct format DD/MM/YYYY",
@@ -269,6 +325,7 @@ export function EditPetForm({
                 }}
                 pattern="\d{2}/\d{2}/\d{4}"
                 placeholder="DD/MM/YYYY"
+                maxLength={10}
                 type="text"
                 value={birthDateDisplay}
               />
@@ -337,7 +394,11 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-2 block text-sm font-medium" htmlFor={id}>
+      <label
+        className="mb-2 block text-sm font-medium"
+        htmlFor={id}
+        id={`${id}-label`}
+      >
         {label}
       </label>
       {children}
