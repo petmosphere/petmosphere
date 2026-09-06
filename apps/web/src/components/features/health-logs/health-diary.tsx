@@ -21,10 +21,12 @@ type View = "calendar" | "detail" | "form" | "saved";
 export function HealthDiary({
   initialView = "calendar",
   pet,
+  petOptions,
   photoUrl,
 }: {
   initialView?: "calendar" | "today";
   pet: Pet;
+  petOptions: { pet: Pet; photoUrl: string | null }[];
   photoUrl: string | null;
 }) {
   const router = useRouter();
@@ -228,16 +230,19 @@ export function HealthDiary({
             initialDate={selectedDate}
             onCancel={() => (selectedLog ? setView("detail") : showCalendar())}
             onConflict={openDate}
+            onPetChange={(petId) =>
+              router.push(
+                `/pets/${petId}/health-logs${initialView === "today" ? "/today" : ""}`,
+              )
+            }
             onSaved={(saved) => {
               setSelectedDate(saved.localDate);
               setSelectedLog(saved);
               setView("saved");
               window.scrollTo({ top: 0 });
             }}
-            petId={pet.id}
-            petName={pet.name}
-            petPhotoUrl={photoUrl}
-            petSpecies={pet.species}
+            petOptions={petOptions}
+            selectedPetId={pet.id}
           />
         </section>
       </main>
@@ -269,6 +274,7 @@ export function HealthDiary({
             onAddToday={() => openDate(today)}
             onMonthChange={changeMonth}
             onSelectDate={openDate}
+            petName={pet.name}
             today={today}
           />
           <HealthLogReminderSettings petId={pet.id} />

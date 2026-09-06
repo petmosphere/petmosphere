@@ -86,7 +86,7 @@ export function HealthLogReminderSettings({ petId }: { petId: string }) {
           </span>
           <div className="min-w-0 flex-1">
             <h2 className="font-bold" id="daily-reminder-title">
-              Daily check-in reminder
+              Daily check-in notification
             </h2>
             <p className="mt-1 text-sm text-stone-500">
               {reminder.enabled
@@ -95,7 +95,7 @@ export function HealthLogReminderSettings({ petId }: { petId: string }) {
             </p>
           </div>
           <button
-            aria-label="Edit daily check-in reminder"
+            aria-label="Edit daily check-in notification"
             className="min-h-11 rounded-full border border-[#e8d0b3] px-4 text-sm font-semibold text-[#a96225] focus-visible:outline-2 focus-visible:outline-[#ed802a]"
             onClick={() => setEditing(true)}
             type="button"
@@ -118,7 +118,7 @@ export function HealthLogReminderSettings({ petId }: { petId: string }) {
         </span>
         <div className="min-w-0 flex-1">
           <h2 className="font-bold" id="daily-reminder-title">
-            Daily check-in reminder
+            Daily check-in notification
           </h2>
           <p className="mt-1 text-sm leading-5 text-stone-500">
             Get a generic notification at your chosen Melbourne time. It never

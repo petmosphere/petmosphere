@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import { HealthDiary } from "@/components/features/health-logs/health-diary";
 import { requireUser } from "@/lib/auth/require-user";
-import { getOwnedPet, getPetPhotoUrl } from "@/lib/pets/supabase-pets";
+import { getPetPhotoUrl, listOwnedPets } from "@/lib/pets/supabase-pets";
 
 export const metadata: Metadata = {
   title: "Today’s health log",
@@ -19,14 +19,25 @@ export default async function TodayHealthLogPage({
   const { supabase, user } = await requireUser(
     `/pets/${petId}/health-logs/today`,
   );
-  const pet = await getOwnedPet(supabase, user.id, petId);
+  const pets = await listOwnedPets(supabase, user.id);
+  const pet = pets.find((candidate) => candidate.id === petId);
   if (!pet) notFound();
+  const petOptions = await Promise.all(
+    pets.map(async (candidate) => ({
+      pet: candidate,
+      photoUrl: await getPetPhotoUrl(supabase, candidate.photoPath),
+    })),
+  );
+  const photoUrl =
+    petOptions.find((candidate) => candidate.pet.id === pet.id)?.photoUrl ??
+    null;
 
   return (
     <HealthDiary
       initialView="today"
       pet={pet}
-      photoUrl={await getPetPhotoUrl(supabase, pet.photoPath)}
+      petOptions={petOptions}
+      photoUrl={photoUrl}
     />
   );
 }

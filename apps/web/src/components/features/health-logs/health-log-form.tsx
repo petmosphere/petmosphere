@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   createHealthLogSchema,
   HEALTH_LOG_IMAGE_TYPES,
-  MAX_HEALTH_LOG_IMAGE_BYTES,
   MAX_HEALTH_LOG_IMAGES,
   MAX_HEALTH_LOG_NOTE_LENGTH,
   type CreateHealthLogFormInput,
@@ -12,7 +11,7 @@ import {
   type HealthLogResponse,
 } from "@petmosphere/api-contracts";
 import { type HealthLogObservation, type Pet } from "@petmosphere/domain";
-import { ImagePlus, LoaderCircle, WifiOff, X } from "lucide-react";
+import { ChevronDown, ImagePlus, LoaderCircle, WifiOff, X } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -21,6 +20,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { DatePicker } from "@/components/ui/date-picker";
 import { PetAvatar } from "@/components/features/pets/pet-avatar";
 import { trackHealthLogEvent } from "@/lib/health-logs/analytics";
+import { optimizeHealthLogImage } from "@/lib/health-logs/optimize-image";
 import { HealthLogObservationOptions } from "./health-log-observation-options";
 import { HealthLogStatusOptions } from "./health-log-status-options";
 
@@ -33,25 +33,24 @@ export function HealthLogForm({
   initialDate,
   onCancel,
   onConflict,
+  onPetChange,
   onSaved,
-  petId,
-  petName,
-  petPhotoUrl,
-  petSpecies,
+  petOptions,
+  selectedPetId,
 }: {
   existing: HealthLogResponse | null;
   initialDate: string;
   onCancel: () => void;
   onConflict: (date: string) => void;
+  onPetChange: (petId: string) => void;
   onSaved: (healthLog: HealthLogResponse) => void;
-  petId: string;
-  petName: string;
-  petPhotoUrl: string | null;
-  petSpecies: Pet["species"];
+  petOptions: { pet: Pet; photoUrl: string | null }[];
+  selectedPetId: string;
 }) {
   const router = useRouter();
   const [startedAt] = useState(() => Date.now());
   const [images, setImages] = useState<File[]>([]);
+  const [isOptimizingImages, setIsOptimizingImages] = useState(false);
   const [retainedImageIndexes, setRetainedImageIndexes] = useState(
     () => existing?.imageUrls.map((_, index) => index) ?? [],
   );
@@ -72,7 +71,7 @@ export function HealthLogForm({
       localDate: existing?.localDate ?? initialDate,
       note: existing?.note ?? "",
       observations: existing?.observations ?? [],
-      petId,
+      petId: selectedPetId,
       timezone,
       ...(existing ? { status: existing.status } : {}),
     },
@@ -83,6 +82,8 @@ export function HealthLogForm({
     control,
     name: ["localDate", "note", "observations", "status"],
   });
+  const selectedPet =
+    petOptions.find(({ pet }) => pet.id === selectedPetId) ?? petOptions[0];
 
   useEffect(() => {
     trackHealthLogEvent({ event: "health_log_started" });
@@ -97,7 +98,7 @@ export function HealthLogForm({
     [previews],
   );
 
-  function chooseImages(files: FileList | null) {
+  async function chooseImages(files: FileList | null) {
     setImageError(undefined);
     if (!files) return;
     const selected = Array.from(files);
@@ -120,11 +121,17 @@ export function HealthLogForm({
       setImageError("Choose JPEG, PNG or WebP photos.");
       return;
     }
-    if (selected.some((image) => image.size > MAX_HEALTH_LOG_IMAGE_BYTES)) {
-      setImageError("Choose photos that are each smaller than 4 MB.");
-      return;
+    setIsOptimizingImages(true);
+    try {
+      const optimized = await Promise.all(selected.map(optimizeHealthLogImage));
+      setImages((current) => [...current, ...optimized]);
+    } catch {
+      setImageError(
+        "We couldn’t optimise one of those photos. Choose another JPEG, PNG or WebP image.",
+      );
+    } finally {
+      setIsOptimizingImages(false);
     }
-    setImages((current) => [...current, ...selected]);
   }
 
   const submit = handleSubmit(async (values) => {
@@ -204,17 +211,43 @@ export function HealthLogForm({
   return (
     <form className="flex flex-col gap-6 pb-8" noValidate onSubmit={submit}>
       {/* pet-context */}
-      <div className="flex items-center gap-3">
-        <PetAvatar
-          className="size-10 shrink-0 rounded-full bg-[#f0e6d8]"
-          name={petName}
-          photoUrl={petPhotoUrl}
-          species={petSpecies}
-        />
-        <div className="flex flex-col gap-0.5">
-          <span className="text-base font-bold text-[#2d2d2d]">{petName}</span>
-        </div>
-      </div>
+      <label className="block text-[14px] font-semibold text-[#7a7a7a]">
+        Pet
+        <span className="relative mt-2 flex min-h-16 items-center gap-3 rounded-2xl border border-[#f0e6d8] bg-white/60 px-3 normal-case focus-within:border-[#ed802a] focus-within:ring-1 focus-within:ring-[#ed802a]">
+          {selectedPet ? (
+            <>
+              <PetAvatar
+                className="size-11 shrink-0 rounded-full bg-[#f0e6d8]"
+                name={selectedPet.pet.name}
+                photoUrl={selectedPet.photoUrl}
+                species={selectedPet.pet.species}
+              />
+              <span className="min-w-0 flex-1 truncate text-base font-bold text-[#2d2d2d]">
+                {selectedPet.pet.name}
+              </span>
+              {petOptions.length > 1 && !existing ? (
+                <ChevronDown
+                  aria-hidden="true"
+                  className="size-5 text-[#7a7a7a]"
+                />
+              ) : null}
+            </>
+          ) : null}
+          <select
+            aria-label="Pet"
+            className="absolute inset-0 cursor-pointer opacity-0 disabled:cursor-default"
+            disabled={Boolean(existing) || petOptions.length < 2}
+            onChange={(event) => onPetChange(event.target.value)}
+            value={selectedPetId}
+          >
+            {petOptions.map(({ pet }) => (
+              <option key={pet.id} value={pet.id}>
+                {pet.name}
+              </option>
+            ))}
+          </select>
+        </span>
+      </label>
 
       {/* date-picker-section */}
       <div className="flex flex-col gap-1.5">
@@ -252,7 +285,7 @@ export function HealthLogForm({
             });
             clearErrors("status");
           }}
-          petName={petName}
+          petName={selectedPet?.pet.name ?? "your pet"}
           value={status}
         />
       </div>
@@ -346,10 +379,11 @@ export function HealthLogForm({
               <input
                 accept={HEALTH_LOG_IMAGE_TYPES.join(",")}
                 className="sr-only"
+                disabled={isOptimizingImages}
                 id="health-log-images"
                 multiple
                 onChange={(event) => {
-                  chooseImages(event.target.files);
+                  void chooseImages(event.target.files);
                   event.currentTarget.value = "";
                 }}
                 type="file"
@@ -363,7 +397,9 @@ export function HealthLogForm({
           </p>
         ) : null}
         <p className="mt-2 text-xs text-[#aaa095]">
-          Up to four private photos · 4 MB each
+          {isOptimizingImages
+            ? "Optimising photos on this device…"
+            : "Up to four private photos · larger photos are optimised before upload"}
         </p>
       </fieldset>
 
@@ -407,7 +443,7 @@ export function HealthLogForm({
       <div className="pt-1">
         <button
           className="flex h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-[#65bcb5] text-base font-bold text-[#fdf8f2] transition-transform duration-150 ease-out enabled:active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-500"
-          disabled={!status || !localDate || isSubmitting}
+          disabled={!status || !localDate || isSubmitting || isOptimizingImages}
           type="submit"
         >
           {isSubmitting ? (

@@ -22,6 +22,7 @@ export function HealthDiaryCalendar({
   onAddToday,
   onMonthChange,
   onSelectDate,
+  petName,
   today,
 }: {
   logs: HealthLogSummary[];
@@ -29,6 +30,7 @@ export function HealthDiaryCalendar({
   onAddToday: () => void;
   onMonthChange: (month: string) => void;
   onSelectDate: (date: string) => void;
+  petName: string;
   today: string;
 }) {
   const first = monthDate(month);
@@ -44,10 +46,11 @@ export function HealthDiaryCalendar({
   });
 
   return (
-    <section aria-label="Health diary calendar">
+    <section aria-label={`Health diary calendar for ${petName}`}>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="mt-1 text-4xl font-bold">Health Diary</h1>
+          <p className="mt-1 text-sm text-stone-500">For {petName}</p>
         </div>
         <button
           aria-label="Add a health log for today"

@@ -310,7 +310,7 @@ export function PetsHome({
                       {mood.emoji}
                     </span>
                   </p>
-                  <div className="flex min-w-0 flex-1 flex-wrap justify-end gap-2">
+                  <div className="flex max-h-14 min-w-0 flex-1 flex-wrap justify-end gap-2 overflow-hidden">
                     {(healthLog.observations.length > 0
                       ? healthLog.observations
                       : [null]

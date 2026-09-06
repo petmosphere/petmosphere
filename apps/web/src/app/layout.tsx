@@ -19,7 +19,20 @@ export const metadata: Metadata = {
   applicationName: "Petmosphere",
   manifest: "/manifest.webmanifest",
   icons: {
-    icon: "/icons/icon-192.svg",
+    apple: [
+      {
+        sizes: "180x180",
+        type: "image/png",
+        url: "/icons/apple-touch-icon.png",
+      },
+    ],
+    icon: [
+      {
+        sizes: "192x192",
+        type: "image/png",
+        url: "/icons/icon-192.png",
+      },
+    ],
   },
 };
 

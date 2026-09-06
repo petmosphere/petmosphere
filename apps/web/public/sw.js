@@ -48,7 +48,7 @@ self.addEventListener("push", (event) => {
     self.registration.showNotification("Petmosphere", {
       body: notification?.body || "It’s time for today’s pet check-in.",
       data: { url: safeUrl },
-      icon: "/icons/icon-192.svg",
+      icon: "/icons/icon-192.png",
       tag: notification?.tag || "petmosphere-daily-check-in",
     }),
   );

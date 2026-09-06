@@ -24,7 +24,7 @@ describe("HealthLogReminderSettings", () => {
     render(<HealthLogReminderSettings petId="pet-1" />);
 
     const editButton = await screen.findByRole("button", {
-      name: "Edit daily check-in reminder",
+      name: "Edit daily check-in notification",
     });
     expect(editButton).toBeVisible();
     expect(
@@ -51,7 +51,9 @@ describe("HealthLogReminderSettings", () => {
 
     await waitFor(() =>
       expect(
-        screen.getByRole("button", { name: "Edit daily check-in reminder" }),
+        screen.getByRole("button", {
+          name: "Edit daily check-in notification",
+        }),
       ).toBeVisible(),
     );
     expect(
