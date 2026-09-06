@@ -10,7 +10,9 @@ import {
 import { Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { type Resolver, useForm } from "react-hook-form";
+import { type Resolver, useForm, useWatch } from "react-hook-form";
+
+import { PasswordStrengthMeter } from "@/components/ui/password-strength-meter";
 
 import type { AuthActionState } from "@/app/auth/actions";
 
@@ -57,6 +59,7 @@ export function AuthForm({
   const [pending, startTransition] = useTransition();
   const [passwordVisible, setPasswordVisible] = useState(false);
   const {
+    control,
     formState: { errors, isValid },
     handleSubmit,
     register,
@@ -75,6 +78,7 @@ export function AuthForm({
     });
   });
 
+  const password = useWatch({ control, name: "password" });
   const isEntryForm = variant === "forgot" || variant === "sign-in";
 
   return (
@@ -161,6 +165,9 @@ export function AuthForm({
                   {errors[field.name]?.message}
                 </span>
               ) : null}
+              {variant === "reset" && field.name === "password" ? (
+                <PasswordStrengthMeter password={password ?? ""} />
+              ) : null}
             </div>
           );
         })}
@@ -194,7 +201,9 @@ export function AuthForm({
         className={
           isEntryForm
             ? `${variant === "sign-in" ? "mt-auto" : "mt-6"} min-h-13 w-full rounded-xl bg-[#f47d21] px-5 text-base font-semibold text-white shadow-[0_10px_24px_rgba(237,128,42,0.08)] transition-[background-color,transform] duration-150 ease-out hover:bg-[#df6d16] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a94e0c] active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-500 disabled:shadow-none motion-reduce:transform-none`
-            : "min-h-12 w-full rounded-2xl bg-[#87b35c] px-5 font-bold text-stone-950 shadow-sm transition hover:bg-[#79a750] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5d843b] disabled:cursor-not-allowed disabled:opacity-65"
+            : variant === "reset"
+              ? "min-h-12 w-full rounded-2xl bg-[#ED802A] px-5 font-bold text-white shadow-sm transition hover:bg-[#df6d16] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a94e0c] disabled:cursor-not-allowed disabled:opacity-65"
+              : "min-h-12 w-full rounded-2xl bg-[#87b35c] px-5 font-bold text-stone-950 shadow-sm transition hover:bg-[#79a750] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5d843b] disabled:cursor-not-allowed disabled:opacity-65"
         }
         disabled={pending || !isValid || state.status === "success"}
         type="submit"
@@ -215,7 +224,7 @@ export function AuthForm({
             className={
               variant === "sign-in"
                 ? "font-semibold text-[#ED802A]"
-                : "font-semibold text-[#8b5b30] underline"
+                : "font-semibold text-[#ED802A]"
             }
             href={footer.href}
           >
