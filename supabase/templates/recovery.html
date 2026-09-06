@@ -27,26 +27,25 @@
           Reset your password
         </h1>
         <p style="margin: 0; color: #57534e; line-height: 1.6">
-          We received a request to reset your Petmosphere password.
+          Enter this code in Petmosphere to reset your password:
         </p>
-        <p style="margin: 28px 0; text-align: center">
-          <a
-            href="{{ .ConfirmationURL }}"
-            style="
-              display: inline-block;
-              border-radius: 14px;
-              background: #ed802a;
-              padding: 14px 24px;
-              color: #ffffff;
-              font-weight: 700;
-              text-decoration: none;
-            "
-            >Choose a new password</a
-          >
+        <p
+          style="
+            margin: 28px 0;
+            border-radius: 16px;
+            background: #fff0e1;
+            padding: 20px;
+            text-align: center;
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: 8px;
+          "
+        >
+          {{ .Token }}
         </p>
         <p style="margin: 0; color: #78716c; line-height: 1.6">
-          If you did not request this change, you can safely ignore this email.
-          The link expires in one hour.
+          This code expires in 10 minutes. If you did not request a password
+          reset, you can safely ignore this email.
         </p>
       </div>
     </div>

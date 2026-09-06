@@ -115,6 +115,48 @@ test("accepts a six-digit email verification code", async ({
   await expect(verifyButton).toBeEnabled();
 });
 
+test("shows recovery code entry on mobile and desktop", async ({
+  page,
+  context,
+}) => {
+  await context.addCookies([
+    {
+      name: "petmosphere_pending_sign_up_email_recovery",
+      value: "owner@example.com",
+      domain: "localhost",
+      path: "/auth",
+      httpOnly: true,
+      sameSite: "Lax",
+      secure: false,
+    },
+    {
+      name: "petmosphere_verification_code_sent_at_recovery",
+      value: String(Date.now()),
+      domain: "localhost",
+      path: "/auth",
+      httpOnly: true,
+      sameSite: "Lax",
+      secure: false,
+    },
+  ]);
+  await page.goto("/auth/verify-recovery");
+  await expect(
+    page.getByRole("heading", { name: "Check your email" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Verify code" }),
+  ).toBeDisabled();
+  await page.getByLabel("Verification code").fill("123456");
+  await expect(page.getByRole("button", { name: "Verify code" })).toBeEnabled();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+  await page.getByRole("link", { name: "Use a different email" }).click();
+  await expect(page).toHaveURL(/\/auth\/forgot-password$/);
+});
+
 test("guides users through password recovery states", async ({ page }) => {
   await page.goto("/auth/sign-in");
   await page.getByRole("link", { name: "Forgot password?" }).click();
@@ -123,7 +165,7 @@ test("guides users through password recovery states", async ({ page }) => {
     page.getByRole("heading", { name: "Reset password" }),
   ).toBeVisible();
   const email = page.getByLabel("Email address");
-  const sendReset = page.getByRole("button", { name: "Send Reset Link" });
+  const sendReset = page.getByRole("button", { name: "Send recovery code" });
   await expect(sendReset).toBeDisabled();
 
   await email.fill("not-an-email");
@@ -284,16 +326,12 @@ test("completes account and password recovery against local Supabase", async ({
   const recoveryEmail = page.getByLabel("Email address");
   await recoveryEmail.fill(email);
   await expect(
-    page.getByRole("button", { name: "Send Reset Link" }),
+    page.getByRole("button", { name: "Send recovery code" }),
   ).toBeEnabled();
-  await page.getByRole("button", { name: "Send Reset Link" }).click();
-  await expect(
-    page.getByText(
-      "If an account exists, a password reset link is on its way.",
-    ),
-  ).toBeVisible();
+  await page.getByRole("button", { name: "Send recovery code" }).click();
+  await expect(page).toHaveURL(/\/auth\/verify-recovery$/);
 
-  async function getPasswordResetLink() {
+  async function getPasswordResetCode() {
     const response = await request.get(
       "http://127.0.0.1:54324/api/v1/messages",
     );
@@ -323,23 +361,15 @@ test("completes account and password recovery against local Supabase", async ({
       Text: string;
     };
     return (
-      `${detail.HTML}\n${detail.Text}`
-        .match(/https?:\/\/[^\s"'<>]+/)?.[0]
-        ?.replaceAll("&amp;", "&") ?? ""
+      detail.HTML.match(/>\s*(\d{6})\s*</)?.[1] ??
+      detail.Text.match(/\b\d{6}\b/)?.[0] ??
+      ""
     );
   }
 
-  await expect.poll(getPasswordResetLink).toMatch(/\/auth\/v1\/verify/);
-  const recoveryResponse = await request.get(await getPasswordResetLink(), {
-    maxRedirects: 0,
-  });
-  expect([302, 303]).toContain(recoveryResponse.status());
-  const redirectLocation = recoveryResponse.headers().location;
-  expect(redirectLocation).toBeTruthy();
-
-  const callbackUrl = new URL(redirectLocation!);
-  callbackUrl.port = "3100";
-  await page.goto(callbackUrl.toString());
+  await expect.poll(getPasswordResetCode).toMatch(/^\d{6}$/);
+  await page.getByLabel("Verification code").fill(await getPasswordResetCode());
+  await page.getByRole("button", { name: "Verify code" }).click();
   await expect(page).toHaveURL(/\/auth\/reset-password$/);
 
   await page
