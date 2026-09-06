@@ -50,7 +50,7 @@ describe("RemindersHome", () => {
     ).toBeVisible();
     expect(screen.getByText(/Stay on top of Max’s health/)).toBeVisible();
     expect(
-      screen.getByRole("link", { name: /Add Your First Reminder/ }),
+      screen.getByRole("link", { name: /Add Your Reminders/ }),
     ).toHaveAttribute("href", "/reminders/new");
     expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
       "Upcoming",
