@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "Reset password" };
 export default function ForgotPasswordPage() {
   return (
     <AuthEntryShell
-      description="Enter your email and we'll send you a reset link."
+      description="Enter your email and we'll send you a six-digit recovery code."
       title="Reset password"
       variant="forgot"
     >
@@ -23,7 +23,7 @@ export default function ForgotPasswordPage() {
             type: "email",
           },
         ]}
-        submitLabel="Send Reset Link"
+        submitLabel="Send recovery code"
         variant="forgot"
       />
     </AuthEntryShell>

@@ -6,6 +6,8 @@ import { useEffect, useState, useTransition } from "react";
 
 import {
   resendVerificationCodeAction,
+  resendRecoveryCodeAction,
+  verifyRecoveryCodeAction,
   verifyEmailCodeAction,
   type AuthActionState,
 } from "@/app/auth/actions";
@@ -16,10 +18,12 @@ export function VerifyEmailCodeForm({
   initialResendWait,
   maskedEmail,
   resendCooldown,
+  purpose = "signup",
 }: {
   initialResendWait: number;
   maskedEmail: string;
   resendCooldown: number;
+  purpose?: "signup" | "recovery";
 }) {
   const [code, setCode] = useState("");
   const [verifyState, setVerifyState] = useState(initialState);
@@ -43,17 +47,29 @@ export function VerifyEmailCodeForm({
     const formData = new FormData();
     formData.set("code", code);
     startVerifying(async () =>
-      setVerifyState(await verifyEmailCodeAction(initialState, formData)),
+      setVerifyState(
+        await (
+          purpose === "recovery"
+            ? verifyRecoveryCodeAction
+            : verifyEmailCodeAction
+        )(initialState, formData),
+      ),
     );
   }
 
   function resend() {
     setResendState(initialState);
     startResending(async () => {
-      const nextState = await resendVerificationCodeAction();
+      const nextState = await (
+        purpose === "recovery"
+          ? resendRecoveryCodeAction
+          : resendVerificationCodeAction
+      )();
       setResendState(nextState);
       if (nextState.status === "success") {
         setResendWait(resendCooldown);
+        setCode("");
+        setVerifyState(initialState);
       }
     });
   }
@@ -63,7 +79,9 @@ export function VerifyEmailCodeForm({
   return (
     <div className="mt-8">
       <p className="text-center text-[15px] leading-[22px] text-[#7a7a7a]">
-        We sent a six-digit code to{" "}
+        {purpose === "recovery"
+          ? "If an account exists, we sent a six-digit code to "
+          : "We sent a six-digit code to "}
         <span className="font-semibold text-[#2d2d2d]">{maskedEmail}</span>
       </p>
 
@@ -94,7 +112,7 @@ export function VerifyEmailCodeForm({
           value={code}
         />
         <div
-          className="flex justify-center gap-3"
+          className="grid grid-cols-6 justify-center gap-2 sm:gap-3"
           onClick={() => document.getElementById("verificationCode")?.focus()}
         >
           {Array.from({ length: 6 }, (_, index) => {
@@ -102,7 +120,7 @@ export function VerifyEmailCodeForm({
             return (
               <span
                 aria-hidden="true"
-                className={`grid size-16 place-items-center rounded-xl border text-2xl leading-8 font-bold text-[#2d2d2d] ${
+                className={`grid h-16 min-w-0 place-items-center rounded-xl border text-2xl leading-8 font-bold text-[#2d2d2d] ${
                   isCurrent
                     ? "border-2 border-[#ed802a] bg-white shadow-[0_4px_12px_rgba(237,128,42,0.1)]"
                     : "border border-[#f0e6d8] bg-white/60"
@@ -127,10 +145,14 @@ export function VerifyEmailCodeForm({
 
         <button
           className="mt-8 min-h-13 w-full rounded-xl bg-[#ED802A] px-5 text-base font-semibold text-[#fdf8f2] shadow-[0_4px_16px_rgba(205,146,85,0.14)] transition hover:bg-[#df6d16] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a94e0c] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-500 disabled:shadow-none"
-          disabled={code.length !== 6 || verifying}
+          disabled={code.length !== 6 || verifying || resending}
           type="submit"
         >
-          {verifying ? "Verifying…" : "Verify email"}
+          {verifying
+            ? "Verifying…"
+            : purpose === "recovery"
+              ? "Verify code"
+              : "Verify email"}
         </button>
       </form>
 
@@ -144,7 +166,7 @@ export function VerifyEmailCodeForm({
         ) : (
           <button
             className="min-h-11 px-3 font-semibold text-[#ED802A] underline underline-offset-4 disabled:text-stone-400 disabled:no-underline"
-            disabled={resending}
+            disabled={resending || verifying}
             onClick={resend}
             type="button"
           >
@@ -167,7 +189,9 @@ export function VerifyEmailCodeForm({
 
       <Link
         className="mx-auto mt-6 flex min-h-11 w-fit items-center px-3 text-sm font-semibold text-[#7a7a7a] underline underline-offset-4"
-        href="/auth/sign-up"
+        href={
+          purpose === "recovery" ? "/auth/forgot-password" : "/auth/sign-up"
+        }
       >
         Use a different email
       </Link>
