@@ -23,8 +23,8 @@ export default async function SignInPage({
           className="mt-5 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-900"
           role="alert"
         >
-          That link is invalid or expired. Sign in or request a new password
-          reset link.
+          That recovery attempt is invalid or expired. Sign in or request a new
+          recovery code.
         </p>
       ) : null}
       {params.notice === "password-updated" ? (

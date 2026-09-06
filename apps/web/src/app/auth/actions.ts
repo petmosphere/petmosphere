@@ -222,7 +222,7 @@ export async function forgotPasswordAction(
     if (error) {
       return {
         status: "error",
-        message: "We could not send the reset email. Wait and try again.",
+        message: "We could not send the recovery email. Wait and try again.",
       };
     }
   } catch (error) {

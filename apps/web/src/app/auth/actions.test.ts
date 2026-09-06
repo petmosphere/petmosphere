@@ -55,7 +55,7 @@ describe("password recovery actions", () => {
       forgotPasswordAction({ status: "idle" }, formData),
     ).resolves.toEqual({
       status: "error",
-      message: "We could not send the reset email. Wait and try again.",
+      message: "We could not send the recovery email. Wait and try again.",
     });
   });
 
