@@ -114,9 +114,11 @@ describe("HealthLogForm", () => {
       />,
     );
 
-    fireEvent.change(screen.getByLabelText("Pet"), {
-      target: { value: luna.id },
-    });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Pet: Max. Tap to change." }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Luna" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
 
     expect(onPetChange).toHaveBeenCalledWith(luna.id);
   });

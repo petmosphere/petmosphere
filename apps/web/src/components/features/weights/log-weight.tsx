@@ -204,11 +204,11 @@ export function LogWeight({
           {pet.name}&apos;s weight in{" "}
           {weightUnit === "kg" ? "kilograms" : "pounds"}
         </label>
-        <div className="relative flex min-w-0 items-center justify-center overflow-hidden">
+        <div className="flex items-center justify-center gap-3">
           <input
-            aria-describedby="weight-last-entry"
+            aria-describedby="weight-last-entry weight-type-hint"
             aria-invalid={weightDirty && !validWeight}
-            className="w-[5.5ch] max-w-[11rem] min-w-0 bg-transparent text-center text-5xl leading-none font-bold tracking-[-0.045em] outline-none focus-visible:rounded-xl focus-visible:outline-2 focus-visible:outline-[#65bcb5]"
+            className="w-[5.5ch] max-w-[11rem] min-w-0 border-b-2 border-[#ED802A66] bg-transparent pb-1 text-center text-5xl leading-none font-bold tracking-[-0.045em] outline-none transition-colors focus:border-[#ED802A]"
             id="weight-value"
             inputMode="decimal"
             maxLength={6}
@@ -216,19 +216,26 @@ export function LogWeight({
               if (validWeight) setWeightInput(formatWeightInput(weight));
             }}
             onChange={(event) => {
-              setWeightInput(event.target.value.replace(",", "."));
-              setWeightDirty(true);
-              setState("idle");
+              const val = event.target.value.replace(",", ".");
+              if (val === "" || /^\d*\.?\d{0,2}$/.test(val)) {
+                setWeightInput(val);
+                setWeightDirty(true);
+                setState("idle");
+              }
             }}
             onFocus={(event) => event.currentTarget.select()}
+            placeholder="0.0"
             type="text"
             value={weightInput}
           />
-          <span className="absolute top-1/2 left-1/2 ml-[4.5rem] -translate-y-1/2 text-xl text-[#7a7a7a]">
+          <span className="text-xl font-medium text-[#7a7a7a]">
             {weightUnit}
           </span>
         </div>
-        <p className="mt-2 text-sm text-[#7a7a7a]" id="weight-last-entry">
+        <p className="mt-2 text-xs text-[#65bcb5]" id="weight-type-hint">
+          Tap to enter weight
+        </p>
+        <p className="mt-1 text-sm text-[#7a7a7a]" id="weight-last-entry">
           {formatLastEntry(entries.at(-1), weightUnit)}
         </p>
         <div className="mt-1 flex items-center justify-center gap-5">

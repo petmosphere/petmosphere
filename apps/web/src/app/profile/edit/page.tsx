@@ -9,14 +9,22 @@ import {
 
 export const metadata: Metadata = { title: "Edit profile" };
 
-export default async function EditProfilePage() {
-  const { supabase, user } = await requireUser("/profile/edit");
+export default async function EditProfilePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ passwordUpdated?: string }>;
+}) {
+  const [{ supabase, user }, { passwordUpdated }] = await Promise.all([
+    requireUser("/profile/edit"),
+    searchParams,
+  ]);
   const profile = await getProfile(supabase, user.id);
   return (
     <EditProfileForm
       avatarUrl={await getProfileAvatarUrl(supabase, profile.avatarPath)}
       displayName={profile.displayName}
       email={user.email ?? ""}
+      passwordUpdated={passwordUpdated === "1"}
     />
   );
 }
