@@ -34,7 +34,7 @@ describe("HealthLogForm", () => {
         existing={null}
         initialDate="2026-08-15"
         onCancel={vi.fn()}
-        onConflict={vi.fn()}
+
         onPetChange={vi.fn()}
         onSaved={vi.fn()}
         petOptions={[{ pet, photoUrl: null }]}
@@ -69,7 +69,7 @@ describe("HealthLogForm", () => {
         existing={null}
         initialDate="2026-08-15"
         onCancel={vi.fn()}
-        onConflict={vi.fn()}
+
         onPetChange={vi.fn()}
         onSaved={vi.fn()}
         petOptions={[{ pet, photoUrl: null }]}
@@ -103,7 +103,7 @@ describe("HealthLogForm", () => {
         existing={null}
         initialDate="2026-08-15"
         onCancel={vi.fn()}
-        onConflict={vi.fn()}
+
         onPetChange={onPetChange}
         onSaved={vi.fn()}
         petOptions={[
@@ -114,9 +114,11 @@ describe("HealthLogForm", () => {
       />,
     );
 
-    fireEvent.change(screen.getByLabelText("Pet"), {
-      target: { value: luna.id },
-    });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Pet: Max. Tap to change." }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Luna" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
 
     expect(onPetChange).toHaveBeenCalledWith(luna.id);
   });

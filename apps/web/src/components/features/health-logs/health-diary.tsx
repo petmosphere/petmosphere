@@ -42,6 +42,7 @@ export function HealthDiary({
   );
   const [loadingEntry, setLoadingEntry] = useState(initialView === "today");
   const [loadError, setLoadError] = useState<string>();
+  const [formPetId, setFormPetId] = useState(pet.id);
 
   const query = useCallback(
     async (body: object) => {
@@ -100,6 +101,7 @@ export function HealthDiary({
 
   function openDate(date: string) {
     setSelectedDate(date);
+    setFormPetId(pet.id);
     setLoadingEntry(true);
     setLoadError(undefined);
     void loadDate(date);
@@ -229,12 +231,8 @@ export function HealthDiary({
             existing={selectedLog}
             initialDate={selectedDate}
             onCancel={() => (selectedLog ? setView("detail") : showCalendar())}
-            onConflict={openDate}
-            onPetChange={(petId) =>
-              router.push(
-                `/pets/${petId}/health-logs${initialView === "today" ? "/today" : ""}`,
-              )
-            }
+
+            onPetChange={setFormPetId}
             onSaved={(saved) => {
               setSelectedDate(saved.localDate);
               setSelectedLog(saved);
@@ -242,7 +240,7 @@ export function HealthDiary({
               window.scrollTo({ top: 0 });
             }}
             petOptions={petOptions}
-            selectedPetId={pet.id}
+            selectedPetId={formPetId}
           />
         </section>
       </main>
@@ -271,7 +269,12 @@ export function HealthDiary({
           <HealthDiaryCalendar
             logs={summaries}
             month={month}
-            onAddToday={() => router.push(`/pets/${pet.id}/health-logs/today`)}
+            onAddToday={() => {
+              setSelectedDate(today);
+              setSelectedLog(null);
+              setFormPetId(pet.id);
+              setView("form");
+            }}
             onMonthChange={changeMonth}
             onSelectDate={openDate}
             petName={pet.name}

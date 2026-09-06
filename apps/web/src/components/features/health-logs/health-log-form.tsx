@@ -11,14 +11,20 @@ import {
   type HealthLogResponse,
 } from "@petmosphere/api-contracts";
 import { type HealthLogObservation, type Pet } from "@petmosphere/domain";
-import { ChevronDown, ImagePlus, LoaderCircle, WifiOff, X } from "lucide-react";
+import {
+  ImagePlus,
+  LoaderCircle,
+  TriangleAlert,
+  WifiOff,
+  X,
+} from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
 import { DatePicker } from "@/components/ui/date-picker";
-import { PetAvatar } from "@/components/features/pets/pet-avatar";
+import { PetSelector } from "@/components/ui/pet-selector";
 import { trackHealthLogEvent } from "@/lib/health-logs/analytics";
 import { optimizeHealthLogImage } from "@/lib/health-logs/optimize-image";
 import { HealthLogObservationOptions } from "./health-log-observation-options";
@@ -32,7 +38,6 @@ export function HealthLogForm({
   existing,
   initialDate,
   onCancel,
-  onConflict,
   onPetChange,
   onSaved,
   petOptions,
@@ -41,7 +46,6 @@ export function HealthLogForm({
   existing: HealthLogResponse | null;
   initialDate: string;
   onCancel: () => void;
-  onConflict: (date: string) => void;
   onPetChange: (petId: string) => void;
   onSaved: (healthLog: HealthLogResponse) => void;
   petOptions: { pet: Pet; photoUrl: string | null }[];
@@ -56,6 +60,10 @@ export function HealthLogForm({
   );
   const [imageError, setImageError] = useState<string>();
   const [serverError, setServerError] = useState<string>();
+  const [pendingOverwrite, setPendingOverwrite] = useState<FormData | null>(
+    null,
+  );
+  const [isOverwriting, setIsOverwriting] = useState(false);
   const timezone =
     Intl.DateTimeFormat().resolvedOptions().timeZone || "Australia/Melbourne";
   const {
@@ -173,7 +181,7 @@ export function HealthLogForm({
       const body: unknown = await response.json();
       if (response.status === 409) {
         trackHealthLogEvent({ event: "health_log_save_failed" });
-        onConflict(values.localDate);
+        setPendingOverwrite(formData);
         return;
       }
       if (!response.ok) {
@@ -208,118 +216,186 @@ export function HealthLogForm({
     }
   });
 
+  async function handleOverwrite() {
+    if (!pendingOverwrite) return;
+    setIsOverwriting(true);
+    try {
+      const queryRes = await fetch("/api/v1/health-logs/query", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          scope: "date",
+          localDate: pendingOverwrite.get("localDate"),
+          petId: pendingOverwrite.get("petId"),
+        }),
+        cache: "no-store",
+      });
+      if (!queryRes.ok) {
+        setServerError("Could not load existing log. Try again.");
+        setPendingOverwrite(null);
+        return;
+      }
+      const existingLog = (await queryRes.json()) as HealthLogResponse | null;
+      if (!existingLog) {
+        setServerError("Could not find existing log. Try again.");
+        setPendingOverwrite(null);
+        return;
+      }
+
+      pendingOverwrite.set("healthLogId", existingLog.id);
+      pendingOverwrite.set("retainedImageIndexes", JSON.stringify([]));
+
+      const patchRes = await fetch("/api/v1/health-logs", {
+        method: "PATCH",
+        body: pendingOverwrite,
+      });
+      if (patchRes.status === 401) {
+        router.push("/auth/sign-in?next=/home");
+        return;
+      }
+      const patchBody: unknown = await patchRes.json();
+      if (!patchRes.ok) {
+        setServerError(
+          "message" in (patchBody as object)
+            ? (patchBody as { message: string }).message
+            : "Could not overwrite log. Try again.",
+        );
+        setPendingOverwrite(null);
+        return;
+      }
+      setPendingOverwrite(null);
+      onSaved(patchBody as HealthLogResponse);
+    } catch {
+      setServerError(
+        "We couldn't reach Petmosphere. Your entry is still here—try again when you're connected.",
+      );
+      setPendingOverwrite(null);
+    } finally {
+      setIsOverwriting(false);
+    }
+  }
+
   return (
-    <form className="flex flex-col gap-6 pb-8" noValidate onSubmit={submit}>
-      {/* pet-context */}
-      <label className="block text-[14px] font-semibold text-[#7a7a7a]">
-        Pet
-        <span className="relative mt-2 flex min-h-16 items-center gap-3 rounded-2xl border border-[#f0e6d8] bg-white/60 px-3 normal-case focus-within:border-[#ed802a] focus-within:ring-1 focus-within:ring-[#ed802a]">
-          {selectedPet ? (
-            <>
-              <PetAvatar
-                className="size-11 shrink-0 rounded-full bg-[#f0e6d8]"
-                name={selectedPet.pet.name}
-                photoUrl={selectedPet.photoUrl}
-                species={selectedPet.pet.species}
-              />
-              <span className="min-w-0 flex-1 truncate text-base font-bold text-[#2d2d2d]">
-                {selectedPet.pet.name}
-              </span>
-              {petOptions.length > 1 && !existing ? (
-                <ChevronDown
-                  aria-hidden="true"
-                  className="size-5 text-[#7a7a7a]"
-                />
-              ) : null}
-            </>
-          ) : null}
-          <select
-            aria-label="Pet"
-            className="absolute inset-0 cursor-pointer opacity-0 disabled:cursor-default"
+    <>
+      <form className="flex flex-col gap-6 pb-8" noValidate onSubmit={submit}>
+        {/* pet-context */}
+        <div>
+          <span className="block pb-1 text-[14px] font-semibold text-[#7a7a7a]">
+            Pet
+          </span>
+          <PetSelector
             disabled={Boolean(existing) || petOptions.length < 2}
-            onChange={(event) => onPetChange(event.target.value)}
+            label="Pet"
+            onChange={(petId) => {
+              onPetChange(petId);
+              setValue("petId", petId, { shouldDirty: true });
+            }}
+            options={petOptions}
             value={selectedPetId}
-          >
-            {petOptions.map(({ pet }) => (
-              <option key={pet.id} value={pet.id}>
-                {pet.name}
-              </option>
-            ))}
-          </select>
-        </span>
-      </label>
+          />
+        </div>
 
-      {/* date-picker-section */}
-      <div className="flex flex-col gap-1.5">
-        <span className="pb-1 text-[14px] font-semibold text-[#7a7a7a]">
-          Date
-        </span>
-        <DatePicker
-          onChange={(date) =>
-            setValue("localDate", date, {
-              shouldDirty: true,
-              shouldValidate: true,
-            })
-          }
-          value={localDate}
-        />
-        {errors.localDate ? (
-          <p className="text-sm text-red-600" role="alert">
-            {errors.localDate.message}
-          </p>
+        {/* date-picker-section */}
+        <div className="flex flex-col gap-1.5">
+          <span className="pb-1 text-[14px] font-semibold text-[#7a7a7a]">
+            Date
+          </span>
+          <DatePicker
+            onChange={(date) =>
+              setValue("localDate", date, {
+                shouldDirty: true,
+                shouldValidate: true,
+              })
+            }
+            value={localDate}
+          />
+          {errors.localDate ? (
+            <p className="text-sm text-red-600" role="alert">
+              {errors.localDate.message}
+            </p>
+          ) : null}
+        </div>
+
+        {/* mood-section */}
+        <div className="flex flex-col gap-0">
+          <span className="mb-2 block text-[14px] font-semibold text-[#7a7a7a]">
+            Mood
+          </span>
+          <HealthLogStatusOptions
+            {...(errors.status?.message
+              ? { error: errors.status.message }
+              : {})}
+            onChange={(value) => {
+              if (value !== status) setValue("observations", []);
+              setValue("status", value, {
+                shouldDirty: true,
+                shouldValidate: true,
+              });
+              clearErrors("status");
+            }}
+            petName={selectedPet?.pet.name ?? "your pet"}
+            value={status}
+          />
+        </div>
+
+        {/* tags-section */}
+        {status ? (
+          <HealthLogObservationOptions
+            onChange={(value: HealthLogObservation[]) =>
+              setValue("observations", value, {
+                shouldDirty: true,
+                shouldValidate: true,
+              })
+            }
+            status={status}
+            value={observations ?? []}
+          />
         ) : null}
-      </div>
 
-      {/* mood-section */}
-      <div className="flex flex-col gap-0">
-        <span className="mb-2 block text-[14px] font-semibold text-[#7a7a7a]">
-          Mood
-        </span>
-        <HealthLogStatusOptions
-          {...(errors.status?.message ? { error: errors.status.message } : {})}
-          onChange={(value) => {
-            if (value !== status) setValue("observations", []);
-            setValue("status", value, {
-              shouldDirty: true,
-              shouldValidate: true,
-            });
-            clearErrors("status");
-          }}
-          petName={selectedPet?.pet.name ?? "your pet"}
-          value={status}
-        />
-      </div>
-
-      {/* tags-section */}
-      {status ? (
-        <HealthLogObservationOptions
-          onChange={(value: HealthLogObservation[]) =>
-            setValue("observations", value, {
-              shouldDirty: true,
-              shouldValidate: true,
-            })
-          }
-          status={status}
-          value={observations ?? []}
-        />
-      ) : null}
-
-      {/* photos-section */}
-      <fieldset>
-        <legend className="mb-2 block text-[14px] font-semibold text-[#7a7a7a]">
-          Photos
-        </legend>
-        <div
-          className={`grid gap-3 ${retainedImageIndexes.length + images.length > 0 ? "grid-cols-4" : "grid-cols-1"}`}
-        >
-          {existing?.imageUrls.map((url, index) =>
-            retainedImageIndexes.includes(index) ? (
+        {/* photos-section */}
+        <fieldset>
+          <legend className="mb-2 block text-[14px] font-semibold text-[#7a7a7a]">
+            Photos
+          </legend>
+          <div
+            className={`grid gap-3 ${retainedImageIndexes.length + images.length > 0 ? "grid-cols-4" : "grid-cols-1"}`}
+          >
+            {existing?.imageUrls.map((url, index) =>
+              retainedImageIndexes.includes(index) ? (
+                <div
+                  className="relative aspect-square overflow-hidden rounded-2xl border border-[#f0e6d8]"
+                  key={url}
+                >
+                  <Image
+                    alt={`Saved health log photo ${index + 1}`}
+                    className="object-cover"
+                    fill
+                    sizes="80px"
+                    src={url}
+                    unoptimized
+                  />
+                  <button
+                    aria-label={`Remove saved photo ${index + 1}`}
+                    className="absolute top-1 right-1 grid size-9 place-items-center rounded-full bg-stone-950/70 text-white"
+                    onClick={() =>
+                      setRetainedImageIndexes((current) =>
+                        current.filter((item) => item !== index),
+                      )
+                    }
+                    type="button"
+                  >
+                    <X aria-hidden="true" className="size-4" />
+                  </button>
+                </div>
+              ) : null,
+            )}
+            {previews.map((url, index) => (
               <div
                 className="relative aspect-square overflow-hidden rounded-2xl border border-[#f0e6d8]"
                 key={url}
               >
                 <Image
-                  alt={`Saved health log photo ${index + 1}`}
+                  alt={`Selected health log photo ${index + 1}`}
                   className="object-cover"
                   fill
                   sizes="80px"
@@ -327,11 +403,11 @@ export function HealthLogForm({
                   unoptimized
                 />
                 <button
-                  aria-label={`Remove saved photo ${index + 1}`}
+                  aria-label={`Remove selected photo ${index + 1}`}
                   className="absolute top-1 right-1 grid size-9 place-items-center rounded-full bg-stone-950/70 text-white"
                   onClick={() =>
-                    setRetainedImageIndexes((current) =>
-                      current.filter((item) => item !== index),
+                    setImages((current) =>
+                      current.filter((_, imageIndex) => imageIndex !== index),
                     )
                   }
                   type="button"
@@ -339,135 +415,167 @@ export function HealthLogForm({
                   <X aria-hidden="true" className="size-4" />
                 </button>
               </div>
-            ) : null,
-          )}
-          {previews.map((url, index) => (
-            <div
-              className="relative aspect-square overflow-hidden rounded-2xl border border-[#f0e6d8]"
-              key={url}
-            >
-              <Image
-                alt={`Selected health log photo ${index + 1}`}
-                className="object-cover"
-                fill
-                sizes="80px"
-                src={url}
-                unoptimized
+            ))}
+            {retainedImageIndexes.length + images.length <
+            MAX_HEALTH_LOG_IMAGES ? (
+              <label
+                className={`flex cursor-pointer items-center justify-center gap-2 rounded-2xl border-[1.5px] border-dashed border-[#aaa095] bg-white/60 text-center font-medium text-[#7a7a7a] focus-within:outline-2 focus-within:outline-[#ed802a] ${retainedImageIndexes.length + images.length > 0 ? "aspect-square flex-col text-sm" : "min-h-20 w-full"}`}
+                htmlFor="health-log-images"
+              >
+                <ImagePlus
+                  aria-hidden="true"
+                  className="size-6 text-[#7a7a7a]"
+                />
+                <span>Add photos</span>
+                <input
+                  accept={HEALTH_LOG_IMAGE_TYPES.join(",")}
+                  className="sr-only"
+                  disabled={isOptimizingImages}
+                  id="health-log-images"
+                  multiple
+                  onChange={(event) => {
+                    void chooseImages(event.target.files);
+                    event.currentTarget.value = "";
+                  }}
+                  type="file"
+                />
+              </label>
+            ) : null}
+          </div>
+          {imageError ? (
+            <p className="mt-2 text-sm text-red-600" role="alert">
+              {imageError}
+            </p>
+          ) : null}
+          <p className="mt-2 text-xs text-[#aaa095]">
+            {isOptimizingImages
+              ? "Optimising photos on this device…"
+              : "Up to four private photos · larger photos are optimised before upload"}
+          </p>
+        </fieldset>
+
+        {/* note-section */}
+        <div>
+          <span
+            aria-hidden="true"
+            className="mb-2 block text-[14px] font-semibold text-[#7a7a7a]"
+          >
+            Note
+          </span>
+          <label className="sr-only" htmlFor="health-log-note">
+            Add a note (optional)
+          </label>
+          <textarea
+            {...register("note")}
+            aria-invalid={Boolean(errors.note)}
+            className="min-h-[120px] w-full resize-y rounded-2xl border border-[#f0e6d8] bg-white/60 p-4 text-[15px] leading-[22px] text-[#2d2d2d] outline-none placeholder:text-[#aaa095] focus:border-[#ed802a] focus:ring-4 focus:ring-[#ed802a]/10"
+            id="health-log-note"
+            maxLength={MAX_HEALTH_LOG_NOTE_LENGTH}
+            placeholder="Add a note…"
+          />
+          <span className="mt-1 block text-right text-xs text-[#aaa095]">
+            {note?.length ?? 0}/{MAX_HEALTH_LOG_NOTE_LENGTH}
+          </span>
+        </div>
+
+        {serverError ? (
+          <div
+            className="rounded-2xl border border-[#efb3ae] bg-[#fff0ef] p-4 text-sm text-[#9f342d]"
+            role="alert"
+          >
+            <div className="flex gap-3">
+              <WifiOff aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
+              <p>{serverError}</p>
+            </div>
+          </div>
+        ) : null}
+
+        {/* primary-action-container */}
+        <div className="pt-1">
+          <button
+            className="flex h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-[#65bcb5] text-base font-bold text-[#fdf8f2] transition-transform duration-150 ease-out enabled:active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-500"
+            disabled={
+              !status ||
+              !localDate ||
+              isSubmitting ||
+              isOptimizingImages ||
+              isOverwriting
+            }
+            type="submit"
+          >
+            {isSubmitting ? (
+              <>
+                <LoaderCircle
+                  aria-hidden="true"
+                  className="size-5 animate-spin"
+                />
+                Saving…
+              </>
+            ) : existing ? (
+              "Save changes"
+            ) : (
+              "Save"
+            )}
+          </button>
+          <button
+            className="mt-6 min-h-11 w-full text-[15px] font-semibold text-[#7a7a7a] active:scale-[0.98]"
+            onClick={onCancel}
+            type="button"
+          >
+            {existing ? "Cancel" : "Skip"}
+          </button>
+        </div>
+      </form>
+
+      {pendingOverwrite ? (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 px-6">
+          <div className="flex w-[327px] flex-col items-center gap-6 rounded-3xl bg-[#fdf8f2] p-6 shadow-[0px_12px_32px_rgba(0,0,0,0.2)]">
+            <div className="mx-auto flex size-[72px] items-center justify-center rounded-full bg-[#ffebee]">
+              <TriangleAlert
+                aria-hidden="true"
+                className="size-8 stroke-2 text-[#ffa959]"
               />
+            </div>
+            <div className="flex flex-col items-center gap-2 self-stretch">
+              <p className="self-stretch text-center text-[20px] leading-[27px] font-extrabold text-[#2d2d2d]">
+                Log Already Exists
+              </p>
+              <p className="self-stretch text-center text-[15px] leading-[22px] font-normal text-[#7a7a7a]">
+                A diary log for {selectedPet?.pet.name ?? "your pet"} already
+                exists for today. Saving will overwrite the existing entry.
+              </p>
+            </div>
+            <div className="flex w-full gap-3">
               <button
-                aria-label={`Remove selected photo ${index + 1}`}
-                className="absolute top-1 right-1 grid size-9 place-items-center rounded-full bg-stone-950/70 text-white"
-                onClick={() =>
-                  setImages((current) =>
-                    current.filter((_, imageIndex) => imageIndex !== index),
-                  )
-                }
+                className="h-12 flex-1 rounded-xl border border-[#f0e6d8] bg-white/60 text-[15px] font-bold text-[#2d2d2d] disabled:opacity-50"
+                disabled={isOverwriting}
+                onClick={() => setPendingOverwrite(null)}
                 type="button"
               >
-                <X aria-hidden="true" className="size-4" />
+                Cancel
+              </button>
+              <button
+                className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#ffa959] text-[15px] font-bold text-white/60 disabled:opacity-50"
+                disabled={isOverwriting}
+                onClick={() => void handleOverwrite()}
+                type="button"
+              >
+                {isOverwriting ? (
+                  <>
+                    <LoaderCircle
+                      aria-hidden="true"
+                      className="size-4 animate-spin"
+                    />
+                    Saving…
+                  </>
+                ) : (
+                  "Save"
+                )}
               </button>
             </div>
-          ))}
-          {retainedImageIndexes.length + images.length <
-          MAX_HEALTH_LOG_IMAGES ? (
-            <label
-              className={`flex cursor-pointer items-center justify-center gap-2 rounded-2xl border-[1.5px] border-dashed border-[#aaa095] bg-white/60 text-center font-medium text-[#7a7a7a] focus-within:outline-2 focus-within:outline-[#ed802a] ${retainedImageIndexes.length + images.length > 0 ? "aspect-square flex-col text-sm" : "min-h-20 w-full"}`}
-              htmlFor="health-log-images"
-            >
-              <ImagePlus aria-hidden="true" className="size-6 text-[#7a7a7a]" />
-              <span>Add photos</span>
-              <input
-                accept={HEALTH_LOG_IMAGE_TYPES.join(",")}
-                className="sr-only"
-                disabled={isOptimizingImages}
-                id="health-log-images"
-                multiple
-                onChange={(event) => {
-                  void chooseImages(event.target.files);
-                  event.currentTarget.value = "";
-                }}
-                type="file"
-              />
-            </label>
-          ) : null}
-        </div>
-        {imageError ? (
-          <p className="mt-2 text-sm text-red-600" role="alert">
-            {imageError}
-          </p>
-        ) : null}
-        <p className="mt-2 text-xs text-[#aaa095]">
-          {isOptimizingImages
-            ? "Optimising photos on this device…"
-            : "Up to four private photos · larger photos are optimised before upload"}
-        </p>
-      </fieldset>
-
-      {/* note-section */}
-      <div>
-        <span
-          aria-hidden="true"
-          className="mb-2 block text-[14px] font-semibold text-[#7a7a7a]"
-        >
-          Note
-        </span>
-        <label className="sr-only" htmlFor="health-log-note">
-          Add a note (optional)
-        </label>
-        <textarea
-          {...register("note")}
-          aria-invalid={Boolean(errors.note)}
-          className="min-h-[120px] w-full resize-y rounded-2xl border border-[#f0e6d8] bg-white/60 p-4 text-[15px] leading-[22px] text-[#2d2d2d] outline-none placeholder:text-[#aaa095] focus:border-[#ed802a] focus:ring-4 focus:ring-[#ed802a]/10"
-          id="health-log-note"
-          maxLength={MAX_HEALTH_LOG_NOTE_LENGTH}
-          placeholder="Add a note…"
-        />
-        <span className="mt-1 block text-right text-xs text-[#aaa095]">
-          {note?.length ?? 0}/{MAX_HEALTH_LOG_NOTE_LENGTH}
-        </span>
-      </div>
-
-      {serverError ? (
-        <div
-          className="rounded-2xl border border-[#efb3ae] bg-[#fff0ef] p-4 text-sm text-[#9f342d]"
-          role="alert"
-        >
-          <div className="flex gap-3">
-            <WifiOff aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
-            <p>{serverError}</p>
           </div>
         </div>
       ) : null}
-
-      {/* primary-action-container */}
-      <div className="pt-1">
-        <button
-          className="flex h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-[#65bcb5] text-base font-bold text-[#fdf8f2] transition-transform duration-150 ease-out enabled:active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-500"
-          disabled={!status || !localDate || isSubmitting || isOptimizingImages}
-          type="submit"
-        >
-          {isSubmitting ? (
-            <>
-              <LoaderCircle
-                aria-hidden="true"
-                className="size-5 animate-spin"
-              />
-              Saving…
-            </>
-          ) : existing ? (
-            "Save changes"
-          ) : (
-            "Save"
-          )}
-        </button>
-        <button
-          className="mt-6 min-h-11 w-full text-[15px] font-semibold text-[#7a7a7a] active:scale-[0.98]"
-          onClick={onCancel}
-          type="button"
-        >
-          {existing ? "Cancel" : "Skip"}
-        </button>
-      </div>
-    </form>
+    </>
   );
 }
