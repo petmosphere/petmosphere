@@ -1,22 +1,29 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { RemindersHome } from "./reminders-home";
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: vi.fn() }),
+}));
+
 const pet = {
-  approximateAge: null,
-  birthDate: null,
-  breed: null,
-  createdAt: "2026-08-22T00:00:00.000Z",
-  desexedStatus: null,
-  id: "73000000-0000-4000-8000-000000000003",
-  name: "Max",
-  ownerId: "71000000-0000-4000-8000-000000000001",
-  photoPath: null,
-  sex: null,
-  species: "dog" as const,
-  updatedAt: "2026-08-22T00:00:00.000Z",
-  weightKg: null,
+  pet: {
+    approximateAge: null,
+    birthDate: null,
+    breed: null,
+    createdAt: "2026-08-22T00:00:00.000Z",
+    desexedStatus: null,
+    id: "73000000-0000-4000-8000-000000000003",
+    name: "Max",
+    ownerId: "71000000-0000-4000-8000-000000000001",
+    photoPath: null,
+    sex: null,
+    species: "dog" as const,
+    updatedAt: "2026-08-22T00:00:00.000Z",
+    weightKg: null,
+  },
+  photoUrl: null,
 };
 
 const expiredReminder = {
@@ -28,7 +35,7 @@ const expiredReminder = {
   localTime: "09:00",
   notificationLeadMinutes: null,
   note: null,
-  petId: pet.id,
+  petId: pet.pet.id,
   repeatRule: "never" as const,
   seriesId: "75000000-0000-4000-8000-000000000005",
   timezone: "Australia/Melbourne" as const,

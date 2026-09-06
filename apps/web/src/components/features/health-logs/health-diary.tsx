@@ -10,6 +10,8 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 import { AppNav } from "@/components/features/pets/app-nav";
+import { PetSwitcherDropdown } from "@/components/ui/pet-switcher-dropdown";
+import { PetSwitcherPill } from "@/components/ui/pet-switcher-pill";
 import { HealthDiaryCalendar } from "./health-diary-calendar";
 import { HealthLogDetail } from "./health-log-detail";
 import { HealthLogForm } from "./health-log-form";
@@ -43,6 +45,7 @@ export function HealthDiary({
   const [loadingEntry, setLoadingEntry] = useState(initialView === "today");
   const [loadError, setLoadError] = useState<string>();
   const [formPetId, setFormPetId] = useState(pet.id);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const query = useCallback(
     async (body: object) => {
@@ -247,6 +250,25 @@ export function HealthDiary({
     );
   }
 
+  const petSwitcher = (
+    <>
+      <PetSwitcherPill
+        onClick={() => setDropdownOpen((o) => !o)}
+        petName={pet.name}
+        photoUrl={photoUrl}
+        species={pet.species}
+      />
+      <PetSwitcherDropdown
+        onClose={() => setDropdownOpen(false)}
+        onSelect={(petId) => router.push(`/pets/${petId}/health-logs`)}
+        open={dropdownOpen}
+        pets={petOptions}
+        selectedId={pet.id}
+        showAllPets={false}
+      />
+    </>
+  );
+
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-[#fdf8f2] px-6 pt-8 pb-3 text-[#2d2d2d] shadow-xl shadow-stone-900/5">
       {loadError ? (
@@ -278,6 +300,7 @@ export function HealthDiary({
             onMonthChange={changeMonth}
             onSelectDate={openDate}
             petName={pet.name}
+            petSwitcher={petSwitcher}
             today={today}
           />
           <HealthLogReminderSettings petId={pet.id} />
@@ -296,7 +319,8 @@ export function HealthDiary({
       <AppNav
         active="diary"
         diaryHref={`/pets/${pet.id}/health-logs`}
-        reminderHref="/reminders"
+        homeHref={`/home?pet=${pet.id}`}
+        reminderHref={`/reminders?pet=${pet.id}`}
       />
     </main>
   );

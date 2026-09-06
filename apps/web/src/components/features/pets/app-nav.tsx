@@ -51,11 +51,13 @@ export function AppNav({
   active = "home",
   diaryHref,
   fixed = false,
+  homeHref = "/home",
   reminderHref,
 }: {
   active?: "diary" | "home" | "profile" | "reminders";
   diaryHref?: string | undefined;
   fixed?: boolean;
+  homeHref?: string;
   reminderHref?: string | undefined;
 }) {
   return (
@@ -72,7 +74,7 @@ export function AppNav({
         className={`${itemClass} ${
           active === "home" ? "bg-white/85 text-[#ed802a]" : "text-[#7a7a7a]"
         }`}
-        href="/home"
+        href={homeHref}
       >
         <House aria-hidden="true" className="mb-0.5 size-5" strokeWidth={1.8} />
         Home

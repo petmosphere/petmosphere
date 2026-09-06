@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 
 import { RemindersHome } from "@/components/features/reminders/reminders-home";
 import { requireUser } from "@/lib/auth/require-user";
-import { listOwnedPets } from "@/lib/pets/supabase-pets";
+import { getPetPhotoUrl, listOwnedPets } from "@/lib/pets/supabase-pets";
 import {
   createReminderRepository,
   toReminderResponse,
@@ -15,19 +15,33 @@ export const metadata: Metadata = {
   robots: { follow: false, index: false },
 };
 
-export default async function RemindersPage() {
-  const { supabase, user } = await requireUser("/reminders");
+export default async function RemindersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ pet?: string }>;
+}) {
+  const [{ supabase, user }, { pet: petParam }] = await Promise.all([
+    requireUser("/reminders"),
+    searchParams,
+  ]);
   const pets = await listOwnedPets(supabase, user.id);
   if (pets.length === 0) redirect("/onboarding");
   const repository = createReminderRepository(supabase);
   const now = new Date();
   const localDate = deriveLocalDate(now, "Australia/Melbourne");
   const localTime = deriveLocalTime(now, "Australia/Melbourne");
-  const [upcoming, completed, overdue] = await Promise.all([
+  const [petOptions, upcoming, completed, overdue] = await Promise.all([
+    Promise.all(
+      pets.map(async (pet) => ({
+        pet,
+        photoUrl: await getPetPhotoUrl(supabase, pet.photoPath),
+      })),
+    ),
     repository.list(user.id, "upcoming", localDate, localTime),
     repository.list(user.id, "completed", localDate, localTime),
     repository.list(user.id, "overdue", localDate, localTime),
   ]);
+  const initialPetId = pets.find((p) => p.id === petParam)?.id;
   return (
     <RemindersHome
       initial={{
@@ -35,7 +49,8 @@ export default async function RemindersPage() {
         overdue: overdue.map(toReminderResponse),
         upcoming: upcoming.map(toReminderResponse),
       }}
-      pets={pets}
+      pets={petOptions}
+      {...(initialPetId ? { initialPetId } : {})}
     />
   );
 }
