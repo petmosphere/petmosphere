@@ -1,6 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import type { Pet } from "@petmosphere/domain";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: vi.fn() }),
+}));
 
 import { PetsHome } from "./pets-home";
 
