@@ -7,9 +7,13 @@ import type {
 import { isReminderOverdue, type Pet } from "@petmosphere/domain";
 import { Bell, Check, ChevronRight, LoaderCircle, Plus } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { AppNav } from "@/components/features/pets/app-nav";
+import { PetAvatar } from "@/components/features/pets/pet-avatar";
+import { PetSwitcherDropdown } from "@/components/ui/pet-switcher-dropdown";
+import { PetSwitcherPill } from "@/components/ui/pet-switcher-pill";
 import {
   categoryDetails,
   formatReminderDate,
@@ -24,11 +28,14 @@ const tabs: { label: string; value: ReminderStatus }[] = [
 
 export function RemindersHome({
   initial,
+  initialPetId,
   pets,
 }: {
   initial: Record<ReminderStatus, ReminderResponse[]>;
-  pets: Pet[];
+  initialPetId?: string;
+  pets: { pet: Pet; photoUrl: string | null }[];
 }) {
+  const router = useRouter();
   const [active, setActive] = useState<ReminderStatus>("upcoming");
   const [lists, setLists] = useState(initial);
   const [workingId, setWorkingId] = useState<string | null>(null);
@@ -37,7 +44,21 @@ export function RemindersHome({
   const [swipe, setSwipe] = useState<{ delta: number; id: string } | null>(
     null,
   );
-  const petNames = new Map(pets.map((pet) => [pet.id, pet.name]));
+  const [selectedPetId, setSelectedPetId] = useState<string | "all">(
+    initialPetId ?? "all",
+  );
+  const [prevInitialPetId, setPrevInitialPetId] = useState(initialPetId);
+  if (prevInitialPetId !== initialPetId) {
+    setPrevInitialPetId(initialPetId);
+    setSelectedPetId(initialPetId ?? "all");
+  }
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const petPhotos = new Map(
+    pets.map(({ pet, photoUrl }) => [
+      pet.id,
+      { photoUrl, species: pet.species, name: pet.name },
+    ]),
+  );
 
   useEffect(() => {
     function moveOverdueReminders() {
@@ -112,8 +133,19 @@ export function RemindersHome({
     }
   }
 
-  const reminders = lists[active];
-  const firstPetName = pets[0]?.name ?? "your pet";
+  const reminders =
+    selectedPetId === "all"
+      ? lists[active]
+      : lists[active].filter((r) => r.petId === selectedPetId);
+  const selectedPet =
+    selectedPetId === "all"
+      ? null
+      : pets.find(({ pet }) => pet.id === selectedPetId);
+  const firstPetName =
+    (selectedPetId === "all" ? pets[0]?.pet.name : selectedPet?.pet.name) ??
+    "your pet";
+  const effectiveDiaryPetId =
+    selectedPetId !== "all" ? selectedPetId : pets[0]?.pet.id;
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-[393px] flex-col bg-[#fdf8f2] pb-3 text-[#2d2d2d] shadow-xl shadow-stone-900/5">
       <header className="flex items-center justify-between px-6 pt-[calc(env(safe-area-inset-top)+1.5rem)]">
@@ -129,9 +161,39 @@ export function RemindersHome({
         </Link>
       </header>
 
+      {pets.length > 0 ? (
+        <div className="relative mx-6 mt-4">
+          <PetSwitcherPill
+            isAllPets={selectedPetId === "all"}
+            onClick={() => setDropdownOpen((o) => !o)}
+            petName={
+              selectedPetId === "all"
+                ? "All Pets"
+                : (selectedPet?.pet.name ?? "Pet")
+            }
+            photoUrl={selectedPet?.photoUrl ?? null}
+            {...(selectedPet?.pet.species
+              ? { species: selectedPet.pet.species }
+              : {})}
+          />
+          <PetSwitcherDropdown
+            onClose={() => setDropdownOpen(false)}
+            onSelect={(id) => {
+              setSelectedPetId(id);
+              router.replace(
+                id === "all" ? "/reminders" : `/reminders?pet=${id}`,
+              );
+            }}
+            open={dropdownOpen}
+            pets={pets}
+            selectedId={selectedPetId}
+          />
+        </div>
+      ) : null}
+
       <div
         aria-label="Reminder lists"
-        className="mx-6 mt-6 flex items-end justify-between border-b border-transparent"
+        className="mx-6 mt-4 flex items-end justify-between border-b border-transparent"
         role="tablist"
       >
         {tabs.map((tab) => (
@@ -267,6 +329,17 @@ export function RemindersHome({
                           : undefined,
                     }}
                   >
+                    {(() => {
+                      const p = petPhotos.get(reminder.petId);
+                      return p ? (
+                        <PetAvatar
+                          className="size-10 border border-[#e9ceaf]"
+                          name={p.name}
+                          photoUrl={p.photoUrl}
+                          species={p.species}
+                        />
+                      ) : null;
+                    })()}
                     <span
                       className={`grid size-12 shrink-0 place-items-center rounded-2xl ${details.colours}`}
                     >
@@ -280,7 +353,6 @@ export function RemindersHome({
                         {reminder.title}
                       </span>
                       <span className="mt-1 block text-sm text-stone-500">
-                        {petNames.get(reminder.petId) ?? "Your pet"} ·{" "}
                         {formatReminderDate(reminder.dueDate)}
                       </span>
                       <span className="block text-xs text-stone-400">
@@ -319,7 +391,14 @@ export function RemindersHome({
       </section>
       <AppNav
         active="reminders"
-        diaryHref={pets[0] ? `/pets/${pets[0].id}/health-logs` : undefined}
+        diaryHref={
+          effectiveDiaryPetId
+            ? `/pets/${effectiveDiaryPetId}/health-logs`
+            : undefined
+        }
+        {...(selectedPetId !== "all"
+          ? { homeHref: `/home?pet=${selectedPetId}` }
+          : {})}
         reminderHref="/reminders"
       />
     </main>

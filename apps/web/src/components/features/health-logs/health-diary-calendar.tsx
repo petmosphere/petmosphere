@@ -1,5 +1,6 @@
 import type { HealthLogSummary } from "@petmosphere/api-contracts";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import type React from "react";
 
 import { healthLogStatusDetails } from "./health-log-status-options";
 
@@ -23,6 +24,7 @@ export function HealthDiaryCalendar({
   onMonthChange,
   onSelectDate,
   petName,
+  petSwitcher,
   today,
 }: {
   logs: HealthLogSummary[];
@@ -31,6 +33,7 @@ export function HealthDiaryCalendar({
   onMonthChange: (month: string) => void;
   onSelectDate: (date: string) => void;
   petName: string;
+  petSwitcher?: React.ReactNode;
   today: string;
 }) {
   const first = monthDate(month);
@@ -50,7 +53,11 @@ export function HealthDiaryCalendar({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="mt-1 text-4xl font-bold">Health Diary</h1>
-          <p className="mt-1 text-sm text-stone-500">For {petName}</p>
+          {petSwitcher ? (
+            <div className="relative mt-3">{petSwitcher}</div>
+          ) : (
+            <p className="mt-1 text-sm text-stone-500">For {petName}</p>
+          )}
         </div>
         <button
           aria-label="Add a health log for today"
