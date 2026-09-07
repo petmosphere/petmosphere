@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { AppNav } from "@/components/features/pets/app-nav";
+import { PetAvatar } from "@/components/features/pets/pet-avatar";
 import { PetSwitcherDropdown } from "@/components/ui/pet-switcher-dropdown";
 import { PetSwitcherPill } from "@/components/ui/pet-switcher-pill";
 import {
@@ -46,12 +47,18 @@ export function RemindersHome({
   const [selectedPetId, setSelectedPetId] = useState<string | "all">(
     initialPetId ?? "all",
   );
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const petNames = new Map(pets.map(({ pet }) => [pet.id, pet.name]));
-
-  useEffect(() => {
+  const [prevInitialPetId, setPrevInitialPetId] = useState(initialPetId);
+  if (prevInitialPetId !== initialPetId) {
+    setPrevInitialPetId(initialPetId);
     setSelectedPetId(initialPetId ?? "all");
-  }, [initialPetId]);
+  }
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const petPhotos = new Map(
+    pets.map(({ pet, photoUrl }) => [
+      pet.id,
+      { photoUrl, species: pet.species, name: pet.name },
+    ]),
+  );
 
   useEffect(() => {
     function moveOverdueReminders() {
@@ -322,6 +329,17 @@ export function RemindersHome({
                           : undefined,
                     }}
                   >
+                    {(() => {
+                      const p = petPhotos.get(reminder.petId);
+                      return p ? (
+                        <PetAvatar
+                          className="size-10 border border-[#e9ceaf]"
+                          name={p.name}
+                          photoUrl={p.photoUrl}
+                          species={p.species}
+                        />
+                      ) : null;
+                    })()}
                     <span
                       className={`grid size-12 shrink-0 place-items-center rounded-2xl ${details.colours}`}
                     >
@@ -335,7 +353,6 @@ export function RemindersHome({
                         {reminder.title}
                       </span>
                       <span className="mt-1 block text-sm text-stone-500">
-                        {petNames.get(reminder.petId) ?? "Your pet"} ·{" "}
                         {formatReminderDate(reminder.dueDate)}
                       </span>
                       <span className="block text-xs text-stone-400">

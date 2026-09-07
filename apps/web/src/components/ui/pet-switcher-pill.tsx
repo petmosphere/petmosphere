@@ -26,7 +26,7 @@ export function PetSwitcherPill({
           ? "All pets selected. Tap to switch."
           : `${petName} selected. Tap to switch pet.`
       }
-      className="flex h-9 items-center gap-2.5 rounded-full border border-[#F0E6D8] bg-white/60 pl-1.5 pr-3.5 transition-opacity active:opacity-70"
+      className="flex h-9 items-center gap-2.5 rounded-full border border-[#F0E6D8] bg-white/60 pr-3.5 pl-1.5 transition-opacity active:opacity-70"
       onClick={onClick}
       type="button"
     >
