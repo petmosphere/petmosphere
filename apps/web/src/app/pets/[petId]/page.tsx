@@ -20,12 +20,15 @@ export default async function PetProfilePage({
   const { supabase, user } = await requireUser(`/pets/${petId}`);
   const pet = await getOwnedPet(supabase, user.id, petId);
   if (!pet) notFound();
-  const profile = await getProfile(supabase, user.id);
+  const [profile, photoUrl] = await Promise.all([
+    getProfile(supabase, user.id),
+    getPetPhotoUrl(supabase, pet.photoPath),
+  ]);
 
   return (
     <PetProfile
       pet={pet}
-      photoUrl={await getPetPhotoUrl(supabase, pet.photoPath)}
+      photoUrl={photoUrl}
       weightUnit={profile.weightUnit}
     />
   );

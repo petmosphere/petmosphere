@@ -33,8 +33,10 @@ export default async function AppHomePage({
   searchParams: Promise<{ pet?: string }>;
 }) {
   const { supabase, user } = await requireUser("/home");
-  const pets = await listOwnedPets(supabase, user.id);
-  const profile = await getProfile(supabase, user.id);
+  const [pets, profile] = await Promise.all([
+    listOwnedPets(supabase, user.id),
+    getProfile(supabase, user.id),
+  ]);
 
   const displayName =
     profile.displayName.trim().split(/\s+/)[0] ||

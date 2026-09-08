@@ -26,12 +26,13 @@ export default async function NotificationsPage({
   const [profile, reminderSettings] = await Promise.all([
     getProfile(supabase, user.id),
     Promise.all(
-      pets.map(async ({ id, name }) => ({
-        healthReminder: await healthReminders.find(user.id, id),
-        id,
-        name,
-        weightReminder: await weightReminders.find(user.id, id),
-      })),
+      pets.map(async ({ id, name }) => {
+        const [healthReminder, weightReminder] = await Promise.all([
+          healthReminders.find(user.id, id),
+          weightReminders.find(user.id, id),
+        ]);
+        return { healthReminder, id, name, weightReminder };
+      }),
     ),
   ]);
   return (
