@@ -401,7 +401,7 @@ export function NotificationSettings({
             body: JSON.stringify({
               ...next,
               petId: id,
-              timezone: "Australia/Melbourne",
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             }),
             headers: { "Content-Type": "application/json" },
             method: "PUT",
@@ -446,13 +446,12 @@ export function NotificationSettings({
     setWeight(next);
     setBusy(true);
     setMessage("");
-    const localDate = deriveLocalDate(new Date(), "Australia/Melbourne");
-    const melbourneToday = new Date(`${localDate}T12:00:00Z`);
+    const deviceTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const localDate = deriveLocalDate(new Date(), deviceTz);
+    const today = new Date(`${localDate}T12:00:00Z`);
     const weekly =
       next.frequency === "weekly" || next.frequency === "fortnightly";
-    const scheduleDay = weekly
-      ? melbourneToday.getUTCDay()
-      : melbourneToday.getUTCDate();
+    const scheduleDay = weekly ? today.getUTCDay() : today.getUTCDate();
     try {
       const responses = await Promise.all(
         pets.map(({ id }) =>
@@ -460,7 +459,7 @@ export function NotificationSettings({
             body: JSON.stringify({
               ...next,
               scheduleDay,
-              timezone: "Australia/Melbourne",
+              timezone: deviceTz,
             }),
             headers: { "Content-Type": "application/json" },
             method: "PUT",
