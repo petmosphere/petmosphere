@@ -74,7 +74,7 @@ export function PetsHome({
   const hasUpcoming = careReminders.length > 0 || reminder?.enabled;
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-[393px] flex-col bg-[#fdf8f2] pb-24 text-[#2d2d2d] shadow-xl shadow-stone-900/5">
+    <main className="animate-page-enter mx-auto flex min-h-dvh w-full max-w-[393px] flex-col bg-[#fdf8f2] pb-24 text-[#2d2d2d] shadow-xl shadow-stone-900/5">
       <header className="px-5 pt-[max(1.5rem,env(safe-area-inset-top))]">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1 pt-1">

@@ -252,21 +252,20 @@ export async function getHealthLogImageUrls(
   supabase: SupabaseClient,
   paths: string[],
 ) {
-  const urls = await Promise.all(
-    paths.map(async (path) => {
-      const { data, error } = await supabase.storage
-        .from("health-log-images")
-        .createSignedUrl(path, 60 * 60);
-      if (!error) return data.signedUrl;
-
-      Sentry.captureMessage("Could not create a health log image URL.", {
-        level: "error",
-        tags: { operation: "health_log_image_signed_url" },
-      });
-      return null;
-    }),
-  );
-  return urls.filter((url): url is string => Boolean(url));
+  if (paths.length === 0) return [];
+  const { data, error } = await supabase.storage
+    .from("health-log-images")
+    .createSignedUrls(paths, 60 * 60);
+  if (error) {
+    Sentry.captureMessage("Could not create health log image URLs.", {
+      level: "error",
+      tags: { operation: "health_log_image_signed_url" },
+    });
+    return [];
+  }
+  return (data ?? [])
+    .map((item) => item.signedUrl)
+    .filter((url): url is string => Boolean(url));
 }
 
 export async function getHealthLogResponse(

@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 
 import { RemindersHome } from "@/components/features/reminders/reminders-home";
 import { requireUser } from "@/lib/auth/require-user";
-import { getPetPhotoUrl, listOwnedPets } from "@/lib/pets/supabase-pets";
+import { getPetPhotoUrls, listOwnedPets } from "@/lib/pets/supabase-pets";
 import {
   createReminderRepository,
   toReminderResponse,
@@ -30,17 +30,16 @@ export default async function RemindersPage({
   const now = new Date();
   const localDate = deriveLocalDate(now, "Australia/Melbourne");
   const localTime = deriveLocalTime(now, "Australia/Melbourne");
-  const [petOptions, upcoming, completed, overdue] = await Promise.all([
-    Promise.all(
-      pets.map(async (pet) => ({
-        pet,
-        photoUrl: await getPetPhotoUrl(supabase, pet.photoPath),
-      })),
-    ),
+  const [photoUrls, upcoming, completed, overdue] = await Promise.all([
+    getPetPhotoUrls(supabase, pets),
     repository.list(user.id, "upcoming", localDate, localTime),
     repository.list(user.id, "completed", localDate, localTime),
     repository.list(user.id, "overdue", localDate, localTime),
   ]);
+  const petOptions = pets.map((pet) => ({
+    pet,
+    photoUrl: photoUrls.get(pet.id) ?? null,
+  }));
   const initialPetId = pets.find((p) => p.id === petParam)?.id;
   return (
     <RemindersHome

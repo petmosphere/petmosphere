@@ -12,7 +12,7 @@ import {
   toReminderResponse,
 } from "@/lib/reminders/supabase-reminders";
 import { getProfile } from "@/lib/profile/supabase-profile";
-import { getPetPhotoUrl, listOwnedPets } from "@/lib/pets/supabase-pets";
+import { getPetPhotoUrls, listOwnedPets } from "@/lib/pets/supabase-pets";
 import { createWeightRepository } from "@/lib/weights/supabase-weights";
 import { listNotifications, listWeights } from "@petmosphere/services";
 
@@ -54,19 +54,14 @@ export default async function AppHomePage({
   const localTime = deriveLocalTime(now, "Australia/Melbourne");
 
   const [
-    petsWithPhotos,
+    photoUrls,
     healthLogs,
     reminder,
     careReminders,
     weightEntries,
     notifications,
   ] = await Promise.all([
-    Promise.all(
-      pets.map(async (pet) => ({
-        pet,
-        photoUrl: await getPetPhotoUrl(supabase, pet.photoPath),
-      })),
-    ),
+    getPetPhotoUrls(supabase, pets),
     listOwnedHealthLogSummaries(
       supabase,
       user.id,
@@ -84,6 +79,11 @@ export default async function AppHomePage({
     listWeights(user.id, currentPet.id, createWeightRepository(supabase), now),
     listNotifications(user.id, createNotificationRepository(supabase), now),
   ]);
+
+  const petsWithPhotos = pets.map((pet) => ({
+    pet,
+    photoUrl: photoUrls.get(pet.id) ?? null,
+  }));
 
   return (
     <PetsHome

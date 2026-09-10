@@ -2,6 +2,8 @@
 
 import { Check, CircleX, Plus } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 import type { Pet } from "@petmosphere/domain";
 import { PetAvatar } from "@/components/features/pets/pet-avatar";
@@ -19,12 +21,17 @@ export function PetSwitcherSheet({
   open: boolean;
   pets: { pet: Pet; photoUrl: string | null }[];
 }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   function handleSelect(petId: string) {
     onSelect(petId);
     onClose();
   }
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <>
       {/* Scrim */}
       <div
@@ -132,6 +139,7 @@ export function PetSwitcherSheet({
           </Link>
         </div>
       </div>
-    </>
+    </>,
+    document.body,
   );
 }

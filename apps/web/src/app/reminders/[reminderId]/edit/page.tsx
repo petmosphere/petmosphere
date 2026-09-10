@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 
 import { ReminderForm } from "@/components/features/reminders/reminder-form";
 import { requireUser } from "@/lib/auth/require-user";
-import { getPetPhotoUrl, listOwnedPets } from "@/lib/pets/supabase-pets";
+import { getPetPhotoUrls, listOwnedPets } from "@/lib/pets/supabase-pets";
 import {
   createReminderRepository,
   toReminderResponse,
@@ -27,12 +27,11 @@ export default async function EditReminderPage({
     listOwnedPets(supabase, user.id),
   ]);
   if (!reminder || reminder.deletedAt || reminder.completedAt) notFound();
-  const petOptions = await Promise.all(
-    pets.map(async (pet) => ({
-      pet,
-      photoUrl: await getPetPhotoUrl(supabase, pet.photoPath),
-    })),
-  );
+  const photoUrls = await getPetPhotoUrls(supabase, pets);
+  const petOptions = pets.map((pet) => ({
+    pet,
+    photoUrl: photoUrls.get(pet.id) ?? null,
+  }));
   return (
     <ReminderForm
       pets={petOptions}
