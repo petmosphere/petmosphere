@@ -11,7 +11,7 @@ function ProfileIcon() {
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
-      viewBox="30 5 20 20"
+      viewBox="29 4 22 22"
       xmlns="http://www.w3.org/2000/svg"
     >
       <path d="M30.5 15C30.5 10.5217 30.5 8.28249 31.8912 6.89124C33.2825 5.5 35.5217 5.5 40 5.5C44.4783 5.5 46.7175 5.5 48.1088 6.89124C49.5 8.28249 49.5 10.5217 49.5 15C49.5 19.4783 49.5 21.7175 48.1088 23.1088C46.7175 24.5 44.4783 24.5 40 24.5C35.5217 24.5 33.2825 24.5 31.8912 23.1088C30.5 21.7175 30.5 19.4783 30.5 15Z" />
@@ -31,7 +31,7 @@ function RemindersIcon() {
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={1.6}
-      viewBox="31 6 18 18"
+      viewBox="30 5 20 20"
       xmlns="http://www.w3.org/2000/svg"
     >
       <line x1="37.845" x2="49" y1="8.125" y2="8.125" />
