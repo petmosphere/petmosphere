@@ -6,7 +6,6 @@ import type {
 } from "@petmosphere/api-contracts";
 import {
   deriveLocalDate,
-  healthLogStatuses,
   type HealthLogStatus,
   type Pet,
 } from "@petmosphere/domain";

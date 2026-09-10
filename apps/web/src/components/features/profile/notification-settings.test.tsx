@@ -1,6 +1,10 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ back: vi.fn(), replace: vi.fn() }),
+}));
+
 import { NotificationSettings } from "./notification-settings";
 
 vi.mock("@/lib/health-logs/push-notifications", () => ({

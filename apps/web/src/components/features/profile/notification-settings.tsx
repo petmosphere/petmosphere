@@ -4,8 +4,8 @@ import {
   deriveLocalDate,
   type WeightReminderFrequency,
 } from "@petmosphere/domain";
-import { Bell } from "lucide-react";
-import { BackButton } from "@/components/ui/back-button";
+import { ArrowLeft, Bell } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 
 import {
@@ -481,12 +481,13 @@ export function NotificationSettings({
   return (
     <main className="mx-auto min-h-dvh w-full max-w-[393px] bg-[#fdf8f2] px-6 pt-[max(1.5rem,env(safe-area-inset-top))] pb-10 text-[#2d2d2d]">
       <header>
-        <BackButton
+        <Link
+          aria-label={`Back to ${backHref.replace(/^\//, "")}`}
           className="grid size-11 place-items-center rounded-full focus-visible:outline-2 focus-visible:outline-[#ed802a]"
-          fallbackHref={backHref}
-          iconClassName="size-6"
-          label="Back"
-        />
+          href={backHref}
+        >
+          <ArrowLeft aria-hidden="true" className="size-6" />
+        </Link>
         <h1 className="mt-5 text-2xl font-bold tracking-[-0.02em]">
           Notification Settings
         </h1>

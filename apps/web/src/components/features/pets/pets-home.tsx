@@ -21,7 +21,6 @@ import { PetAvatar } from "./pet-avatar";
 
 type PetWithPhoto = { pet: Pet; photoUrl: string | null };
 
-
 function formatLogDate(localDate: string) {
   return new Intl.DateTimeFormat("en-AU", {
     day: "numeric",

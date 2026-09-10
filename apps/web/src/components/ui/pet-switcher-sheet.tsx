@@ -2,7 +2,7 @@
 
 import { Check, CircleX, Plus } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 
 import type { Pet } from "@petmosphere/domain";
@@ -21,8 +21,11 @@ export function PetSwitcherSheet({
   open: boolean;
   pets: { pet: Pet; photoUrl: string | null }[];
 }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
   function handleSelect(petId: string) {
     onSelect(petId);

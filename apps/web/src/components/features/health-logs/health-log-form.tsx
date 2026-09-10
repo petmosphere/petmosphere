@@ -87,7 +87,11 @@ export function HealthLogForm({
       observations: existing?.observations ?? [],
       petId: selectedPetId,
       timezone,
-      ...(existing ? { status: existing.status } : initialStatus ? { status: initialStatus } : {}),
+      ...(existing
+        ? { status: existing.status }
+        : initialStatus
+          ? { status: initialStatus }
+          : {}),
     },
     mode: "onChange",
     resolver: zodResolver(createHealthLogSchema),

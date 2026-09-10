@@ -1,8 +1,7 @@
 "use client";
 
 import { CalendarDays, House } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import Link from "next/link";
 
 function ProfileIcon() {
   return (
@@ -63,16 +62,8 @@ function NavItem({
   href: string;
   label: string;
 }) {
-  const router = useRouter();
-  const [, startTransition] = useTransition();
-
-  const handleClick = () => {
-    if (disabled || active) return;
-    startTransition(() => router.push(href));
-  };
-
   return (
-    <button
+    <Link
       aria-current={active ? "page" : undefined}
       aria-disabled={disabled}
       aria-label={label}
@@ -83,12 +74,13 @@ function NavItem({
             ? "cursor-default text-[#c4c4c4]"
             : "text-[#7a7a7a]"
       }`}
-      disabled={disabled}
-      onClick={handleClick}
-      type="button"
+      href={href}
+      onClick={(e) => {
+        if (disabled || active) e.preventDefault();
+      }}
     >
       {children}
-    </button>
+    </Link>
   );
 }
 

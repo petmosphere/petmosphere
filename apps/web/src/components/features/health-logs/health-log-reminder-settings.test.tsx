@@ -35,7 +35,7 @@ describe("HealthLogReminderSettings", () => {
     expect(screen.getByRole("button", { name: "Save reminder" })).toBeVisible();
   });
 
-  it("collapses the editor after a new reminder is saved", async () => {
+  it("starts collapsed when no reminder is saved, opens on click, collapses after save", async () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(Response.json(null))
@@ -43,17 +43,25 @@ describe("HealthLogReminderSettings", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     render(<HealthLogReminderSettings petId="pet-1" />);
+
+    // No reminder saved → collapsed with "Set up" button, no save form
+    const setupButton = await screen.findByRole("button", {
+      name: "Edit daily check-in notification",
+    });
+    expect(setupButton).toBeVisible();
     expect(
-      await screen.findByRole("button", { name: "Save reminder" }),
-    ).toBeVisible();
+      screen.queryByRole("button", { name: "Save reminder" }),
+    ).not.toBeInTheDocument();
 
+    // Click to open editor
+    fireEvent.click(setupButton);
+    expect(screen.getByRole("button", { name: "Save reminder" })).toBeVisible();
+
+    // Save → collapses back
     fireEvent.click(screen.getByRole("button", { name: "Save reminder" }));
-
     await waitFor(() =>
       expect(
-        screen.getByRole("button", {
-          name: "Edit daily check-in notification",
-        }),
+        screen.getByRole("button", { name: "Edit daily check-in notification" }),
       ).toBeVisible(),
     );
     expect(

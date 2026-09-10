@@ -120,6 +120,7 @@ export function PetSelector({
               const selected = option.pet.id === pending;
               return (
                 <button
+                  aria-label={option.pet.name}
                   aria-pressed={selected}
                   className={`flex h-14 w-full items-center justify-between rounded-xl px-3.5 shadow-[0px_2px_8px_rgba(237,128,42,0.10)] transition-colors ${
                     selected

@@ -52,30 +52,30 @@ export default async function AppHomePage({
   const today = deriveLocalDate(now, "Australia/Melbourne");
   const localTime = deriveLocalTime(now, "Australia/Melbourne");
 
-  const [
-    photoUrls,
-    healthLogs,
-    careReminders,
-    weightEntries,
-    notifications,
-  ] = await Promise.all([
-    getPetPhotoUrls(supabase, pets),
-    listOwnedHealthLogSummaries(
-      supabase,
-      user.id,
-      currentPet.id,
-      localDateDaysAgo(today, 6),
-      today,
-    ),
-    createReminderRepository(supabase).list(
-      user.id,
-      "upcoming",
-      today,
-      localTime,
-    ),
-    listWeights(user.id, currentPet.id, createWeightRepository(supabase), now),
-    listNotifications(user.id, createNotificationRepository(supabase), now),
-  ]);
+  const [photoUrls, healthLogs, careReminders, weightEntries, notifications] =
+    await Promise.all([
+      getPetPhotoUrls(supabase, pets),
+      listOwnedHealthLogSummaries(
+        supabase,
+        user.id,
+        currentPet.id,
+        localDateDaysAgo(today, 6),
+        today,
+      ),
+      createReminderRepository(supabase).list(
+        user.id,
+        "upcoming",
+        today,
+        localTime,
+      ),
+      listWeights(
+        user.id,
+        currentPet.id,
+        createWeightRepository(supabase),
+        now,
+      ),
+      listNotifications(user.id, createNotificationRepository(supabase), now),
+    ]);
 
   const petsWithPhotos = pets.map((pet) => ({
     pet,
