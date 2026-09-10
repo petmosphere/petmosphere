@@ -64,7 +64,7 @@ function NavItem({
   label: string;
 }) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   const handleClick = () => {
     if (disabled || active) return;
@@ -82,18 +82,12 @@ function NavItem({
           : disabled
             ? "cursor-default text-[#c4c4c4]"
             : "text-[#7a7a7a]"
-      } relative`}
+      }`}
       disabled={disabled}
       onClick={handleClick}
       type="button"
     >
       {children}
-      {isPending && (
-        <span
-          aria-hidden="true"
-          className="absolute bottom-1.5 left-1/2 size-1 -translate-x-1/2 animate-pulse rounded-full bg-[#ed802a]"
-        />
-      )}
     </button>
   );
 }

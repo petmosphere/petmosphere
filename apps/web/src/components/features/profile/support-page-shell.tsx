@@ -1,7 +1,5 @@
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
-
 import { AppNav } from "@/components/features/pets/app-nav";
+import { BackButton } from "@/components/ui/back-button";
 
 export function SupportPageShell({
   backHref = "/profile",
@@ -27,13 +25,12 @@ export function SupportPageShell({
       }`}
     >
       <header className="flex items-center gap-4">
-        <Link
-          aria-label="Back to profile"
+        <BackButton
           className="grid size-11 shrink-0 place-items-center rounded-full border border-[#ead9c7] bg-white/55 text-[#ed802a] transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.96] motion-reduce:transform-none"
-          href={backHref}
-        >
-          <ArrowLeft aria-hidden="true" className="size-5" />
-        </Link>
+          fallbackHref={backHref}
+          iconClassName="size-5"
+          label="Back to profile"
+        />
         <h1 className="text-2xl font-bold tracking-[-0.02em]">{title}</h1>
       </header>
 

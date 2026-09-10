@@ -1,7 +1,7 @@
-import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 import { AppNav } from "@/components/features/pets/app-nav";
+import { BackButton } from "@/components/ui/back-button";
 
 const acceptableUseItems = [
   "upload, create, store or distribute unlawful, harmful, defamatory, abusive or fraudulent content",
@@ -60,13 +60,11 @@ export function TermsContent({
         }`}
       >
         <div className="flex items-center gap-4">
-          <Link
-            aria-label="Back"
+          <BackButton
             className="grid size-11 shrink-0 place-items-center rounded-full border border-[#f0e6d8] bg-white/60 text-[#ed802a] transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.97] motion-reduce:transform-none"
-            href={backHref}
-          >
-            <ArrowLeft aria-hidden="true" className="size-5" strokeWidth={2} />
-          </Link>
+            fallbackHref={backHref}
+            iconClassName="size-5"
+          />
           <h1 className="text-2xl font-extrabold tracking-[-0.025em]">
             Terms of Service
           </h1>

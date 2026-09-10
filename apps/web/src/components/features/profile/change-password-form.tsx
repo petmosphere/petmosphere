@@ -5,8 +5,8 @@ import {
   changePasswordSchema,
   type ChangePasswordInput,
 } from "@petmosphere/api-contracts";
-import { ArrowLeft, Eye, EyeOff } from "lucide-react";
-import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
+import { BackButton } from "@/components/ui/back-button";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
@@ -91,13 +91,11 @@ export function ChangePasswordForm() {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-[393px] flex-col bg-[#fdf8f2] px-6 pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))] text-[#2d2d2d] shadow-xl shadow-stone-900/5">
       <div>
-        <Link
-          aria-label="Back"
+        <BackButton
           className="grid size-11 place-items-center rounded-full border border-[#ead9c7] bg-white/55 text-[#ed802a] transition-transform duration-150 active:scale-[0.96]"
-          href="/profile/edit"
-        >
-          <ArrowLeft aria-hidden="true" className="size-5" />
-        </Link>
+          fallbackHref="/profile/edit"
+          iconClassName="size-5"
+        />
       </div>
 
       <h1 className="mt-6 text-[22px] font-bold tracking-tight">

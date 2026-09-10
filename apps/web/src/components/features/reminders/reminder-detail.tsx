@@ -2,7 +2,6 @@
 
 import type { ReminderResponse } from "@petmosphere/api-contracts";
 import {
-  ArrowLeft,
   Bell,
   CalendarDays,
   Check,
@@ -13,6 +12,7 @@ import {
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
+import { BackButton } from "@/components/ui/back-button";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -79,13 +79,11 @@ export function ReminderDetail({
   return (
     <main className="mx-auto min-h-dvh w-full max-w-md bg-[#fdf8f2] px-6 pb-12 text-[#2d2d2d] shadow-xl shadow-stone-900/5">
       <header className="flex min-h-20 items-center justify-between">
-        <Link
-          aria-label="Back to reminders"
+        <BackButton
           className="grid size-11 place-items-center rounded-full focus-visible:outline-2 focus-visible:outline-[#ed802a]"
-          href="/reminders"
-        >
-          <ArrowLeft aria-hidden="true" />
-        </Link>
+          fallbackHref="/reminders"
+          label="Back to reminders"
+        />
         <div className="flex gap-1">
           {active ? (
             <>

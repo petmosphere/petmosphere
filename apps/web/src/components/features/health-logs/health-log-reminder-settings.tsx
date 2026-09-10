@@ -74,7 +74,7 @@ export function HealthLogReminderSettings({ petId }: { petId: string }) {
     }
   }
 
-  if (configured && !editing && state !== "error") {
+  if (!editing) {
     return (
       <section
         className="mt-8 rounded-3xl bg-white/60 p-5 shadow-sm"
@@ -89,19 +89,25 @@ export function HealthLogReminderSettings({ petId }: { petId: string }) {
               Daily check-in notification
             </h2>
             <p className="mt-1 text-sm text-stone-500">
-              {reminder.enabled
-                ? `Enabled · ${formatTimeLabel(reminder.localTime)}`
-                : "Paused"}
+              {state === "loading"
+                ? "Loading…"
+                : state === "error"
+                  ? "Could not load settings"
+                  : reminder.enabled
+                    ? `Enabled · ${formatTimeLabel(reminder.localTime)}`
+                    : "Paused"}
             </p>
           </div>
-          <button
-            aria-label="Edit daily check-in notification"
-            className="min-h-11 rounded-full border border-[#e8d0b3] px-4 text-sm font-semibold text-[#a96225] focus-visible:outline-2 focus-visible:outline-[#ed802a]"
-            onClick={() => setEditing(true)}
-            type="button"
-          >
-            Edit
-          </button>
+          {state === "idle" && (
+            <button
+              aria-label="Edit daily check-in notification"
+              className="min-h-11 rounded-full border border-[#e8d0b3] px-4 text-sm font-semibold text-[#a96225] focus-visible:outline-2 focus-visible:outline-[#ed802a]"
+              onClick={() => setEditing(true)}
+              type="button"
+            >
+              {configured ? "Edit" : "Set up"}
+            </button>
+          )}
         </div>
       </section>
     );

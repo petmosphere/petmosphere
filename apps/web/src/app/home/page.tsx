@@ -4,7 +4,6 @@ import { deriveLocalDate, deriveLocalTime } from "@petmosphere/domain";
 import { EmptyPetsHome } from "@/components/features/pets/empty-pets-home";
 import { PetsHome } from "@/components/features/pets/pets-home";
 import { requireUser } from "@/lib/auth/require-user";
-import { createHealthLogReminderRepository } from "@/lib/health-logs/supabase-health-log-reminders";
 import { listOwnedHealthLogSummaries } from "@/lib/health-logs/supabase-health-logs";
 import { createNotificationRepository } from "@/lib/notifications/supabase-notifications";
 import {
@@ -56,7 +55,6 @@ export default async function AppHomePage({
   const [
     photoUrls,
     healthLogs,
-    reminder,
     careReminders,
     weightEntries,
     notifications,
@@ -69,7 +67,6 @@ export default async function AppHomePage({
       localDateDaysAgo(today, 6),
       today,
     ),
-    createHealthLogReminderRepository(supabase).find(user.id, currentPet.id),
     createReminderRepository(supabase).list(
       user.id,
       "upcoming",
@@ -91,7 +88,6 @@ export default async function AppHomePage({
       currentPetId={currentPet.id}
       healthLogs={healthLogs}
       pets={petsWithPhotos}
-      reminder={reminder}
       careReminders={careReminders.slice(0, 3).map(toReminderResponse)}
       today={today}
       weightEntries={weightEntries}

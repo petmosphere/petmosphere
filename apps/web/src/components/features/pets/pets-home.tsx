@@ -1,11 +1,6 @@
 import type { ReminderResponse } from "@petmosphere/api-contracts";
-import type {
-  HealthLogReminder,
-  Pet,
-  WeightEntry,
-  WeightUnit,
-} from "@petmosphere/domain";
-import { Bell, Check, ChevronRight, Plus } from "lucide-react";
+import type { Pet, WeightEntry, WeightUnit } from "@petmosphere/domain";
+import { Check, ChevronRight, Plus } from "lucide-react";
 import Link from "next/link";
 
 import {
@@ -26,14 +21,6 @@ import { PetAvatar } from "./pet-avatar";
 
 type PetWithPhoto = { pet: Pet; photoUrl: string | null };
 
-function formatReminderTime(localTime: string) {
-  return new Intl.DateTimeFormat("en-AU", {
-    hour: "numeric",
-    hour12: true,
-    minute: "2-digit",
-    timeZone: "UTC",
-  }).format(new Date(`2026-01-01T${localTime}:00Z`));
-}
 
 function formatLogDate(localDate: string) {
   return new Intl.DateTimeFormat("en-AU", {
@@ -49,7 +36,6 @@ export function PetsHome({
   displayName,
   healthLogs,
   pets,
-  reminder,
   today,
   weightEntries = [],
   weightUnit = "kg",
@@ -60,7 +46,6 @@ export function PetsHome({
   displayName: string;
   healthLogs: HomeHealthLogSummary[];
   pets: PetWithPhoto[];
-  reminder: Pick<HealthLogReminder, "enabled" | "localTime"> | null;
   today: string;
   weightEntries?: WeightEntry[];
   weightUnit?: WeightUnit;
@@ -71,7 +56,7 @@ export function PetsHome({
   const todayLog = healthLogs.find((log) => log.localDate === today);
   const todayHref = `/pets/${currentPet.pet.id}/health-logs/today`;
   const diaryHref = `/pets/${currentPet.pet.id}/health-logs`;
-  const hasUpcoming = careReminders.length > 0 || reminder?.enabled;
+  const hasUpcoming = careReminders.length > 0;
 
   return (
     <main className="animate-page-enter mx-auto flex min-h-dvh w-full max-w-[393px] flex-col bg-[#fdf8f2] pb-24 text-[#2d2d2d] shadow-xl shadow-stone-900/5">
@@ -95,16 +80,16 @@ export function PetsHome({
       </header>
 
       <section className="mx-5 mt-6">
-        <Link
-          aria-label={
-            todayLog
-              ? `Review today’s health log. ${healthLogStatusDetails[todayLog.status].label} is selected today.`
-              : "Record today’s health. No emotion selected."
-          }
-          className="block rounded-3xl bg-white/45 p-4 shadow-[0_8px_24px_rgba(205,146,85,0.06)] transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.99]"
-          href={todayHref}
-        >
-          <div className="flex items-center gap-3">
+        <div className="rounded-3xl bg-white/45 p-4 shadow-[0_8px_24px_rgba(205,146,85,0.06)]">
+          <Link
+            aria-label={
+              todayLog
+                ? `Review today’s health log. ${healthLogStatusDetails[todayLog.status].label} is selected today.`
+                : "Record today’s health"
+            }
+            className="flex items-center gap-3"
+            href={todayHref}
+          >
             <PetAvatar
               className="size-10"
               name={currentPet.pet.name}
@@ -114,17 +99,19 @@ export function PetsHome({
             <h2 className="text-lg font-semibold tracking-[-0.015em]">
               How is {currentPet.pet.name} today?
             </h2>
-          </div>
+          </Link>
           <div className="mt-3 grid grid-cols-3 gap-2">
             {Object.entries(healthLogStatusDetails).map(([status, details]) => {
               const selected = todayLog?.status === status;
               return (
-                <span
-                  className={`relative grid min-h-24 place-items-center rounded-2xl px-2 py-3 text-center ${
+                <Link
+                  aria-label={`Log ${details.label}`}
+                  className={`relative grid min-h-24 place-items-center rounded-2xl px-2 py-3 text-center transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.97] ${
                     selected
                       ? `border-2 ${details.selectedClass}`
                       : "bg-white/55 text-[#7a7a7a]"
                   }`}
+                  href={`${todayHref}?status=${status}`}
                   key={status}
                 >
                   {selected ? (
@@ -148,11 +135,11 @@ export function PetsHome({
                       ) : null}
                     </span>
                   </span>
-                </span>
+                </Link>
               );
             })}
           </div>
-        </Link>
+        </div>
       </section>
 
       <HomeWeightTracker
@@ -204,28 +191,7 @@ export function PetsHome({
             </Link>
           );
         })}
-        {reminder?.enabled ? (
-          <Link
-            className="mt-2 flex min-h-14 items-center gap-2.5 rounded-2xl bg-white/70 px-3 transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.99]"
-            href={diaryHref}
-          >
-            <span className="grid size-9 place-items-center rounded-full bg-[#fff0df] text-[#ed802a]">
-              <Bell aria-hidden="true" className="size-4" />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-sm font-semibold">
-                Daily health log
-              </span>
-              <span className="block text-xs text-[#7a7a7a]">
-                Reminder at {formatReminderTime(reminder.localTime)}
-              </span>
-            </span>
-            <ChevronRight
-              aria-hidden="true"
-              className="size-5 text-[#8a837c]"
-            />
-          </Link>
-        ) : null}
+
         {!hasUpcoming ? (
           <div className="mt-3">
             <p className="text-base font-medium">No reminders set</p>

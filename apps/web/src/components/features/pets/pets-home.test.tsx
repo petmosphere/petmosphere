@@ -44,14 +44,12 @@ describe("PetsHome", () => {
           },
         ]}
         pets={[{ pet, photoUrl: null }]}
-        reminder={{ enabled: true, localTime: "19:00" }}
         today="2026-08-16"
         unreadNotificationCount={2}
       />,
     );
 
     expect(screen.getByText(/selected today/)).toBeInTheDocument();
-    expect(screen.getByText("Reminder at 7:00 pm")).toBeVisible();
     expect(screen.getByText("Low energy")).toBeVisible();
     expect(screen.getByText("Playful")).toBeVisible();
     expect(
@@ -65,7 +63,6 @@ describe("PetsHome", () => {
         displayName="Sarah"
         healthLogs={[]}
         pets={[{ pet, photoUrl: null }]}
-        reminder={null}
         today="2026-08-16"
       />,
     );

@@ -9,9 +9,9 @@ import {
   type UpdatePetInput,
 } from "@petmosphere/api-contracts";
 import type { Pet, PetDesexedStatus, PetSex } from "@petmosphere/domain";
-import { ArrowLeft, CalendarDays, Camera } from "lucide-react";
+import { CalendarDays, Camera } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
+import { BackButton } from "@/components/ui/back-button";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
@@ -150,13 +150,12 @@ export function EditPetForm({
     <main className="mx-auto min-h-dvh w-full max-w-md bg-[#fdf8f2] px-6 pt-[max(2rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))] text-[#2d2d2d] shadow-xl shadow-stone-900/5">
       <form id="edit-pet-form" noValidate onSubmit={submit}>
         <header className="flex min-h-11 items-center justify-between">
-          <Link
-            aria-label="Back to pet profile"
+          <BackButton
             className="grid size-11 place-items-center rounded-full focus-visible:outline-2 focus-visible:outline-[#ed802a]"
-            href={`/pets/${pet.id}`}
-          >
-            <ArrowLeft aria-hidden="true" className="size-6" />
-          </Link>
+            fallbackHref={`/pets/${pet.id}`}
+            iconClassName="size-6"
+            label="Back to pet profile"
+          />
           <button
             className="min-h-11 px-1 text-lg font-medium text-[#ed802a] disabled:cursor-not-allowed disabled:opacity-45"
             disabled={

@@ -2,8 +2,9 @@
 
 import type { NotificationResponse } from "@petmosphere/api-contracts";
 import { deriveLocalDate } from "@petmosphere/domain";
-import { ArrowLeft, Bell, Check, Heart, Scale, Settings } from "lucide-react";
+import { Bell, Check, Heart, Scale, Settings } from "lucide-react";
 import Link from "next/link";
+import { BackButton } from "@/components/ui/back-button";
 import { useState, type ReactNode } from "react";
 
 import { AppNav } from "@/components/features/pets/app-nav";
@@ -169,13 +170,12 @@ export function NotificationInbox({
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-[393px] flex-col bg-[#fdf8f2] px-5 pt-[max(1.5rem,env(safe-area-inset-top))] pb-24 text-[#2d2d2d] shadow-xl shadow-stone-900/5">
       <header className="flex min-h-12 items-center gap-3">
-        <Link
-          aria-label={backHref === "/home" ? "Back to home" : "Back"}
+        <BackButton
           className="grid size-11 shrink-0 place-items-center rounded-full border border-[#eedbc4] bg-white/45 focus-visible:outline-2 focus-visible:outline-[#ed802a]"
-          href={backHref}
-        >
-          <ArrowLeft aria-hidden="true" className="size-5" />
-        </Link>
+          fallbackHref={backHref}
+          iconClassName="size-5"
+          label="Back"
+        />
         <h1 className="min-w-0 flex-1 text-2xl font-bold">Notifications</h1>
 
         <Link
