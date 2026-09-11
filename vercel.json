@@ -2,15 +2,15 @@
   "crons": [
     {
       "path": "/api/v1/health-log-reminders/dispatch",
-      "schedule": "*/5 * * * *"
+      "schedule": "0 12 * * *"
     },
     {
       "path": "/api/v1/reminders/dispatch",
-      "schedule": "*/5 * * * *"
+      "schedule": "0 12 * * *"
     },
     {
       "path": "/api/v1/weight-reminders/dispatch",
-      "schedule": "*/5 * * * *"
+      "schedule": "0 12 * * *"
     }
   ]
 }
