@@ -1,8 +1,13 @@
-import { Cat, Dog, PawPrint } from "lucide-react";
+import { PawPrint } from "lucide-react";
 import Image from "next/image";
 
 import type { PetSpecies } from "@petmosphere/domain";
 import { cn } from "@/lib/utils";
+
+const speciesPhotoSrc: Partial<Record<PetSpecies, string>> = {
+  cat: "/images/species-cat.png",
+  dog: "/images/species-dog.png",
+};
 
 export function PetAvatar({
   className,
@@ -15,7 +20,7 @@ export function PetAvatar({
   photoUrl: string | null;
   species: PetSpecies;
 }) {
-  const Icon = species === "dog" ? Dog : species === "cat" ? Cat : PawPrint;
+  const src = photoUrl ?? speciesPhotoSrc[species] ?? null;
 
   return (
     <div
@@ -24,17 +29,17 @@ export function PetAvatar({
         className,
       )}
     >
-      {photoUrl ? (
+      {src ? (
         <Image
           alt={`${name}'s profile photo`}
           className="object-cover"
           fill
           sizes="160px"
-          src={photoUrl}
-          unoptimized
+          src={src}
+          unoptimized={Boolean(photoUrl)}
         />
       ) : (
-        <Icon aria-hidden="true" className="size-10" strokeWidth={1.5} />
+        <PawPrint aria-hidden="true" className="size-10" strokeWidth={1.5} />
       )}
     </div>
   );

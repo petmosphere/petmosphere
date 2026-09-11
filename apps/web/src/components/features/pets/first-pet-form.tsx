@@ -12,10 +12,8 @@ import type { PetAgeBand, PetDesexedStatus, PetSex } from "@petmosphere/domain";
 import {
   CalendarDays,
   Camera,
-  Cat,
   Check,
   ChevronDown,
-  Dog,
   PawPrint,
 } from "lucide-react";
 import Image from "next/image";
@@ -243,19 +241,24 @@ export function FirstPetForm({
             <legend className="text-sm font-medium">
               Species <RequiredMark />
             </legend>
-            <div className="mt-2 grid grid-cols-3 gap-2">
+            <div className="mt-2 flex gap-4">
               {(
                 [
-                  ["dog", "Dog", Dog],
-                  ["cat", "Cat", Cat],
-                  ["other", "Other", PawPrint],
+                  ["dog", "Dog"],
+                  ["cat", "Cat"],
+                  ["other", "Other"],
                 ] as const
-              ).map(([value, label, Icon]) => {
+              ).map(([value, label]) => {
                 const selected = species === value;
+                const isOther = value === "other";
                 return (
                   <button
                     aria-pressed={selected}
-                    className={`flex min-h-28 flex-col items-center justify-center rounded-2xl border bg-white/60 transition-[border-color,background-color,transform] duration-150 ease-out active:scale-[0.97] ${selected ? "border-2 border-[#ed802a] bg-[#fff0e1] text-[#d8640d]" : "border-[#ead9c7]"}`}
+                    className={`flex h-[120px] flex-1 flex-col items-center justify-center gap-3 rounded-2xl transition-[border-color,background-color,transform] duration-150 ease-out active:scale-[0.97] ${
+                      selected
+                        ? "border-2 border-[#ed802a] bg-[#ed802a]/[0.08]"
+                        : "border border-[#f0e6d8] bg-white/60"
+                    }`}
                     key={value}
                     onClick={() => {
                       setValue("species", value, {
@@ -268,12 +271,32 @@ export function FirstPetForm({
                     }}
                     type="button"
                   >
-                    <Icon
-                      aria-hidden="true"
-                      className="size-9"
-                      strokeWidth={1.5}
-                    />
-                    <span className="mt-2 text-sm font-medium">{label}</span>
+                    {isOther ? (
+                      <span className="grid size-12 place-items-center rounded-full border-2 border-white/90 bg-[#65bcb5]/[0.08] text-[#65bcb5]">
+                        <PawPrint
+                          aria-hidden="true"
+                          className="size-6"
+                          strokeWidth={1.5}
+                        />
+                      </span>
+                    ) : (
+                      <span className="relative size-12 overflow-hidden rounded-full border-2 border-white/90">
+                        <Image
+                          alt=""
+                          className="object-cover"
+                          fill
+                          sizes="48px"
+                          src={`/images/species-${value}.png`}
+                        />
+                      </span>
+                    )}
+                    <span
+                      className={`text-sm font-semibold ${
+                        selected ? "text-[#ed802a]" : "text-[#2d2d2d]"
+                      }`}
+                    >
+                      {label}
+                    </span>
                   </button>
                 );
               })}

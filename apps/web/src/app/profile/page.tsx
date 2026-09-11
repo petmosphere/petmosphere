@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { ProfileHome } from "@/components/features/profile/profile-home";
 import { requireUser } from "@/lib/auth/require-user";
-import { getPetPhotoUrl, listOwnedPets } from "@/lib/pets/supabase-pets";
+import { getPetPhotoUrls, listOwnedPets } from "@/lib/pets/supabase-pets";
 import {
   getProfile,
   getProfileAvatarUrl,
@@ -16,15 +16,14 @@ export default async function ProfilePage() {
     getProfile(supabase, user.id),
     listOwnedPets(supabase, user.id),
   ]);
-  const [avatarUrl, petsWithPhotos] = await Promise.all([
+  const [avatarUrl, photoUrls] = await Promise.all([
     getProfileAvatarUrl(supabase, profile.avatarPath),
-    Promise.all(
-      pets.map(async (pet) => ({
-        pet,
-        photoUrl: await getPetPhotoUrl(supabase, pet.photoPath),
-      })),
-    ),
+    getPetPhotoUrls(supabase, pets),
   ]);
+  const petsWithPhotos = pets.map((pet) => ({
+    pet,
+    photoUrl: photoUrls.get(pet.id) ?? null,
+  }));
 
   return (
     <ProfileHome

@@ -20,6 +20,7 @@ import { useForm, useWatch } from "react-hook-form";
 
 import { signUpAction, type AuthActionState } from "@/app/auth/actions";
 import { PasswordStrengthMeter } from "@/components/ui/password-strength-meter";
+import { useFormPersist } from "@/hooks/use-form-persist";
 
 const initialState: AuthActionState = { status: "idle" };
 
@@ -73,6 +74,7 @@ export function SignUpForm() {
     formState: { errors },
     handleSubmit,
     register,
+    setValue,
   } = useForm<SignUpFormInput, unknown, SignUpInput>({
     defaultValues: {
       acceptedTerms: false,
@@ -95,6 +97,13 @@ export function SignUpForm() {
         "acceptedTerms",
       ],
     });
+
+  const { clearPersisted } = useFormPersist("signup-draft", {
+    control,
+    setValue,
+    fields: ["displayName", "email"] as const,
+  });
+
   const canSubmit =
     Boolean(displayName?.trim()) &&
     Boolean(email?.trim()) &&
@@ -110,9 +119,11 @@ export function SignUpForm() {
     Object.entries(values).forEach(([key, value]) =>
       formData.set(key, value === true ? "on" : value),
     );
-    startTransition(async () =>
-      setState(await signUpAction(initialState, formData)),
-    );
+    startTransition(async () => {
+      const result = await signUpAction(initialState, formData);
+      if (result.status === "success") clearPersisted();
+      setState(result);
+    });
   });
 
   return (

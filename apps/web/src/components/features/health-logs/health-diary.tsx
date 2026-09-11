@@ -4,7 +4,11 @@ import type {
   HealthLogResponse,
   HealthLogSummary,
 } from "@petmosphere/api-contracts";
-import { deriveLocalDate, type Pet } from "@petmosphere/domain";
+import {
+  deriveLocalDate,
+  type HealthLogStatus,
+  type Pet,
+} from "@petmosphere/domain";
 import { ArrowLeft, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -21,11 +25,13 @@ import { HealthLogSaved } from "./health-log-saved";
 type View = "calendar" | "detail" | "form" | "saved";
 
 export function HealthDiary({
+  initialStatus,
   initialView = "calendar",
   pet,
   petOptions,
   photoUrl,
 }: {
+  initialStatus?: HealthLogStatus;
   initialView?: "calendar" | "today";
   pet: Pet;
   petOptions: { pet: Pet; photoUrl: string | null }[];
@@ -233,6 +239,7 @@ export function HealthDiary({
           <HealthLogForm
             existing={selectedLog}
             initialDate={selectedDate}
+            {...(!selectedLog && initialStatus && { initialStatus })}
             onCancel={() => (selectedLog ? setView("detail") : showCalendar())}
 
             onPetChange={setFormPetId}

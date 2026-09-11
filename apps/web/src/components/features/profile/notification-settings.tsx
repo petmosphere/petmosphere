@@ -401,7 +401,7 @@ export function NotificationSettings({
             body: JSON.stringify({
               ...next,
               petId: id,
-              timezone: "Australia/Melbourne",
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             }),
             headers: { "Content-Type": "application/json" },
             method: "PUT",
@@ -446,13 +446,12 @@ export function NotificationSettings({
     setWeight(next);
     setBusy(true);
     setMessage("");
-    const localDate = deriveLocalDate(new Date(), "Australia/Melbourne");
-    const melbourneToday = new Date(`${localDate}T12:00:00Z`);
+    const deviceTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const localDate = deriveLocalDate(new Date(), deviceTz);
+    const today = new Date(`${localDate}T12:00:00Z`);
     const weekly =
       next.frequency === "weekly" || next.frequency === "fortnightly";
-    const scheduleDay = weekly
-      ? melbourneToday.getUTCDay()
-      : melbourneToday.getUTCDate();
+    const scheduleDay = weekly ? today.getUTCDay() : today.getUTCDate();
     try {
       const responses = await Promise.all(
         pets.map(({ id }) =>
@@ -460,7 +459,7 @@ export function NotificationSettings({
             body: JSON.stringify({
               ...next,
               scheduleDay,
-              timezone: "Australia/Melbourne",
+              timezone: deviceTz,
             }),
             headers: { "Content-Type": "application/json" },
             method: "PUT",
@@ -483,11 +482,7 @@ export function NotificationSettings({
     <main className="mx-auto min-h-dvh w-full max-w-[393px] bg-[#fdf8f2] px-6 pt-[max(1.5rem,env(safe-area-inset-top))] pb-10 text-[#2d2d2d]">
       <header>
         <Link
-          aria-label={
-            backHref === "/notifications"
-              ? "Back to notifications"
-              : "Back to profile"
-          }
+          aria-label={`Back to ${backHref.replace(/^\//, "")}`}
           className="grid size-11 place-items-center rounded-full focus-visible:outline-2 focus-visible:outline-[#ed802a]"
           href={backHref}
         >

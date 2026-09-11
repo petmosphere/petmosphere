@@ -221,3 +221,34 @@ export async function getPetPhotoUrl(
   });
   return null;
 }
+
+export async function getPetPhotoUrls(
+  supabase: SupabaseClient,
+  pets: Array<{ id: string; photoPath: string | null }>,
+): Promise<Map<string, string | null>> {
+  const withPaths = pets.filter((p): p is { id: string; photoPath: string } =>
+    Boolean(p.photoPath),
+  );
+
+  if (withPaths.length === 0) {
+    return new Map(pets.map((p) => [p.id, null]));
+  }
+
+  const { data } = await supabase.storage.from("pet-photos").createSignedUrls(
+    withPaths.map((p) => p.photoPath),
+    60 * 60,
+  );
+
+  const pathToUrl = new Map(
+    (data ?? []).map((item) => [item.path, item.signedUrl]),
+  );
+
+  const result = new Map<string, string | null>();
+  for (const pet of pets) {
+    result.set(
+      pet.id,
+      pet.photoPath ? (pathToUrl.get(pet.photoPath) ?? null) : null,
+    );
+  }
+  return result;
+}

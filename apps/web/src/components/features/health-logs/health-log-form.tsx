@@ -10,7 +10,11 @@ import {
   type CreateHealthLogInput,
   type HealthLogResponse,
 } from "@petmosphere/api-contracts";
-import { type HealthLogObservation, type Pet } from "@petmosphere/domain";
+import {
+  type HealthLogObservation,
+  type HealthLogStatus,
+  type Pet,
+} from "@petmosphere/domain";
 import {
   ImagePlus,
   LoaderCircle,
@@ -37,6 +41,7 @@ function elapsedMilliseconds(startedAt: number) {
 export function HealthLogForm({
   existing,
   initialDate,
+  initialStatus,
   onCancel,
   onPetChange,
   onSaved,
@@ -45,6 +50,7 @@ export function HealthLogForm({
 }: {
   existing: HealthLogResponse | null;
   initialDate: string;
+  initialStatus?: HealthLogStatus;
   onCancel: () => void;
   onPetChange: (petId: string) => void;
   onSaved: (healthLog: HealthLogResponse) => void;
@@ -81,7 +87,11 @@ export function HealthLogForm({
       observations: existing?.observations ?? [],
       petId: selectedPetId,
       timezone,
-      ...(existing ? { status: existing.status } : {}),
+      ...(existing
+        ? { status: existing.status }
+        : initialStatus
+          ? { status: initialStatus }
+          : {}),
     },
     mode: "onChange",
     resolver: zodResolver(createHealthLogSchema),

@@ -57,7 +57,7 @@ export function ProfileHome({
   weightUnit: "kg" | "lb";
 }) {
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-[393px] flex-col bg-[#fdf8f2] pb-24 text-[#2d2d2d] shadow-xl shadow-stone-900/5">
+    <main className="animate-page-enter mx-auto flex min-h-dvh w-full max-w-[393px] flex-col bg-[#fdf8f2] pb-24 text-[#2d2d2d] shadow-xl shadow-stone-900/5">
       <div className="px-6 pt-[max(1.5rem,env(safe-area-inset-top))]">
         <h1 className="text-2xl font-bold tracking-[-0.02em]">Profile</h1>
 

@@ -26,10 +26,6 @@ export default async function PetProfilePage({
   ]);
 
   return (
-    <PetProfile
-      pet={pet}
-      photoUrl={photoUrl}
-      weightUnit={profile.weightUnit}
-    />
+    <PetProfile pet={pet} photoUrl={photoUrl} weightUnit={profile.weightUnit} />
   );
 }
