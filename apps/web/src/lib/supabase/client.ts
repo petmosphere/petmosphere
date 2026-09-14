@@ -5,5 +5,11 @@ import { getSupabaseConfig } from "./config";
 export function createClient() {
   const { publishableKey, url } = getSupabaseConfig();
 
-  return createBrowserClient(url, publishableKey);
+  return createBrowserClient(url, publishableKey, {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true,
+    },
+  });
 }
