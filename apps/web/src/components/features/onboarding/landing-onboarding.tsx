@@ -1,8 +1,10 @@
 "use client";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
 
 const slides = [
   {
@@ -27,6 +29,15 @@ export function LandingOnboarding() {
   const [activeSlide, setActiveSlide] = useState(0);
   const slide = slides[activeSlide] ?? slides[0];
   const isLastSlide = activeSlide === slides.length - 1;
+  const router = useRouter();
+  const supabase = createClient();
+
+  useEffect(() => {
+    void (async () => {
+      const { data } = await supabase.auth.getUser();
+      if (data.user) router.push("/home");
+    })();
+  }, [router, supabase]);
 
   return (
     <main className="relative min-h-dvh overflow-hidden bg-[#fdf8f2] text-[#2d2d2d]">
