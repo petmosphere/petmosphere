@@ -101,7 +101,7 @@ export function SignUpForm() {
   const { clearPersisted } = useFormPersist("signup-draft", {
     control,
     setValue,
-    fields: ["displayName", "email"] as const,
+    fields: ["displayName", "email", "password", "confirmPassword"] as const,
   });
 
   const canSubmit =

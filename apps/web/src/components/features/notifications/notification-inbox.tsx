@@ -208,9 +208,7 @@ export function NotificationInbox({
         </section>
       ) : (
         <div className="pb-8">
-          {group(
-            "Today",
-            todayNotifications,
+          <div className="mb-3 flex justify-end">
             <button
               className="text-sm font-bold text-[#ed802a] disabled:text-[#aaa39c]"
               disabled={!hasUnread || busy}
@@ -218,8 +216,9 @@ export function NotificationInbox({
               type="button"
             >
               Mark all read
-            </button>,
-          )}
+            </button>
+          </div>
+          {group("Today", todayNotifications)}
           {group("Earlier", earlierNotifications)}
         </div>
       )}

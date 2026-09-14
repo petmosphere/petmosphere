@@ -61,7 +61,9 @@ describe("HealthLogReminderSettings", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save reminder" }));
     await waitFor(() =>
       expect(
-        screen.getByRole("button", { name: "Edit daily check-in notification" }),
+        screen.getByRole("button", {
+          name: "Edit daily check-in notification",
+        }),
       ).toBeVisible(),
     );
     expect(
