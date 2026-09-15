@@ -12,7 +12,7 @@ export function EmptyPetsHome({
   unreadNotificationCount?: number;
 }) {
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-[#fdf8f2] pb-3 text-[#2d2d2d] shadow-xl shadow-stone-900/5">
+    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-[#fdf8f2] pb-[max(6rem,env(safe-area-inset-bottom))] text-[#2d2d2d] shadow-xl shadow-stone-900/5">
       <header className="flex items-center px-6 pt-8">
         <p className="text-lg font-medium">Hello, {displayName}</p>
         <NotificationBell unreadCount={unreadNotificationCount} />
@@ -51,7 +51,7 @@ export function EmptyPetsHome({
         </div>
       </section>
 
-      <AppNav />
+      <AppNav fixed />
     </main>
   );
 }
