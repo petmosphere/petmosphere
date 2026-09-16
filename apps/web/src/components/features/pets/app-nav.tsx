@@ -69,7 +69,7 @@ function NavItem({
       aria-label={label}
       className={`${itemClass} ${
         active
-          ? "bg-white/85 text-[#ed802a]"
+          ? "bg-[#fff3e4] text-[#ed802a] shadow-sm"
           : disabled
             ? "cursor-default text-[#c4c4c4]"
             : "text-[#7a7a7a]"
@@ -104,7 +104,7 @@ export function AppNav({
         fixed
           ? "fixed bottom-[max(0.5rem,env(safe-area-inset-bottom))] left-1/2 w-[calc(100%_-_2rem)] max-w-[361px] -translate-x-1/2"
           : "sticky bottom-[max(0.5rem,env(safe-area-inset-bottom))] mx-4 mt-auto"
-      } z-40 grid grid-cols-4 rounded-full border border-white/50 bg-[rgba(248,239,227,0.92)] p-1.5 shadow-[0_8px_24px_rgba(75,55,35,0.12)] backdrop-blur-xl`}
+      } z-40 grid grid-cols-4 rounded-full border border-[#ead9c7] bg-[#f8efe3] p-1.5 shadow-[0_8px_24px_rgba(75,55,35,0.15)]`}
     >
       <NavItem active={active === "home"} href={homeHref} label="Home">
         <House aria-hidden="true" className="mb-0.5 size-5" strokeWidth={1.8} />
