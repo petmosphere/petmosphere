@@ -11,16 +11,17 @@ describe("PrivacyPolicyContent", () => {
       screen.getByRole("heading", { name: "Information we collect" }),
     ).toBeVisible();
     expect(
-      screen.getByRole("heading", { name: "Overseas processing" }),
+      screen.getByRole("heading", {
+        name: "Data location and overseas processing",
+      }),
     ).toBeVisible();
     expect(
-      screen.getByRole("heading", { name: "Access and correction" }),
+      screen.getByRole("heading", {
+        name: "Access, correction and portability",
+      }),
     ).toBeVisible();
     expect(
-      screen.getByRole("link", { name: "OAIC privacy complaints process" }),
-    ).toHaveAttribute(
-      "href",
-      "https://www.oaic.gov.au/privacy/privacy-complaints",
-    );
+      screen.getByRole("link", { name: "info.petmosphere@gmail.com" }),
+    ).toHaveAttribute("href", "mailto:info.petmosphere@gmail.com");
   });
 });
