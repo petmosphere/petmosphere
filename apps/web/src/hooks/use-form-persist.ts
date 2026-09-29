@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   type Control,
   type FieldValues,
@@ -26,6 +26,7 @@ export function useFormPersist<T extends FieldValues>(
     fields: readonly Path<T>[];
   },
 ): { clearPersisted: () => void } {
+  const [restored, setRestored] = useState(false);
   const values = useWatch({ control, name: fields as Path<T>[] });
 
   // Restore persisted values on mount
@@ -45,12 +46,15 @@ export function useFormPersist<T extends FieldValues>(
       }
     } catch {
       // private browsing or stale JSON — silently ignore
+    } finally {
+      setRestored(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // mount only
 
   // Persist on change
   useEffect(() => {
+    if (!restored) return;
     const data: Record<string, unknown> = {};
     (fields as Path<T>[]).forEach((field, i) => {
       data[field] = values[i];
@@ -61,7 +65,7 @@ export function useFormPersist<T extends FieldValues>(
       // private browsing — silently ignore
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, ...values]);
+  }, [key, restored, ...values]);
 
   return {
     clearPersisted: () => {
