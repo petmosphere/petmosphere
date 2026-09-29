@@ -57,7 +57,9 @@ describe("NotificationSettings", () => {
     ).toBeVisible();
     await waitFor(() =>
       expect(
-        screen.getByRole("switch", { name: "All notifications" }),
+        screen.getByRole("switch", {
+          name: "Push notifications on this device",
+        }),
       ).toHaveAttribute("aria-checked", "true"),
     );
     expect(screen.getByText("Daily check-in notifications")).toBeVisible();
@@ -108,7 +110,9 @@ describe("NotificationSettings", () => {
 
     await waitFor(() =>
       expect(
-        screen.getByRole("switch", { name: "All notifications" }),
+        screen.getByRole("switch", {
+          name: "Push notifications on this device",
+        }),
       ).toHaveAttribute("aria-checked", "true"),
     );
 
@@ -117,6 +121,34 @@ describe("NotificationSettings", () => {
     );
     expect(
       screen.getByRole("heading", { name: "Set Reminder Time" }),
+    ).toBeVisible();
+  });
+
+  it("keeps inbox category controls enabled when device push is off", async () => {
+    vi.mocked(navigator.serviceWorker.getRegistration).mockResolvedValueOnce({
+      pushManager: {
+        getSubscription: vi.fn().mockResolvedValue(null),
+      },
+    } as unknown as ServiceWorkerRegistration);
+
+    render(<NotificationSettings pets={pets} reminderNotificationsEnabled />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole("switch", {
+          name: "Push notifications on this device",
+        }),
+      ).toHaveAttribute("aria-checked", "false"),
+    );
+    expect(
+      screen.getByRole("switch", { name: "Daily check-in" }),
+    ).toBeEnabled();
+    expect(screen.getByRole("switch", { name: "Reminders" })).toBeEnabled();
+    expect(screen.getByRole("switch", { name: "Weight log" })).toBeEnabled();
+    expect(
+      screen.getByText(
+        "Push is off on this device. Enabled categories will still appear in your inbox.",
+      ),
     ).toBeVisible();
   });
 });
