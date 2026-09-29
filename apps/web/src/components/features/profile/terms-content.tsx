@@ -1,5 +1,7 @@
-import Link from "next/link";
-
+import {
+  TermsAgreeButton,
+  TermsBackButton,
+} from "@/components/features/auth/terms-agree-button";
 import { AppNav } from "@/components/features/pets/app-nav";
 import { BackButton } from "@/components/ui/back-button";
 
@@ -60,11 +62,15 @@ export function TermsContent({
         }`}
       >
         <div className="flex items-center gap-4">
-          <BackButton
-            className="grid size-11 shrink-0 place-items-center rounded-full border border-[#f0e6d8] bg-white/60 text-[#ed802a] transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.97] motion-reduce:transform-none"
-            fallbackHref={backHref}
-            iconClassName="size-5"
-          />
+          {profileMode ? (
+            <BackButton
+              className="grid size-11 shrink-0 place-items-center rounded-full border border-[#f0e6d8] bg-white/60 text-[#ed802a] transition-transform duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed802a] active:scale-[0.97] motion-reduce:transform-none"
+              fallbackHref={backHref}
+              iconClassName="size-5"
+            />
+          ) : (
+            <TermsBackButton fallbackHref={backHref} />
+          )}
           <h1 className="text-2xl font-extrabold tracking-[-0.025em]">
             Terms of Service
           </h1>
@@ -492,12 +498,7 @@ export function TermsContent({
       ) : (
         <div className="fixed inset-x-0 bottom-0 z-10 bg-gradient-to-t from-[#fdf8f2] via-[#fdf8f2]/95 to-transparent px-6 pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
           <div className="mx-auto w-full max-w-md">
-            <Link
-              className="block min-h-13 w-full rounded-xl bg-[#ED802A] px-5 py-3.5 text-center text-base font-semibold text-[#fdf8f2] shadow-[0_4px_16px_rgba(205,146,85,0.14)] transition hover:bg-[#df6d16] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a94e0c]"
-              href="/auth/sign-up"
-            >
-              Agree
-            </Link>
+            <TermsAgreeButton />
           </div>
         </div>
       )}

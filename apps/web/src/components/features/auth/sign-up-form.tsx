@@ -15,7 +15,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
 import { signUpAction, type AuthActionState } from "@/app/auth/actions";
@@ -101,8 +101,28 @@ export function SignUpForm() {
   const { clearPersisted } = useFormPersist("signup-draft", {
     control,
     setValue,
-    fields: ["displayName", "email", "password", "confirmPassword"] as const,
+    fields: ["displayName", "email"] as const,
   });
+
+  useEffect(() => {
+    const agreementKey = "signup-terms-agreed";
+
+    function acceptTerms(event?: StorageEvent) {
+      if (event && (event.key !== agreementKey || event.newValue !== "true")) {
+        return;
+      }
+      if (!event && window.localStorage?.getItem(agreementKey) !== "true") {
+        return;
+      }
+
+      setValue("acceptedTerms", true, { shouldValidate: true });
+      window.localStorage?.removeItem(agreementKey);
+    }
+
+    acceptTerms();
+    window.addEventListener("storage", acceptTerms);
+    return () => window.removeEventListener("storage", acceptTerms);
+  }, [setValue]);
 
   const canSubmit =
     Boolean(displayName?.trim()) &&
@@ -212,6 +232,7 @@ export function SignUpForm() {
             <Link
               className="font-semibold text-[#ED802A] underline underline-offset-2"
               href="/terms"
+              rel="noopener"
               target="_blank"
             >
               Terms of Service

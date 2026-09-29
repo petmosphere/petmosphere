@@ -73,13 +73,47 @@ test("opens the email account journey", async ({ page }) => {
     .fill("valid-password");
   await expect(page.getByText("Passwords do not match.")).toBeHidden();
 
+  let termsPagePromise = page.waitForEvent("popup");
+  await page.getByRole("link", { name: "Terms of Service" }).click();
+  let termsPage = await termsPagePromise;
+  await Promise.all([
+    termsPage.waitForEvent("close"),
+    termsPage.getByRole("button", { name: "Back" }).click(),
+  ]);
+  await expect(page.getByLabel("Name")).toHaveValue("Pet Owner");
+  await expect(page.getByLabel("Email address")).toHaveValue(
+    "owner@example.com",
+  );
   await expect(
-    page.getByRole("button", { name: "Create account" }),
-  ).toBeDisabled();
+    page.getByRole("textbox", { name: "Password", exact: true }),
+  ).toHaveValue("valid-password");
+  await expect(
+    page.getByRole("textbox", { name: "Confirm password" }),
+  ).toHaveValue("valid-password");
+  await expect(
+    page.getByRole("checkbox", { name: /agree to the Terms of Service/i }),
+  ).not.toBeChecked();
 
-  await page
-    .getByRole("checkbox", { name: /agree to the Terms of Service/i })
-    .check();
+  termsPagePromise = page.waitForEvent("popup");
+  await page.getByRole("link", { name: "Terms of Service" }).click();
+  termsPage = await termsPagePromise;
+  await Promise.all([
+    termsPage.waitForEvent("close"),
+    termsPage.getByRole("button", { name: "Agree" }).click(),
+  ]);
+  await expect(page.getByLabel("Name")).toHaveValue("Pet Owner");
+  await expect(page.getByLabel("Email address")).toHaveValue(
+    "owner@example.com",
+  );
+  await expect(
+    page.getByRole("textbox", { name: "Password", exact: true }),
+  ).toHaveValue("valid-password");
+  await expect(
+    page.getByRole("textbox", { name: "Confirm password" }),
+  ).toHaveValue("valid-password");
+  await expect(
+    page.getByRole("checkbox", { name: /agree to the Terms of Service/i }),
+  ).toBeChecked();
   await expect(
     page.getByRole("button", { name: "Create account" }),
   ).toBeEnabled();
