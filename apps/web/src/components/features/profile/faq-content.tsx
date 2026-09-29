@@ -23,7 +23,7 @@ const faqs = [
   },
   {
     answer:
-      "Open Profile, then Notification Settings. Make sure All Notifications and the relevant reminder are enabled, and allow notifications in your browser or device settings. On iPhone and iPad, web push requires Petmosphere to be added to the Home Screen.",
+      "Open Profile, then Notification Settings. Enable Push notifications on this device and the relevant category, and allow notifications in your browser or device settings. On iPhone and iPad, web push requires Petmosphere to be added to the Home Screen.",
     question: "Why am I not receiving notifications?",
   },
   {

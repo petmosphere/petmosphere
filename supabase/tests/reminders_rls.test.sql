@@ -1,6 +1,6 @@
 begin;
 
-select plan(18);
+select plan(19);
 
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password, raw_user_meta_data,
@@ -103,6 +103,18 @@ where owner_id = '71000000-0000-4000-8000-000000000001'
   and completed_at is null;
 reset role;
 set local role service_role;
+update public.profiles
+set reminder_notifications_enabled = false
+where id = '71000000-0000-4000-8000-000000000001';
+select is(
+  (select count(*) from public.claim_due_reminders('2026-09-22 08:55:00+00', 100)
+    where owner_id = '71000000-0000-4000-8000-000000000001'),
+  0::bigint,
+  'disabled reminder category creates no inbox or push occurrence'
+);
+update public.profiles
+set reminder_notifications_enabled = true
+where id = '71000000-0000-4000-8000-000000000001';
 select is(
   (select count(*) from public.claim_due_reminders('2026-09-22 08:54:00+00', 100)
     where owner_id = '71000000-0000-4000-8000-000000000001'),

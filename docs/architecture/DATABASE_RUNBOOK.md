@@ -536,6 +536,10 @@ a due occurrence at most once. Health-log reminders are skipped when that date
 already has a health log. Pet-care reminders send only generic wording; titles,
 notes, pet names, categories, and other private details never enter the push
 payload.
+Do not configure these dispatchers in `vercel.json`. Vercel Cron invokes routes
+with `GET`, while the protected Supabase jobs deliberately use authenticated
+`POST` requests; Vercel Hobby also cannot provide the required five-minute
+cadence.
 The stored timezone is `Australia/Melbourne`, so PostgreSQL applies AEDT or AEST
 automatically across daylight-saving boundaries.
 

@@ -477,7 +477,7 @@ export function NotificationSettings({
     }
   }
 
-  const scheduleControlsDisabled = !masterEnabled || busy || pets.length === 0;
+  const scheduleControlsDisabled = busy || pets.length === 0;
   return (
     <main className="mx-auto min-h-dvh w-full max-w-[393px] bg-[#fdf8f2] px-6 pt-[max(1.5rem,env(safe-area-inset-top))] pb-10 text-[#2d2d2d]">
       <header>
@@ -500,11 +500,13 @@ export function NotificationSettings({
           <Bell aria-hidden="true" className="size-6" />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block font-bold">All Notifications</span>
+          <span className="block font-bold">
+            Push notifications on this device
+          </span>
           <span className="mt-0.5 block text-sm text-[#7a7a7a]">
             {pushStatus === "checking"
               ? "Checking this device…"
-              : "Manage all alerts"}
+              : "Show alerts outside Petmosphere"}
           </span>
         </span>
         <Toggle
@@ -512,21 +514,22 @@ export function NotificationSettings({
           disabled={
             busy || pushStatus === "checking" || pushStatus === "unsupported"
           }
-          label="All notifications"
+          label="Push notifications on this device"
           onChange={() => void toggleMaster()}
         />
       </section>
       <p className="mt-4 px-2 text-sm leading-5 text-[#aaa39c]">
-        Controls push notifications. In-app alerts are always shown.
+        This only controls phone alerts on this device. Inbox notifications
+        follow the category settings below.
       </p>
 
       <div className="mt-5 space-y-3">
         {dailyConfigured ? (
           <SettingCard
             active={false}
-            checked={masterEnabled && daily.enabled}
+            checked={daily.enabled}
             description="Daily check-in notifications"
-            disabled={!masterEnabled || busy}
+            disabled={busy}
             label="Daily check-in"
             onToggle={() =>
               void saveDaily({ ...daily, enabled: !daily.enabled })
@@ -545,9 +548,9 @@ export function NotificationSettings({
 
         <SettingCard
           active={false}
-          checked={masterEnabled && upcoming.enabled}
+          checked={upcoming.enabled}
           description="Notifications follow each reminder’s settings"
-          disabled={!masterEnabled || busy}
+          disabled={busy}
           label="Reminders"
           onToggle={() => void saveUpcoming(!upcoming.enabled)}
         />
@@ -555,9 +558,9 @@ export function NotificationSettings({
         {weightConfigured ? (
           <SettingCard
             active={false}
-            checked={masterEnabled && weight.enabled}
+            checked={weight.enabled}
             description="Weight log notifications"
-            disabled={!masterEnabled || busy}
+            disabled={busy}
             label="Weight log"
             onToggle={() =>
               void saveWeight({ ...weight, enabled: !weight.enabled })
@@ -579,7 +582,7 @@ export function NotificationSettings({
         <p className="mt-7 text-center text-sm leading-5 text-[#7a7a7a]">
           {pushStatus === "blocked"
             ? "Allow notifications in your browser settings, then return here."
-            : "Turn on notifications to never miss a reminder for your furry friend."}
+            : "Push is off on this device. Enabled categories will still appear in your inbox."}
         </p>
       ) : null}
       {masterEnabled && pets.length === 0 ? (
