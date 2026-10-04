@@ -23,6 +23,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 
 import { formatBirthDateInput } from "@/lib/pets/birth-date-input";
+import { optimizeUploadImage } from "@/lib/images/optimize-upload-image";
 import { BreedSelect, OTHER_BREED } from "./breed-select";
 import { RequiredMark } from "@/components/ui/required-mark";
 
@@ -43,6 +44,7 @@ export function FirstPetForm({
     mode === "onboarding" ? "/onboarding/pet" : "/pets/new";
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoError, setPhotoError] = useState<string>();
+  const [isOptimizingPhoto, setIsOptimizingPhoto] = useState(false);
   const [birthDateDisplay, setBirthDateDisplay] = useState("");
   const [birthDateFormatError, setBirthDateFormatError] = useState<
     string | undefined
@@ -97,7 +99,7 @@ export function FirstPetForm({
     [photoPreview],
   );
 
-  function selectPhoto(file: File | undefined) {
+  async function selectPhoto(file: File | undefined) {
     setPhotoError(undefined);
     if (!file) {
       setPhoto(null);
@@ -109,11 +111,16 @@ export function FirstPetForm({
       setPhotoError("Choose a JPEG, PNG or WebP photo.");
       return;
     }
-    if (file.size > MAX_PET_PHOTO_BYTES) {
-      setPhotoError("Choose a photo smaller than 4 MB.");
-      return;
+    setIsOptimizingPhoto(true);
+    try {
+      setPhoto(await optimizeUploadImage(file, MAX_PET_PHOTO_BYTES));
+    } catch {
+      setPhotoError(
+        "We couldn’t optimise that photo. Choose another JPEG, PNG or WebP image.",
+      );
+    } finally {
+      setIsOptimizingPhoto(false);
     }
-    setPhoto(file);
   }
 
   const submit = handleSubmit(async (values) => {
@@ -191,12 +198,14 @@ export function FirstPetForm({
                 accept={PET_PHOTO_TYPES.join(",")}
                 className="sr-only"
                 id="pet-photo"
-                onChange={(event) => selectPhoto(event.target.files?.[0])}
+                onChange={(event) => void selectPhoto(event.target.files?.[0])}
                 type="file"
               />
             </label>
             <p className="mt-2 text-sm text-stone-500">
-              Photo optional · max 4 MB
+              {isOptimizingPhoto
+                ? "Optimising photo…"
+                : "Photo optional · larger photos are optimised before upload"}
             </p>
             {photoError ? (
               <p className="mt-1 text-sm text-red-600" role="alert">
@@ -501,6 +510,7 @@ export function FirstPetForm({
             className="mt-10 min-h-13 w-full rounded-xl bg-[#66bbb6] px-5 font-bold text-white transition-transform duration-150 ease-out active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-stone-300"
             disabled={
               isSubmitting ||
+              isOptimizingPhoto ||
               Boolean(photoError) ||
               Boolean(birthDateFormatError) ||
               Boolean(customBreedError)

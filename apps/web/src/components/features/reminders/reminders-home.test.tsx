@@ -26,6 +26,15 @@ const pet = {
   photoUrl: null,
 };
 
+const otherPet = {
+  pet: {
+    ...pet.pet,
+    id: "73000000-0000-4000-8000-000000000006",
+    name: "Kele",
+  },
+  photoUrl: null,
+};
+
 const expiredReminder = {
   category: "vet_visit" as const,
   completedAt: null,
@@ -44,7 +53,7 @@ const expiredReminder = {
 };
 
 describe("RemindersHome", () => {
-  it("matches the personalised empty-state journey across all three tabs", () => {
+  it("uses all-pets copy for the empty-state journey", () => {
     render(
       <RemindersHome
         initial={{ completed: [], overdue: [], upcoming: [] }}
@@ -55,7 +64,7 @@ describe("RemindersHome", () => {
     expect(
       screen.getByRole("heading", { name: "No reminders yet" }),
     ).toBeVisible();
-    expect(screen.getByText(/Stay on top of Max’s health/)).toBeVisible();
+    expect(screen.getByText(/Stay on top of your pets’ health/)).toBeVisible();
     expect(
       screen.getByRole("link", { name: /Add Your Reminders/ }),
     ).toHaveAttribute("href", "/reminders/new");
@@ -69,6 +78,18 @@ describe("RemindersHome", () => {
     expect(
       screen.getByRole("heading", { name: "No completed reminders yet" }),
     ).toBeVisible();
+  });
+
+  it("uses the selected pet's name in the empty state", () => {
+    render(
+      <RemindersHome
+        initial={{ completed: [], overdue: [], upcoming: [] }}
+        initialPetId={pet.pet.id}
+        pets={[pet]}
+      />,
+    );
+
+    expect(screen.getByText(/Stay on top of Max’s health/)).toBeVisible();
   });
 
   it("moves a passed reminder from upcoming to overdue", () => {
@@ -92,5 +113,26 @@ describe("RemindersHome", () => {
     expect(overdueTab).toHaveTextContent("1");
     fireEvent.click(overdueTab);
     expect(screen.getByText("Vet appointment")).toBeVisible();
+  });
+
+  it("does not count another pet's overdue reminders", () => {
+    render(
+      <RemindersHome
+        initial={{
+          completed: [],
+          overdue: [expiredReminder],
+          upcoming: [],
+        }}
+        initialPetId={otherPet.pet.id}
+        pets={[pet, otherPet]}
+      />,
+    );
+
+    expect(screen.getByRole("tab", { name: "Overdue" })).toHaveTextContent(
+      "Overdue",
+    );
+    expect(screen.getByRole("tab", { name: "Overdue" })).not.toHaveTextContent(
+      "1",
+    );
   });
 });

@@ -17,6 +17,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 
 import { formatBirthDateInput } from "@/lib/pets/birth-date-input";
+import { optimizeUploadImage } from "@/lib/images/optimize-upload-image";
 import { BreedSelect, isSuggestedBreed, OTHER_BREED } from "./breed-select";
 
 export function EditPetForm({
@@ -29,6 +30,7 @@ export function EditPetForm({
   const router = useRouter();
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoError, setPhotoError] = useState<string>();
+  const [isOptimizingPhoto, setIsOptimizingPhoto] = useState(false);
   const [serverError, setServerError] = useState<string>();
   const [birthDateDisplay, setBirthDateDisplay] = useState(() => {
     const v = pet.birthDate;
@@ -87,7 +89,7 @@ export function EditPetForm({
     [photo, photoPreview],
   );
 
-  function selectPhoto(file: File | undefined) {
+  async function selectPhoto(file: File | undefined) {
     setPhotoError(undefined);
     if (!file) return;
     if (
@@ -96,11 +98,16 @@ export function EditPetForm({
       setPhotoError("Choose a JPEG, PNG or WebP photo.");
       return;
     }
-    if (file.size > MAX_PET_PHOTO_BYTES) {
-      setPhotoError("Choose a photo smaller than 4 MB.");
-      return;
+    setIsOptimizingPhoto(true);
+    try {
+      setPhoto(await optimizeUploadImage(file, MAX_PET_PHOTO_BYTES));
+    } catch {
+      setPhotoError(
+        "We couldn’t optimise that photo. Choose another JPEG, PNG or WebP image.",
+      );
+    } finally {
+      setIsOptimizingPhoto(false);
     }
-    setPhoto(file);
   }
 
   const submit = handleSubmit(async (values) => {
@@ -160,6 +167,7 @@ export function EditPetForm({
             className="min-h-11 px-1 text-lg font-medium text-[#ed802a] disabled:cursor-not-allowed disabled:opacity-45"
             disabled={
               isSubmitting ||
+              isOptimizingPhoto ||
               !isValid ||
               Boolean(photoError) ||
               Boolean(birthDateFormatError) ||
@@ -201,7 +209,7 @@ export function EditPetForm({
               accept={PET_PHOTO_TYPES.join(",")}
               className="sr-only"
               id="edit-pet-photo"
-              onChange={(event) => selectPhoto(event.target.files?.[0])}
+              onChange={(event) => void selectPhoto(event.target.files?.[0])}
               type="file"
             />
           </label>
@@ -209,7 +217,7 @@ export function EditPetForm({
             className="mt-3 inline-flex min-h-11 cursor-pointer items-center text-sm text-[#ed802a]"
             htmlFor="edit-pet-photo"
           >
-            Change photo
+            {isOptimizingPhoto ? "Optimising photo…" : "Change photo"}
           </label>
           {photoError ? (
             <p className="text-sm text-red-600" role="alert">
