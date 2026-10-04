@@ -5,7 +5,7 @@ import { deriveLocalDate } from "@petmosphere/domain";
 import { Bell, Check, Heart, Scale, Settings } from "lucide-react";
 import Link from "next/link";
 import { BackButton } from "@/components/ui/back-button";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import { AppNav } from "@/components/features/pets/app-nav";
 
@@ -21,15 +21,18 @@ function hrefFor(notification: NotificationResponse, today: string) {
 }
 
 function relativeTime(createdAt: string, now: Date) {
-  const elapsedHours = Math.max(
+  const elapsedMinutes = Math.max(
     0,
-    Math.floor((now.getTime() - new Date(createdAt).getTime()) / 3_600_000),
+    Math.floor((now.getTime() - new Date(createdAt).getTime()) / 60_000),
   );
-  if (elapsedHours < 1) return "Just now";
-  if (elapsedHours < 24) return `${elapsedHours}h ago`;
+  if (elapsedMinutes < 2) return "Just now";
+  if (elapsedMinutes < 60)
+    return `${elapsedMinutes} min${elapsedMinutes === 1 ? "" : "s"} ago`;
+  const elapsedHours = Math.floor(elapsedMinutes / 60);
+  if (elapsedHours < 24)
+    return `${elapsedHours} hour${elapsedHours === 1 ? "" : "s"} ago`;
   const elapsedDays = Math.floor(elapsedHours / 24);
-  if (elapsedDays === 1) return "Yesterday";
-  return `${elapsedDays}d ago`;
+  return `${elapsedDays} day${elapsedDays === 1 ? "" : "s"} ago`;
 }
 
 const details = {
@@ -45,20 +48,26 @@ const details = {
 export function NotificationInbox({
   backHref = "/home",
   diaryHref,
+  initialNow,
   initialNotifications,
   reminderHref,
   today,
 }: {
   backHref?: string;
   diaryHref?: string | undefined;
+  initialNow: string;
   initialNotifications: NotificationResponse[];
   reminderHref?: string | undefined;
   today: string;
 }) {
   const [notifications, setNotifications] = useState(initialNotifications);
+  const [now, setNow] = useState(() => new Date(initialNow));
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
-  const now = new Date();
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
   const todayNotifications = notifications.filter(
     ({ createdAt }) =>
       deriveLocalDate(new Date(createdAt), "Australia/Melbourne") === today,

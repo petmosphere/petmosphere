@@ -11,6 +11,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import {
   disablePushNotifications,
   enablePushNotifications,
+  isCurrentPushSubscription,
   pushSetupErrorMessages,
 } from "@/lib/health-logs/push-notifications";
 
@@ -359,7 +360,12 @@ export function NotificationSettings({
       }
       const registration = await navigator.serviceWorker.getRegistration();
       const subscription = await registration?.pushManager.getSubscription();
-      if (active) setPushStatus(subscription ? "enabled" : "disabled");
+      if (!subscription || !isCurrentPushSubscription(subscription)) {
+        if (active) setPushStatus("disabled");
+        return;
+      }
+      const result = await enablePushNotifications();
+      if (active) setPushStatus(result.ok ? "enabled" : "disabled");
     }
     void inspect();
     return () => {
@@ -485,6 +491,7 @@ export function NotificationSettings({
           aria-label={`Back to ${backHref.replace(/^\//, "")}`}
           className="grid size-11 place-items-center rounded-full focus-visible:outline-2 focus-visible:outline-[#ed802a]"
           href={backHref}
+          replace
         >
           <ArrowLeft aria-hidden="true" className="size-6" />
         </Link>

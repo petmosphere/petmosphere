@@ -23,6 +23,7 @@ describe("NotificationInbox", () => {
   it("shows unread notifications and links settings", () => {
     render(
       <NotificationInbox
+        initialNow="2026-08-30T02:03:00.000Z"
         initialNotifications={[notification]}
         today="2026-08-30"
       />,
@@ -35,6 +36,7 @@ describe("NotificationInbox", () => {
     expect(
       screen.getByRole("link", { name: /Vaccination Due/ }),
     ).toHaveAttribute("href", `/reminders/${notification.reminderId}`);
+    expect(screen.getByText("3 mins ago")).toBeVisible();
   });
 
   it("marks all notifications read", async () => {
@@ -45,6 +47,7 @@ describe("NotificationInbox", () => {
       );
     render(
       <NotificationInbox
+        initialNow="2026-08-30T02:03:00.000Z"
         initialNotifications={[notification]}
         today="2026-08-30"
       />,
@@ -63,7 +66,13 @@ describe("NotificationInbox", () => {
   });
 
   it("shows the empty state", () => {
-    render(<NotificationInbox initialNotifications={[]} today="2026-08-30" />);
+    render(
+      <NotificationInbox
+        initialNow="2026-08-30T02:03:00.000Z"
+        initialNotifications={[]}
+        today="2026-08-30"
+      />,
+    );
     expect(screen.getByText("No notifications yet")).toBeVisible();
   });
 });
