@@ -592,8 +592,10 @@ then store two Vault secrets:
 - `health_log_cron_secret`: the same `CRON_SECRET` configured for that Vercel
   environment
 
-Create the job through **Integrations → Cron** or with reviewed SQL equivalent
-to the following. Job names must be unique within each project:
+Migration `20261004120000_schedule_notification_dispatch.sql` creates or updates
+the three five-minute jobs. Apply it only after the environment URL and cron
+secret exist in Vault. The migration is equivalent to the following SQL; use
+**Integrations → Cron** to verify the jobs rather than creating duplicates:
 
 ```sql
 select cron.schedule(
