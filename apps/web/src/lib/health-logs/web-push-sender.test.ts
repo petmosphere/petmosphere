@@ -29,6 +29,8 @@ it.each([
   ]);
   const repository = {
     claimDue,
+    createNextOccurrence: vi.fn(),
+    listOverdueRecurring: async () => [],
     listSubscriptions: async () => [
       {
         id: "subscription",

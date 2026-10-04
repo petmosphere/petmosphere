@@ -740,8 +740,10 @@ notification permission, select its **Notify me** timing, and invoke
 `dispatch-pet-care-reminders` once that alert window opens. Confirm the
 notification uses generic wording, appears in the in-app Notifications page,
 opens the reminder detail, and is not sent a second time. Choosing **None**
-must produce no reminder notification. Completing a repeating reminder must preserve
-the completed occurrence and create exactly one next future occurrence.
+must produce no reminder notification. Once a repeating reminder becomes
+overdue, the dispatch job must keep that occurrence overdue and create exactly
+one next future occurrence. Completing the overdue occurrence afterwards must
+preserve its history without duplicating the scheduled successor.
 
 For weight reminders, log a weight before the scheduled time and confirm the
 job advances without sending a notification. On another due date with no

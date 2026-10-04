@@ -125,7 +125,7 @@ export async function completeReminder(
   const nextDueDate = nextReminderDate(
     reminder.seriesStartDate,
     reminder.repeatRule,
-    today,
+    reminder.dueDate > today ? reminder.dueDate : today,
   );
   return repository.complete(ownerId, reminderId, nextDueDate);
 }
