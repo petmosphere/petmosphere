@@ -272,10 +272,10 @@ export function FirstPetForm({
                     type="button"
                   >
                     {isOther ? (
-                      <span className="grid size-12 place-items-center rounded-full border-2 border-white/90 bg-[#65bcb5]/[0.08] text-[#65bcb5]">
+                      <span className="grid size-12 place-items-center rounded-full border-2 border-[#f47b20] bg-[#fff0e1] text-[#ed802a]">
                         <PawPrint
                           aria-hidden="true"
-                          className="size-6"
+                          className="size-5"
                           strokeWidth={1.5}
                         />
                       </span>

@@ -7,7 +7,7 @@ function ProfileIcon() {
   return (
     <svg
       aria-hidden="true"
-      className="mb-0.5 size-5"
+      className="mb-0.5 size-6"
       fill="none"
       stroke="currentColor"
       strokeLinecap="round"
@@ -27,7 +27,7 @@ function RemindersIcon() {
   return (
     <svg
       aria-hidden="true"
-      className="mb-0.5 size-5"
+      className="mb-0.5 size-6"
       fill="none"
       stroke="currentColor"
       strokeLinecap="round"
@@ -47,7 +47,7 @@ function RemindersIcon() {
 }
 
 const itemClass =
-  "flex min-h-12 flex-col items-center justify-center rounded-full text-[10px] leading-3 font-medium transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.97]";
+  "flex min-h-14 flex-col items-center justify-center rounded-full text-[11px] leading-3 font-medium transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.97]";
 
 function NavItem({
   active,
@@ -87,7 +87,7 @@ function NavItem({
 export function AppNav({
   active = "home",
   diaryHref,
-  fixed = false,
+  fixed = true,
   homeHref = "/home",
   reminderHref,
 }: {
@@ -102,12 +102,12 @@ export function AppNav({
       aria-label="Primary navigation"
       className={`${
         fixed
-          ? "fixed bottom-[max(0.5rem,env(safe-area-inset-bottom))] left-1/2 w-[calc(100%_-_2rem)] max-w-[361px] -translate-x-1/2"
-          : "sticky bottom-[max(0.5rem,env(safe-area-inset-bottom))] mx-4 mt-auto"
-      } z-40 grid grid-cols-4 rounded-full border border-[#ead9c7] bg-[#f8efe3] p-1.5 shadow-[0_8px_24px_rgba(75,55,35,0.15)]`}
+          ? "fixed bottom-[max(1.25rem,calc(env(safe-area-inset-bottom)+1rem))] left-1/2 w-[calc(100%_-_2rem)] max-w-[380px] -translate-x-1/2"
+          : "sticky bottom-[max(1.25rem,calc(env(safe-area-inset-bottom)+1rem))] mx-4 mt-auto"
+      } z-40 grid grid-cols-4 rounded-full border border-[#ead9c7]/70 bg-[#f8efe3]/75 p-1.5 shadow-[0_8px_24px_rgba(75,55,35,0.15)] backdrop-blur-md`}
     >
       <NavItem active={active === "home"} href={homeHref} label="Home">
-        <House aria-hidden="true" className="mb-0.5 size-5" strokeWidth={1.8} />
+        <House aria-hidden="true" className="mb-0.5 size-6" strokeWidth={1.8} />
         Home
       </NavItem>
       <NavItem
@@ -118,7 +118,7 @@ export function AppNav({
       >
         <CalendarDays
           aria-hidden="true"
-          className="mb-0.5 size-5"
+          className="mb-0.5 size-6"
           strokeWidth={1.8}
         />
         Diary

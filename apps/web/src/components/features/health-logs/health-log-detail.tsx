@@ -141,7 +141,7 @@ export function HealthLogDetail({
       {healthLog.imageUrls.length > 0 ? (
         <div className="flex flex-col gap-3 pt-6">
           <p className="text-sm font-medium text-[#7A7A7A]">Photos</p>
-          <div className="flex flex-row gap-3">
+          <div className="flex flex-row flex-wrap gap-3">
             {healthLog.imageUrls.map((url, index) => (
               <div
                 className="relative size-24 shrink-0 overflow-hidden rounded-2xl border border-[#F0E6D8]"
