@@ -76,7 +76,9 @@ export function TermsContent({
           </h1>
         </div>
         <p className="mt-3 text-sm text-[#7A7A7A]">
-          Effective date: 16 September 2026 · Version 2026-09-16
+          Effective date: 16 September 2026
+          <br />
+          Version 2026-09-16
         </p>
 
         <div className="mt-6 space-y-4">

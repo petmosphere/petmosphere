@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, ChevronDown, List, Search } from "lucide-react";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { PetSpecies } from "@petmosphere/domain";
 
 export const OTHER_BREED = "others";
@@ -150,8 +150,19 @@ export function BreedSelect({
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [maxHeight, setMaxHeight] = useState<number>();
+  const rootRef = useRef<HTMLDivElement>(null);
   const triggerId = id;
   const listboxId = useId();
+
+  // Keep the dropdown card inside the viewport on small screens: cap it to the
+  // space below the trigger (minus margin), falling back to 360px.
+  useEffect(() => {
+    if (!open) return;
+    const rect = rootRef.current?.getBoundingClientRect();
+    if (rect)
+      setMaxHeight(Math.max(160, window.innerHeight - rect.bottom - 16));
+  }, [open]);
 
   const breeds = species ? breedSuggestions[species] : [];
   const normalizedQuery = query.trim().toLowerCase();
@@ -187,7 +198,7 @@ export function BreedSelect({
   const displayValue = value === OTHER_BREED ? "Others" : value;
 
   return (
-    <div className="relative">
+    <div className="relative" ref={rootRef}>
       <button
         aria-expanded={open}
         aria-haspopup="listbox"
@@ -232,7 +243,12 @@ export function BreedSelect({
             onClick={close}
           />
           {/* dropdown card */}
-          <div className="absolute top-full right-0 left-0 z-50 mt-2 flex max-h-[360px] flex-col overflow-hidden rounded-2xl border border-[#f0e6d8] bg-white shadow-[0px_16px_32px_-10px_rgba(0,0,0,0.078),0px_2px_8px_rgba(0,0,0,0.05)]">
+          <div
+            className="absolute top-full right-0 left-0 z-50 mt-2 flex flex-col overflow-hidden rounded-2xl border border-[#f0e6d8] bg-white shadow-[0px_16px_32px_-10px_rgba(0,0,0,0.078),0px_2px_8px_rgba(0,0,0,0.05)]"
+            style={
+              maxHeight ? { maxHeight: Math.min(maxHeight, 360) } : undefined
+            }
+          >
             <div className="flex items-center gap-2.5 border-b border-[#f0e6d8] bg-[#fff9f2] px-4 py-3">
               <Search
                 aria-hidden="true"

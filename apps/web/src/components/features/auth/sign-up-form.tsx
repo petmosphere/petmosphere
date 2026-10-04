@@ -107,16 +107,33 @@ export function SignUpForm() {
   useEffect(() => {
     const agreementKey = "signup-terms-agreed";
 
+    // localStorage can be missing or a non-functional stub (private browsing,
+    // test environments) — never let that break the form.
+    function readAgreement(): string | null {
+      try {
+        return window.localStorage?.getItem(agreementKey) ?? null;
+      } catch {
+        return null;
+      }
+    }
+    function clearAgreement() {
+      try {
+        window.localStorage?.removeItem(agreementKey);
+      } catch {
+        // ignore
+      }
+    }
+
     function acceptTerms(event?: StorageEvent) {
       if (event && (event.key !== agreementKey || event.newValue !== "true")) {
         return;
       }
-      if (!event && window.localStorage?.getItem(agreementKey) !== "true") {
+      if (!event && readAgreement() !== "true") {
         return;
       }
 
       setValue("acceptedTerms", true, { shouldValidate: true });
-      window.localStorage?.removeItem(agreementKey);
+      clearAgreement();
     }
 
     acceptTerms();
