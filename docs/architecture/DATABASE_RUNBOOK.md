@@ -671,8 +671,59 @@ select cron.schedule(
 );
 ```
 
-Verify job runs in **Integrations → Cron** and confirm the dispatcher returns a
-successful count-only response in Vercel runtime logs. Never log subscription
+Verify job runs in **Integrations → Cron** and check the HTTP response separately.
+A successful Cron run only means `pg_net` queued the request; it does not prove
+that the dispatcher succeeded. Run these read-only checks in the target project's
+SQL editor (they do not display secrets or user data):
+
+```sql
+select jobname, schedule, active
+from cron.job
+where jobname in (
+  'dispatch-health-log-reminders',
+  'dispatch-pet-care-reminders',
+  'dispatch-pet-weight-reminders'
+);
+
+select name
+from vault.secrets
+where name in ('petmosphere_app_url', 'health_log_cron_secret');
+
+select job.jobname, run.start_time, run.status
+from cron.job_run_details as run
+join cron.job as job on job.jobid = run.jobid
+where job.jobname in (
+  'dispatch-health-log-reminders',
+  'dispatch-pet-care-reminders',
+  'dispatch-pet-weight-reminders'
+)
+order by run.start_time desc
+limit 12;
+
+select id, created, status_code, timed_out
+from net._http_response
+order by created desc
+limit 12;
+```
+
+Missing jobs mean the scheduling migration has not been applied. Missing Vault
+names mean the scheduler is not configured. HTTP 401 requires checking that the
+Vault secret matches Vercel's `CRON_SECRET` (also check Vercel deployment
+protection); 3xx requires using the final canonical app URL; 404/405 means the
+route or method is wrong. For 500, check the matching Vercel/Sentry operation and
+server Supabase configuration and migrations. Do not paste secret values into
+diagnostic output. HTTP response history is temporary, so inspect it soon after
+a scheduled run. Other `pg_net` users may also appear in this response history;
+correlate request IDs with the specific Cron run's return value.
+
+The dispatch response contains `claimed`, `sent`, `failed`, and `expired` counts.
+`claimed > 0` means the database claim created (or deduplicated) inbox records.
+`sent = 0` with `failed = 0` can mean there are no registered push subscriptions.
+`failed > 0` means push delivery failed; verify all three VAPID variables above.
+Missing push configuration must not prevent inbox creation. Claimed occurrences
+are not retried for push, so test with a new due occurrence after fixing config.
+
+Never log subscription
 endpoints, encryption keys, pet identifiers, notes, filenames, or health data.
 An expired push endpoint is removed automatically. Other provider failures are
 reported only as aggregate counts and are not retried that day, which avoids
