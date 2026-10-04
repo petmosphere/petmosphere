@@ -2,9 +2,18 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
+  redirect: vi.fn(),
   useRouter: () => ({
     push: vi.fn(),
   }),
+}));
+
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: vi.fn(async () => ({
+    auth: {
+      getUser: vi.fn().mockResolvedValue({ data: { user: null } }),
+    },
+  })),
 }));
 
 vi.mock("@/lib/supabase/client", () => ({
@@ -18,8 +27,8 @@ vi.mock("@/lib/supabase/client", () => ({
 import HomePage from "./page";
 
 describe("HomePage", () => {
-  it("guides visitors through the product introduction to sign-up", () => {
-    render(<HomePage />);
+  it("guides visitors through the product introduction to sign-up", async () => {
+    render(await HomePage());
 
     expect(
       screen.getByRole("heading", {
