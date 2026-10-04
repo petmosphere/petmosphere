@@ -14,11 +14,12 @@ function getWebPushConfig() {
 }
 
 export function createWebPushSender(): WebPushSender {
-  const vapidDetails = getWebPushConfig();
-
   return {
     async send(subscription, notification) {
       try {
+        // Inbox records are claimed before push delivery; missing push config
+        // must not prevent that independent channel from working.
+        const vapidDetails = getWebPushConfig();
         await webPush.sendNotification(
           {
             endpoint: subscription.endpoint,

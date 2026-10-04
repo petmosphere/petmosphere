@@ -30,6 +30,14 @@ export async function POST(request: Request) {
       createWeightReminderDeliveryRepository(createAdminClient()),
       createWebPushSender(),
     );
+    if (result.failed > 0)
+      console.warn(
+        JSON.stringify({
+          failed: result.failed,
+          operation: "weight_reminder_dispatch",
+          status: "partial_failure",
+        }),
+      );
     return NextResponse.json(
       healthLogReminderDispatchResponseSchema.parse(result),
     );
