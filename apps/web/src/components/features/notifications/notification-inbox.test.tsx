@@ -65,6 +65,30 @@ describe("NotificationInbox", () => {
     fetchMock.mockRestore();
   });
 
+  it("keeps marking a clicked notification read during navigation", async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response(null, { status: 200 }));
+    render(
+      <NotificationInbox
+        initialNow="2026-08-30T02:03:00.000Z"
+        initialNotifications={[notification]}
+        today="2026-08-30"
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("link", { name: /Vaccination Due/ }));
+
+    expect(screen.queryByText("Unread")).not.toBeInTheDocument();
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/v1/notifications",
+        expect.objectContaining({ keepalive: true, method: "PATCH" }),
+      ),
+    );
+    fetchMock.mockRestore();
+  });
+
   it("shows the empty state", () => {
     render(
       <NotificationInbox

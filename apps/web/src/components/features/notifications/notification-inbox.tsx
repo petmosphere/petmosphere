@@ -111,8 +111,22 @@ export function NotificationInbox({
     void fetch("/api/v1/notifications", {
       body: JSON.stringify({ notificationId }),
       headers: { "Content-Type": "application/json" },
+      keepalive: true,
       method: "PATCH",
-    });
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error();
+      })
+      .catch(() => {
+        setNotifications((current) =>
+          current.map((notification) =>
+            notification.id === notificationId
+              ? { ...notification, readAt: null }
+              : notification,
+          ),
+        );
+        setMessage("We could not mark that notification as read. Try again.");
+      });
   }
 
   function group(

@@ -1,6 +1,6 @@
 begin;
 
-select plan(19);
+select plan(29);
 
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password, raw_user_meta_data,
@@ -128,9 +128,81 @@ select is(
   'claiming at the lead time creates an inbox occurrence'
 );
 
+select is(
+  (select count(*) from public.list_overdue_recurring_reminders(
+    '2026-09-22 09:01:00+00', 100
+  )),
+  1::bigint,
+  'an overdue recurring series is eligible for advancement'
+);
+select lives_ok(
+  $$select public.create_next_reminder_occurrence(
+    (select reminder_id from public.list_overdue_recurring_reminders(
+      '2026-09-22 09:01:00+00', 100
+    )),
+    '2026-10-22'
+  )$$,
+  'dispatcher creates the next occurrence without completing the overdue one'
+);
 reset role;
+select is(
+  (select count(*) from public.reminders
+    where completed_at is null and deleted_at is null),
+  2::bigint,
+  'overdue and future occurrences remain active together'
+);
+select lives_ok(
+  $$select public.create_next_reminder_occurrence(
+    (select id from public.reminders
+      where due_local_date = '2026-09-22' and completed_at is null),
+    '2026-10-22'
+  )$$,
+  'advancement retry is idempotent'
+);
+reset role;
+select is(
+  (select count(*) from public.reminders
+    where completed_at is null and deleted_at is null),
+  2::bigint,
+  'advancement retry does not duplicate the future occurrence'
+);
+
 set local role authenticated;
 select throws_ok($$select * from public.claim_due_reminders(now(), 100)$$, '42501', null, 'authenticated clients cannot claim notifications');
+select throws_ok(
+  $$select * from public.list_overdue_recurring_reminders(now(), 100)$$,
+  '42501', null,
+  'authenticated clients cannot list overdue series for dispatch'
+);
+select throws_ok(
+  $$select public.create_next_reminder_occurrence(
+    '77000000-0000-4000-8000-000000000007', '2026-10-22'
+  )$$,
+  '42501', null,
+  'authenticated clients cannot advance recurring series directly'
+);
+
+set local "request.jwt.claims" = '{"sub":"71000000-0000-4000-8000-000000000001","role":"authenticated"}';
+select lives_ok(
+  $$select * from public.complete_reminder(
+    (select id from public.reminders
+      where due_local_date = '2026-09-22' and completed_at is null),
+    '2026-10-22'
+  )$$,
+  'completing an overdue occurrence reuses its scheduled successor'
+);
+select is(
+  (select count(*) from public.reminders
+    where completed_at is null and deleted_at is null),
+  1::bigint,
+  'completion leaves only the scheduled future occurrence active'
+);
+select is(
+  (select count(*) from public.reminders
+    where due_local_date = '2026-10-22' and completed_at is null),
+  1::bigint,
+  'completion does not duplicate the scheduled future occurrence'
+);
 
 select * from finish();
 rollback;
