@@ -257,7 +257,6 @@ export function BreedSelect({
               />
               <input
                 aria-label="Search breeds"
-                autoFocus
                 className="w-full bg-transparent text-sm text-[#2d2d2d] outline-none placeholder:text-stone-400"
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search breeds"
