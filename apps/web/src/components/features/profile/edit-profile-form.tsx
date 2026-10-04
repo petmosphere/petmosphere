@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 
+import { optimizeUploadImage } from "@/lib/images/optimize-upload-image";
 import { ProfileShell } from "./profile-shell";
 import { getInitials } from "./user-avatar";
 
@@ -32,6 +33,7 @@ export function EditProfileForm({
   const [toastVisible, setToastVisible] = useState(passwordUpdated);
   const [toastFading, setToastFading] = useState(false);
   const [photo, setPhoto] = useState<File | null>(null);
+  const [isOptimizingPhoto, setIsOptimizingPhoto] = useState(false);
 
   useEffect(() => {
     if (!passwordUpdated) return;
@@ -65,7 +67,7 @@ export function EditProfileForm({
     [photo, photoPreview],
   );
 
-  function selectPhoto(file: File | undefined) {
+  async function selectPhoto(file: File | undefined) {
     setPhotoError(undefined);
     if (!file) return;
     if (
@@ -76,11 +78,16 @@ export function EditProfileForm({
       setPhotoError("Choose a JPEG, PNG or WebP photo.");
       return;
     }
-    if (file.size > MAX_PROFILE_PHOTO_BYTES) {
-      setPhotoError("Choose a photo smaller than 4 MB.");
-      return;
+    setIsOptimizingPhoto(true);
+    try {
+      setPhoto(await optimizeUploadImage(file, MAX_PROFILE_PHOTO_BYTES));
+    } catch {
+      setPhotoError(
+        "We couldn’t optimise that photo. Choose another JPEG, PNG or WebP image.",
+      );
+    } finally {
+      setIsOptimizingPhoto(false);
     }
-    setPhoto(file);
   }
 
   const submit = handleSubmit(async ({ displayName: name }) => {
@@ -167,7 +174,7 @@ export function EditProfileForm({
               accept={PROFILE_PHOTO_TYPES.join(",")}
               className="sr-only"
               id="profile-photo"
-              onChange={(event) => selectPhoto(event.target.files?.[0])}
+              onChange={(event) => void selectPhoto(event.target.files?.[0])}
               type="file"
             />
           </label>
@@ -175,7 +182,7 @@ export function EditProfileForm({
             className="mt-2 inline-flex min-h-11 cursor-pointer items-center text-sm font-medium text-[#ed802a]"
             htmlFor="profile-photo"
           >
-            Change photo
+            {isOptimizingPhoto ? "Optimising photo…" : "Change photo"}
           </label>
           {photoError ? (
             <p className="text-sm text-red-700" role="alert">
@@ -226,7 +233,9 @@ export function EditProfileForm({
 
         <button
           className="mt-6 min-h-13 rounded-2xl bg-[#ed802a] px-5 font-semibold text-white disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-500"
-          disabled={isSubmitting || !isValid || Boolean(photoError)}
+          disabled={
+            isSubmitting || isOptimizingPhoto || !isValid || Boolean(photoError)
+          }
           type="submit"
         >
           {isSubmitting ? "Saving…" : "Save profile"}

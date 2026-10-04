@@ -18,6 +18,29 @@ function decodeVapidPublicKey(value: string) {
   return Uint8Array.from(atob(base64), (character) => character.charCodeAt(0));
 }
 
+function subscriptionUsesKey(
+  subscription: PushSubscription,
+  expectedKey: Uint8Array<ArrayBuffer>,
+) {
+  const currentKey = subscription.options.applicationServerKey;
+  if (!currentKey) return false;
+  const currentBytes = new Uint8Array(currentKey);
+  return (
+    currentBytes.length === expectedKey.length &&
+    currentBytes.every((value, index) => value === expectedKey[index])
+  );
+}
+
+export function isCurrentPushSubscription(subscription: PushSubscription) {
+  const publicKey = process.env.NEXT_PUBLIC_WEB_PUSH_VAPID_PUBLIC_KEY;
+  if (!publicKey) return false;
+  try {
+    return subscriptionUsesKey(subscription, decodeVapidPublicKey(publicKey));
+  } catch {
+    return false;
+  }
+}
+
 export async function enablePushNotifications(): Promise<PushSetupResult> {
   if (
     !("serviceWorker" in navigator) ||
@@ -38,12 +61,26 @@ export async function enablePushNotifications(): Promise<PushSetupResult> {
 
   try {
     const registration = await navigator.serviceWorker.ready;
-    const subscription =
-      (await registration.pushManager.getSubscription()) ??
-      (await registration.pushManager.subscribe({
-        applicationServerKey: decodeVapidPublicKey(publicKey),
-        userVisibleOnly: true,
-      }));
+    const applicationServerKey = decodeVapidPublicKey(publicKey);
+    let subscription = await registration.pushManager.getSubscription();
+    if (
+      subscription &&
+      !subscriptionUsesKey(subscription, applicationServerKey)
+    ) {
+      await Promise.allSettled([
+        fetch("/api/v1/push-subscriptions", {
+          body: JSON.stringify({ endpoint: subscription.endpoint }),
+          headers: { "Content-Type": "application/json" },
+          method: "DELETE",
+        }),
+        subscription.unsubscribe(),
+      ]);
+      subscription = null;
+    }
+    subscription ??= await registration.pushManager.subscribe({
+      applicationServerKey,
+      userVisibleOnly: true,
+    });
     const serialised = subscription.toJSON();
     if (
       !serialised.endpoint ||

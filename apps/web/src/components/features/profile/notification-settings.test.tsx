@@ -1,15 +1,26 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import type { ComponentProps } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ back: vi.fn(), replace: vi.fn() }),
 }));
+vi.mock("next/link", () => ({
+  default: ({
+    replace,
+    ...props
+  }: ComponentProps<"a"> & { replace?: boolean }) => (
+    <a data-replace={replace ? "true" : "false"} {...props} />
+  ),
+}));
 
 import { NotificationSettings } from "./notification-settings";
+import { enablePushNotifications } from "@/lib/health-logs/push-notifications";
 
 vi.mock("@/lib/health-logs/push-notifications", () => ({
   disablePushNotifications: vi.fn(),
-  enablePushNotifications: vi.fn(),
+  enablePushNotifications: vi.fn(async () => ({ ok: true })),
+  isCurrentPushSubscription: vi.fn(() => true),
   pushSetupErrorMessages: {},
 }));
 
@@ -62,6 +73,7 @@ describe("NotificationSettings", () => {
         }),
       ).toHaveAttribute("aria-checked", "true"),
     );
+    expect(enablePushNotifications).toHaveBeenCalledOnce();
     expect(screen.getByText("Daily check-in notifications")).toBeVisible();
     expect(screen.getByText("Weight log notifications")).toBeVisible();
     expect(
@@ -80,7 +92,7 @@ describe("NotificationSettings", () => {
 
     expect(
       screen.getByRole("link", { name: "Back to notifications" }),
-    ).toHaveAttribute("href", "/notifications");
+    ).toHaveAttribute("data-replace", "true");
   });
 
   it("shows setup actions until feature schedules exist", async () => {

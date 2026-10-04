@@ -137,13 +137,19 @@ export function RemindersHome({
     selectedPetId === "all"
       ? lists[active]
       : lists[active].filter((r) => r.petId === selectedPetId);
+  const overdueCount =
+    selectedPetId === "all"
+      ? lists.overdue.length
+      : lists.overdue.filter((reminder) => reminder.petId === selectedPetId)
+          .length;
   const selectedPet =
     selectedPetId === "all"
       ? null
       : pets.find(({ pet }) => pet.id === selectedPetId);
-  const firstPetName =
-    (selectedPetId === "all" ? pets[0]?.pet.name : selectedPet?.pet.name) ??
-    "your pet";
+  const reminderHealthOwner =
+    selectedPetId === "all"
+      ? "your pets’"
+      : `${selectedPet?.pet.name ?? "your pet"}’s`;
   const effectiveDiaryPetId =
     selectedPetId !== "all" ? selectedPetId : pets[0]?.pet.id;
   return (
@@ -199,8 +205,8 @@ export function RemindersHome({
         {tabs.map((tab) => (
           <button
             aria-label={
-              tab.value === "overdue" && lists.overdue.length > 0
-                ? `Overdue, ${lists.overdue.length} ${lists.overdue.length === 1 ? "reminder" : "reminders"}`
+              tab.value === "overdue" && overdueCount > 0
+                ? `Overdue, ${overdueCount} ${overdueCount === 1 ? "reminder" : "reminders"}`
                 : tab.label
             }
             aria-selected={active === tab.value}
@@ -214,12 +220,12 @@ export function RemindersHome({
             type="button"
           >
             {tab.label}
-            {tab.value === "overdue" && lists.overdue.length > 0 ? (
+            {tab.value === "overdue" && overdueCount > 0 ? (
               <span
                 aria-hidden="true"
                 className="grid h-6 min-w-6 place-items-center rounded-full bg-[#ef4444] px-1.5 text-xs font-bold text-white"
               >
-                {lists.overdue.length}
+                {overdueCount}
               </span>
             ) : null}
           </button>
@@ -259,7 +265,7 @@ export function RemindersHome({
             </h2>
             <p className="mt-4 max-w-[20rem] text-base leading-7 text-[#7a7a7a]">
               {active === "upcoming"
-                ? `Stay on top of ${firstPetName}’s health by setting reminders for vaccinations, medications, vet visits, and more.`
+                ? `Stay on top of ${reminderHealthOwner} health by setting reminders for vaccinations, medications, vet visits, and more.`
                 : active === "completed"
                   ? "Reminders you mark as done will appear here."
                   : "Reminders that pass their due date will appear here."}

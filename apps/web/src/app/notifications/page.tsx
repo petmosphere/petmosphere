@@ -25,6 +25,7 @@ export default async function NotificationsPage() {
   return (
     <NotificationInbox
       diaryHref={firstPet ? `/pets/${firstPet.id}/health-logs` : undefined}
+      initialNow={new Date().toISOString()}
       initialNotifications={result.notifications.map(toNotificationResponse)}
       reminderHref={firstPet ? "/reminders" : undefined}
       today={deriveLocalDate(new Date(), "Australia/Melbourne")}
