@@ -105,16 +105,19 @@ export function RemindersHome({
         throw new Error(
           body.message ?? "We could not mark this reminder as done.",
         );
+      const next = body.next;
       setLists((current) => ({
         completed: [
           body.completed!,
           ...current.completed.filter((item) => item.id !== reminder.id),
         ],
         overdue: current.overdue.filter((item) => item.id !== reminder.id),
-        upcoming: body.next
+        upcoming: next
           ? [
-              ...current.upcoming.filter((item) => item.id !== reminder.id),
-              body.next,
+              ...current.upcoming.filter(
+                (item) => item.id !== reminder.id && item.id !== next.id,
+              ),
+              next,
             ].sort((a, b) =>
               `${a.dueDate}${a.localTime}`.localeCompare(
                 `${b.dueDate}${b.localTime}`,
