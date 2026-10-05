@@ -1,6 +1,6 @@
 begin;
 
-select plan(29);
+select plan(31);
 
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password, raw_user_meta_data,
@@ -126,6 +126,20 @@ select is(
     where owner_id = '71000000-0000-4000-8000-000000000001'),
   1::bigint,
   'claiming at the lead time creates an inbox occurrence'
+);
+select is(
+  (select message from public.notifications
+    where kind = 'reminder_due'
+      and owner_id = '71000000-0000-4000-8000-000000000001'),
+  'A reminder for Max is coming up.',
+  'inbox identifies the pet without exposing the reminder title in its message'
+);
+select is(
+  (select title from public.notifications
+    where kind = 'reminder_due'
+      and owner_id = '71000000-0000-4000-8000-000000000001'),
+  'Flea treatment',
+  'inbox title retains the exact reminder title without a misleading Due suffix'
 );
 
 select is(

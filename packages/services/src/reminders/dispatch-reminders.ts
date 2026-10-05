@@ -9,7 +9,11 @@ import type {
   WebPushSender,
 } from "../health-logs/dispatch-health-log-reminders";
 
-export type DueReminderNotification = { id: string; ownerId: string };
+export type DueReminderNotification = {
+  id: string;
+  message: string;
+  ownerId: string;
+};
 export type OverdueRecurringReminder = {
   id: string;
   repeatRule: ReminderRepeatRule;
@@ -53,7 +57,7 @@ export async function dispatchReminders(
     for (const subscription of subscriptions) {
       try {
         const outcome = await sender.send(subscription, {
-          body: "A pet care reminder is due.",
+          body: reminder.message,
           tag: `petmosphere-reminder-${reminder.id}`,
           url: `/reminders/${reminder.id}`,
         });
