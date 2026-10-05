@@ -5,7 +5,7 @@ import { deriveLocalDate } from "@petmosphere/domain";
 import { Bell, Check, Heart, Scale, Settings } from "lucide-react";
 import Link from "next/link";
 import { BackButton } from "@/components/ui/back-button";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { AppNav } from "@/components/features/pets/app-nav";
 
@@ -64,9 +64,41 @@ export function NotificationInbox({
   const [now, setNow] = useState(() => new Date(initialNow));
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const refreshController = useRef<AbortController | null>(null);
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 60_000);
     return () => window.clearInterval(timer);
+  }, []);
+  useEffect(() => {
+    async function refresh() {
+      refreshController.current?.abort();
+      const controller = new AbortController();
+      refreshController.current = controller;
+      try {
+        const response = await fetch("/api/v1/notifications", {
+          cache: "no-store",
+          signal: controller.signal,
+        });
+        if (!response.ok) throw new Error();
+        const body = (await response.json()) as {
+          notifications?: NotificationResponse[];
+        };
+        if (!Array.isArray(body.notifications)) throw new Error();
+        if (!controller.signal.aborted) setNotifications(body.notifications);
+      } catch {
+        if (!controller.signal.aborted)
+          setMessage("We could not refresh notifications. Try again later.");
+      }
+    }
+    function onPageShow(event: PageTransitionEvent) {
+      if (event.persisted) void refresh();
+    }
+    void refresh();
+    window.addEventListener("pageshow", onPageShow);
+    return () => {
+      refreshController.current?.abort();
+      window.removeEventListener("pageshow", onPageShow);
+    };
   }, []);
   const todayNotifications = notifications.filter(
     ({ createdAt }) =>
@@ -80,6 +112,7 @@ export function NotificationInbox({
 
   async function markAllRead() {
     if (!hasUnread || busy) return;
+    refreshController.current?.abort();
     setBusy(true);
     setMessage("");
     try {
@@ -101,6 +134,7 @@ export function NotificationInbox({
   }
 
   function markRead(notificationId: string) {
+    refreshController.current?.abort();
     setNotifications((current) =>
       current.map((notification) =>
         notification.id === notificationId
