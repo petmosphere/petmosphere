@@ -32,6 +32,23 @@ export function VerifyEmailCodeForm({
   const [verifying, startVerifying] = useTransition();
   const [resending, startResending] = useTransition();
 
+  // Auto-verify once all six digits are in (paste, SMS/email autofill, or
+  // typing) so users don't have to press the button.
+  useEffect(() => {
+    if (code.length !== 6) return;
+    const formData = new FormData();
+    formData.set("code", code);
+    startVerifying(async () =>
+      setVerifyState(
+        await (
+          purpose === "recovery"
+            ? verifyRecoveryCodeAction
+            : verifyEmailCodeAction
+        )(initialState, formData),
+      ),
+    );
+  }, [code, purpose]);
+
   useEffect(() => {
     if (resendWait <= 0) return;
 
@@ -44,6 +61,13 @@ export function VerifyEmailCodeForm({
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (verifyState.status === "error") {
+      setVerifyState(initialState);
+      return;
+    }
+    // Manual submit is a fallback (e.g. autofill arrives while a verify is
+    // already in flight); the auto-submit effect normally handles it.
+    if (code.length === 6) return;
     const formData = new FormData();
     formData.set("code", code);
     startVerifying(async () =>
