@@ -30,13 +30,10 @@ describe("recovery code form", () => {
         resendCooldown={60}
       />,
     );
-    const button = screen.getByRole("button", { name: "Verify code" });
-    expect(button).toBeDisabled();
+    // Six digits auto-submit without pressing the button.
     fireEvent.change(screen.getByLabelText("Verification code"), {
       target: { value: "123 456" },
     });
-    expect(button).toBeEnabled();
-    fireEvent.click(button);
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "invalid or expired",
     );
@@ -46,6 +43,8 @@ describe("recovery code form", () => {
     ).toHaveAttribute("href", "/auth/forgot-password");
   });
   it("restarts the cooldown and clears the old code after resending", async () => {
+    // Entering six digits auto-submits, so verify needs a resolved state.
+    verify.mockResolvedValue({ status: "idle" });
     resend.mockResolvedValue({
       status: "success",
       message: "A new code is on its way.",
@@ -61,6 +60,10 @@ describe("recovery code form", () => {
     fireEvent.change(screen.getByLabelText("Verification code"), {
       target: { value: "123456" },
     });
+    // Wait for the auto-submit to finish so Resend is clickable.
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Resend code" })).toBeEnabled(),
+    );
     fireEvent.click(screen.getByRole("button", { name: "Resend code" }));
     await waitFor(() =>
       expect(screen.getByLabelText("Verification code")).toHaveValue(""),
