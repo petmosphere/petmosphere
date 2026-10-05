@@ -164,6 +164,10 @@ export function FirstPetForm({
   const inputClass =
     "min-h-13 w-full rounded-xl border border-[#ead9c7] bg-white/60 px-12 text-base text-stone-900 outline-none transition-[border-color,box-shadow] focus:border-[#ed802a] focus:ring-4 focus:ring-[#ed802a]/10";
 
+  // Same as inputClass but without the big left/right padding reserved for
+  // leading icons — used by inputs with no icon.
+  const inputClassNoIcon = inputClass.replace("px-12", "px-4");
+
   return (
     <main className="mx-auto min-h-dvh w-full max-w-md bg-[#fdf8f2] px-6 pt-7 pb-10 text-[#2d2d2d] shadow-xl shadow-stone-900/5">
       <form className="mt-3" noValidate onSubmit={submit}>
@@ -356,7 +360,7 @@ export function FirstPetForm({
                     customBreedError ? "pet-custom-breed-error" : undefined
                   }
                   aria-invalid={Boolean(customBreedError)}
-                  className={inputClass}
+                  className={inputClassNoIcon}
                   id="pet-custom-breed"
                   onChange={(event) => {
                     const value = event.target.value;
@@ -388,59 +392,66 @@ export function FirstPetForm({
             >
               Date of birth <RequiredMark />
             </label>
-            <div className="relative">
-              <CalendarDays
-                aria-hidden="true"
-                className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-stone-500"
-              />
-              <input
-                aria-describedby={
-                  birthDateFormatError || errors.birthDate
-                    ? "birth-date-error"
-                    : undefined
-                }
-                aria-invalid={Boolean(birthDateFormatError || errors.birthDate)}
-                className={inputClass}
-                disabled={unknownBirthDate}
-                id="birth-date"
-                inputMode="numeric"
-                onChange={(e) => {
-                  const display = formatBirthDateInput(e.target.value);
-                  setBirthDateDisplay(display);
-                  if (display === "") {
-                    setBirthDateFormatError(undefined);
-                    setValue("birthDate", "", { shouldValidate: true });
-                    return;
-                  }
-                  const match = display.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-                  if (match) {
-                    setBirthDateFormatError(undefined);
-                    setValue(
-                      "birthDate",
-                      `${match[3]}-${match[2]}-${match[1]}`,
-                      { shouldValidate: true },
-                    );
-                  } else {
-                    setBirthDateFormatError(
-                      "Please enter the correct format DD/MM/YYYY",
-                    );
-                    setValue("birthDate", "", { shouldValidate: false });
-                  }
-                }}
-                placeholder="DD/MM/YYYY"
-                maxLength={10}
-                type="text"
-                value={birthDateDisplay}
-              />
-            </div>
-            {birthDateFormatError || errors.birthDate ? (
-              <p
-                className="mt-1.5 text-sm text-red-600"
-                id="birth-date-error"
-                role="alert"
-              >
-                {birthDateFormatError ?? errors.birthDate?.message}
-              </p>
+            {!unknownBirthDate ? (
+              <>
+                <div className="relative">
+                  <CalendarDays
+                    aria-hidden="true"
+                    className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-stone-500"
+                  />
+                  <input
+                    aria-describedby={
+                      birthDateFormatError || errors.birthDate
+                        ? "birth-date-error"
+                        : undefined
+                    }
+                    aria-invalid={Boolean(
+                      birthDateFormatError || errors.birthDate,
+                    )}
+                    className={inputClass}
+                    id="birth-date"
+                    inputMode="numeric"
+                    onChange={(e) => {
+                      const display = formatBirthDateInput(e.target.value);
+                      setBirthDateDisplay(display);
+                      if (display === "") {
+                        setBirthDateFormatError(undefined);
+                        setValue("birthDate", "", { shouldValidate: true });
+                        return;
+                      }
+                      const match = display.match(
+                        /^(\d{2})\/(\d{2})\/(\d{4})$/,
+                      );
+                      if (match) {
+                        setBirthDateFormatError(undefined);
+                        setValue(
+                          "birthDate",
+                          `${match[3]}-${match[2]}-${match[1]}`,
+                          { shouldValidate: true },
+                        );
+                      } else {
+                        setBirthDateFormatError(
+                          "Please enter the correct format DD/MM/YYYY",
+                        );
+                        setValue("birthDate", "", { shouldValidate: false });
+                      }
+                    }}
+                    placeholder="DD/MM/YYYY"
+                    maxLength={10}
+                    type="text"
+                    value={birthDateDisplay}
+                  />
+                </div>
+                {birthDateFormatError || errors.birthDate ? (
+                  <p
+                    className="mt-1.5 text-sm text-red-600"
+                    id="birth-date-error"
+                    role="alert"
+                  >
+                    {birthDateFormatError ?? errors.birthDate?.message}
+                  </p>
+                ) : null}
+              </>
             ) : null}
             <label className="mt-3 flex min-h-11 cursor-pointer items-center gap-3 text-sm text-stone-600">
               <input
