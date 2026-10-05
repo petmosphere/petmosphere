@@ -531,7 +531,7 @@ behaviour.
 ### PWA push reminder operations
 
 Health-log and pet-care reminder delivery use browser Web Push. Separate
-Next.js dispatchers are called every five minutes by Supabase Cron. Each claims
+Next.js dispatchers are called every minute by Supabase Cron. Each claims
 a due occurrence at most once. Health-log reminders are skipped when that date
 already has a health log. Pet-care reminders send only generic wording; titles,
 notes, pet names, categories, and other private details never enter the push
@@ -600,7 +600,7 @@ secret exist in Vault. The migration is equivalent to the following SQL; use
 ```sql
 select cron.schedule(
   'dispatch-health-log-reminders',
-  '*/5 * * * *',
+  '* * * * *',
   $$
   select net.http_post(
     url := (
@@ -617,14 +617,14 @@ select cron.schedule(
       )
     ),
     body := '{}'::jsonb,
-    timeout_milliseconds := 10000
+    timeout_milliseconds := 30000
   );
   $$
 );
 
 select cron.schedule(
   'dispatch-pet-care-reminders',
-  '*/5 * * * *',
+  '* * * * *',
   $$
   select net.http_post(
     url := (
@@ -641,14 +641,14 @@ select cron.schedule(
       )
     ),
     body := '{}'::jsonb,
-    timeout_milliseconds := 10000
+    timeout_milliseconds := 30000
   );
   $$
 );
 
 select cron.schedule(
   'dispatch-pet-weight-reminders',
-  '*/5 * * * *',
+  '* * * * *',
   $$
   select net.http_post(
     url := (
@@ -665,7 +665,7 @@ select cron.schedule(
       )
     ),
     body := '{}'::jsonb,
-    timeout_milliseconds := 10000
+    timeout_milliseconds := 30000
   );
   $$
 );
@@ -721,13 +721,37 @@ The dispatch response contains `claimed`, `sent`, `failed`, and `expired` counts
 `sent = 0` with `failed = 0` can mean there are no registered push subscriptions.
 `failed > 0` means push delivery failed; verify all three VAPID variables above.
 Missing push configuration must not prevent inbox creation. Claimed occurrences
-are not retried for push, so test with a new due occurrence after fixing config.
+are not replayed on later Cron runs, so test with a new due occurrence after
+fixing configuration. The sender retries temporary network failures and HTTP
+429/5xx responses up to three total attempts in that dispatch. Requests use a
+five-second socket timeout and high urgency for delivery while the device is
+asleep. High urgency does not override iPhone Focus or notification settings.
 
 Never log subscription
 endpoints, encryption keys, pet identifiers, notes, filenames, or health data.
 An expired push endpoint is removed automatically. Other provider failures are
-reported only as aggregate counts and are not retried that day, which avoids
-duplicate notifications; the next day's reminder remains eligible.
+reported as aggregate counts and a Sentry event containing only the operation
+and HTTP status. Exhausted retries are not retried on later dispatches. A
+process crash after claiming can still lose a push; durable per-device delivery
+tracking would be needed to recover that case. A provider-accepted send is not
+a receipt proving the phone displayed the notification.
+
+For the iPhone closed-app check, install and open the app from the Home Screen,
+sign in, and allow notifications. Create an at-time reminder 2–3 minutes ahead;
+confirm there is no push-setup warning after saving. Leave the app and lock the
+phone. Allow one scheduler interval plus network delivery after the due time,
+then tap the notification and confirm it opens that reminder. Repeat with the
+app fully closed. Check iOS notification permissions, Lock Screen alerts and
+Focus/Scheduled Summary if the provider accepted the push but it is not shown.
+Compare the Cron HTTP response's `claimed`, `sent`, `failed`, and `expired`
+counts immediately after the test, without copying private endpoint values.
+
+Migration `20261005090000_notification_dispatch_every_minute.sql` updates all
+three existing jobs to `* * * * *` with a 30-second HTTP timeout to allow for
+push retries. Apply it through normal staging/production
+promotion; redeploying Vercel alone does not change the database schedule.
+This increases scheduler requests from 36 to 180 per hour across the three
+jobs. No new environment variables are required.
 
 For a safe manual staging check, enable the health-log reminder from an installed PWA,
 create no health log for that pet/date, and invoke the Cron job. Confirm one

@@ -19,7 +19,8 @@ export default async function NotificationsPage({
 }) {
   const { supabase, user } = await requireUser("/profile/notifications");
   const from = (await searchParams)?.from;
-  const backHref = from === "/notifications" ? "/notifications" : "/profile";
+  const backHref =
+    from === "/notifications" || from === "/reminders" ? from : "/profile";
   const pets = await listOwnedPets(supabase, user.id);
   const healthReminders = createHealthLogReminderRepository(supabase);
   const weightReminders = createWeightReminderRepository(supabase);

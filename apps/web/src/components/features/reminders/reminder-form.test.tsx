@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ReminderForm } from "./reminder-form";
+import { enablePushNotifications } from "@/lib/health-logs/push-notifications";
 
 const push = vi.fn();
 const refresh = vi.fn();
@@ -10,8 +11,11 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push, refresh }),
 }));
 
-vi.mock("@/lib/health-logs/push-notifications", () => ({
-  enablePushNotifications: () => Promise.resolve({ ok: true }),
+vi.mock("@/lib/health-logs/push-notifications", async (importOriginal) => ({
+  ...(await importOriginal<
+    typeof import("@/lib/health-logs/push-notifications")
+  >()),
+  enablePushNotifications: vi.fn(async () => ({ ok: true })),
 }));
 
 const pet = {
@@ -40,6 +44,7 @@ describe("ReminderForm", () => {
     push.mockReset();
     refresh.mockReset();
     vi.unstubAllGlobals();
+    vi.mocked(enablePushNotifications).mockResolvedValue({ ok: true });
   });
 
   it("keeps save disabled until required fields are valid", () => {
@@ -99,36 +104,56 @@ describe("ReminderForm", () => {
     ).toBeVisible();
   });
 
-  it("returns to the reminder home after saving", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi
-        .fn()
-        .mockResolvedValue({ json: vi.fn().mockResolvedValue({}), ok: true }),
-    );
-    render(
-      <ReminderForm pets={[{ pet, photoUrl: null }]} today="2026-08-22" />,
-    );
-    fireEvent.change(screen.getByLabelText(/Title/), {
-      target: { value: "Flea treatment" },
-    });
+  it.each([true, false])(
+    "saves the reminder and handles push setup success=%s",
+    async (pushEnabled) => {
+      if (!pushEnabled)
+        vi.mocked(enablePushNotifications).mockResolvedValue({
+          ok: false,
+          reason: "denied",
+        });
+      vi.stubGlobal(
+        "fetch",
+        vi
+          .fn()
+          .mockResolvedValue({ json: vi.fn().mockResolvedValue({}), ok: true }),
+      );
+      render(
+        <ReminderForm pets={[{ pet, photoUrl: null }]} today="2026-08-22" />,
+      );
+      fireEvent.change(screen.getByLabelText(/Title/), {
+        target: { value: "Flea treatment" },
+      });
 
-    // Select date via DatePicker
-    fireEvent.click(
-      screen.getByRole("button", {
-        name: /Date: Select date\. Tap to change\./,
-      }),
-    );
-    fireEvent.click(screen.getByRole("button", { name: /22 August 2026/ }));
-    fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
+      // Select date via DatePicker
+      fireEvent.click(
+        screen.getByRole("button", {
+          name: /Date: Select date\. Tap to change\./,
+        }),
+      );
+      fireEvent.click(screen.getByRole("button", { name: /22 August 2026/ }));
+      fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
 
-    fireEvent.change(screen.getByTestId("reminder-time-input"), {
-      target: { value: "19:00" },
-    });
+      fireEvent.change(screen.getByTestId("reminder-time-input"), {
+        target: { value: "19:00" },
+      });
 
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-    await waitFor(() => expect(push).toHaveBeenCalledWith("/reminders"));
-    expect(refresh).toHaveBeenCalledOnce();
-  });
+      if (pushEnabled) {
+        await waitFor(() => expect(push).toHaveBeenCalledWith("/reminders"));
+        expect(refresh).toHaveBeenCalledOnce();
+      } else {
+        expect(await screen.findByRole("alert")).toHaveTextContent(
+          "Reminder saved, but push notifications are not enabled on this device.",
+        );
+        expect(
+          screen.getByRole("link", { name: "Open notification settings" }),
+        ).toHaveAttribute("href", "/profile/notifications?from=%2Freminders");
+        expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
+        expect(push).not.toHaveBeenCalled();
+        expect(fetch).toHaveBeenCalledTimes(1);
+      }
+    },
+  );
 });

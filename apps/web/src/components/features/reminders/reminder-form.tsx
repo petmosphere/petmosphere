@@ -16,7 +16,10 @@ import { NotificationLeadSelector } from "@/components/ui/notification-lead-sele
 import { RepeatSelector } from "@/components/ui/repeat-selector";
 import { TimePicker } from "@/components/ui/time-picker";
 import { PetSelector } from "@/components/ui/pet-selector";
-import { enablePushNotifications } from "@/lib/health-logs/push-notifications";
+import {
+  enablePushNotifications,
+  pushSetupErrorMessages,
+} from "@/lib/health-logs/push-notifications";
 import {
   categoryDetails,
   notificationLeadOptions,
@@ -45,21 +48,24 @@ export function ReminderForm({
   const [localTime, setLocalTime] = useState(reminder?.localTime ?? "");
   const [notificationLeadMinutes, setNotificationLeadMinutes] = useState<
     number | null
-  >(reminder?.notificationLeadMinutes ?? 0);
+  >(reminder ? reminder.notificationLeadMinutes : 0);
   const [repeatRule, setRepeatRule] = useState(reminder?.repeatRule ?? "never");
   const [note, setNote] = useState(reminder?.note ?? "");
-  const [state, setState] = useState<"idle" | "saving" | "error">("idle");
+  const [state, setState] = useState<"idle" | "saving" | "saved" | "error">(
+    "idle",
+  );
   const [message, setMessage] = useState("");
   const requestId = useMemo(() => crypto.randomUUID(), []);
   const valid = Boolean(petId && title.trim() && dueDate >= today && localTime);
 
   async function save(event: FormEvent) {
     event.preventDefault();
-    if (!valid || state === "saving") return;
+    if (!valid || state === "saving" || state === "saved") return;
     setState("saving");
     setMessage("");
     try {
-      const pushSetup = enablePushNotifications();
+      const pushSetup =
+        notificationLeadMinutes === null ? null : enablePushNotifications();
       const response = await fetch(
         reminder ? `/api/v1/reminders/${reminder.id}` : "/api/v1/reminders",
         {
@@ -86,7 +92,14 @@ export function ReminderForm({
           "message" in body ? body.message : "We could not save this reminder.",
         );
       }
-      await pushSetup;
+      const pushResult = await pushSetup;
+      if (pushResult && !pushResult.ok) {
+        setState("saved");
+        setMessage(
+          `Reminder saved, but push notifications are not enabled on this device. ${pushSetupErrorMessages[pushResult.reason]}`,
+        );
+        return;
+      }
       router.push("/reminders");
       router.refresh();
     } catch (error) {
@@ -254,9 +267,25 @@ export function ReminderForm({
             {message}
           </p>
         ) : null}
+        {state === "saved" ? (
+          <Link
+            className="block min-h-11 text-[#ed802a] underline"
+            href="/profile/notifications?from=%2Freminders"
+          >
+            Open notification settings
+          </Link>
+        ) : null}
+        {state === "saved" ? (
+          <Link
+            className="block min-h-11 text-[#ed802a] underline"
+            href="/reminders"
+          >
+            Return to reminders
+          </Link>
+        ) : null}
         <button
           className="flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-[#ed802a] text-lg font-semibold text-white shadow-sm disabled:bg-[#f2c59e] disabled:text-white/90"
-          disabled={!valid || state === "saving"}
+          disabled={!valid || state === "saving" || state === "saved"}
           type="submit"
         >
           {state === "saving" ? (
