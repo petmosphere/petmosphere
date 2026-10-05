@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { RemindersHome } from "./reminders-home";
@@ -134,5 +134,43 @@ describe("RemindersHome", () => {
     expect(screen.getByRole("tab", { name: "Overdue" })).not.toHaveTextContent(
       "1",
     );
+  });
+
+  it("does not duplicate an already scheduled occurrence when an overdue one is completed", async () => {
+    const overdue = {
+      ...expiredReminder,
+      repeatRule: "daily" as const,
+      title: "gbv",
+    };
+    const next = {
+      ...overdue,
+      dueDate: "2099-01-01",
+      id: "74000000-0000-4000-8000-000000000008",
+    };
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          completed: { ...overdue, completedAt: "2026-10-05T00:00:00.000Z" },
+          next,
+        }),
+        { status: 200 },
+      ),
+    );
+
+    render(
+      <RemindersHome
+        initial={{ completed: [], overdue: [overdue], upcoming: [next] }}
+        pets={[pet]}
+      />,
+    );
+    fireEvent.click(screen.getByRole("tab", { name: "Overdue, 1 reminder" }));
+    fireEvent.click(screen.getByRole("button", { name: "Mark gbv as done" }));
+    await waitFor(() =>
+      expect(screen.getByRole("tab", { name: "Overdue" })).toBeVisible(),
+    );
+    fireEvent.click(screen.getByRole("tab", { name: "Upcoming" }));
+    expect(screen.getAllByText("gbv")).toHaveLength(1);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    fetchMock.mockRestore();
   });
 });
