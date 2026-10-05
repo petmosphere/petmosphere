@@ -1,5 +1,11 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ back: vi.fn(), replace: vi.fn() }),
@@ -20,6 +26,21 @@ const notification = {
 };
 
 describe("NotificationInbox", () => {
+  beforeEach(() => {
+    vi.spyOn(globalThis, "fetch").mockImplementation(
+      async (_url, options) =>
+        new Response(
+          JSON.stringify(
+            options?.method === "PATCH"
+              ? { ok: true }
+              : { notifications: [notification], unreadCount: 1 },
+          ),
+          { status: 200 },
+        ),
+    );
+  });
+  afterEach(() => vi.restoreAllMocks());
+
   it("shows unread notifications and links settings", () => {
     render(
       <NotificationInbox
@@ -40,11 +61,7 @@ describe("NotificationInbox", () => {
   });
 
   it("marks all notifications read", async () => {
-    const fetchMock = vi
-      .spyOn(globalThis, "fetch")
-      .mockResolvedValue(
-        new Response(JSON.stringify({ ok: true }), { status: 200 }),
-      );
+    const fetchMock = vi.mocked(globalThis.fetch);
     render(
       <NotificationInbox
         initialNow="2026-08-30T02:03:00.000Z"
@@ -62,13 +79,10 @@ describe("NotificationInbox", () => {
       "/api/v1/notifications",
       expect.objectContaining({ method: "PATCH" }),
     );
-    fetchMock.mockRestore();
   });
 
   it("keeps marking a clicked notification read during navigation", async () => {
-    const fetchMock = vi
-      .spyOn(globalThis, "fetch")
-      .mockResolvedValue(new Response(null, { status: 200 }));
+    const fetchMock = vi.mocked(globalThis.fetch);
     render(
       <NotificationInbox
         initialNow="2026-08-30T02:03:00.000Z"
@@ -86,10 +100,82 @@ describe("NotificationInbox", () => {
         expect.objectContaining({ keepalive: true, method: "PATCH" }),
       ),
     );
-    fetchMock.mockRestore();
+  });
+
+  it("refreshes a cached unread notification when returning to the inbox", async () => {
+    const fetchMock = vi.mocked(globalThis.fetch);
+    const props = {
+      initialNow: "2026-08-30T02:03:00.000Z",
+      initialNotifications: [notification],
+      today: "2026-08-30",
+    };
+    const firstVisit = render(<NotificationInbox {...props} />);
+    fireEvent.click(screen.getByRole("link", { name: /Vaccination Due/ }));
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/v1/notifications",
+        expect.objectContaining({ method: "PATCH" }),
+      ),
+    );
+    firstVisit.unmount();
+    fetchMock.mockImplementation(
+      async (_url, options) =>
+        new Response(
+          JSON.stringify(
+            options?.method === "PATCH"
+              ? { ok: true }
+              : {
+                  notifications: [
+                    { ...notification, readAt: "2026-08-30T02:03:30.000Z" },
+                  ],
+                  unreadCount: 0,
+                },
+          ),
+          { status: 200 },
+        ),
+    );
+    render(<NotificationInbox {...props} />);
+    await waitFor(() =>
+      expect(screen.queryByText("Unread")).not.toBeInTheDocument(),
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/v1/notifications",
+      expect.objectContaining({ cache: "no-store" }),
+    );
+  });
+
+  it("does not restore unread state from a stale refresh after tapping a notification", async () => {
+    const fetchMock = vi.mocked(globalThis.fetch);
+    let finishRefresh!: (response: Response) => void;
+    fetchMock.mockImplementation(async (_url, options) => {
+      if (options?.method === "PATCH")
+        return new Response(JSON.stringify({ ok: true }));
+      return new Promise<Response>((resolve) => {
+        finishRefresh = resolve;
+      });
+    });
+    render(
+      <NotificationInbox
+        initialNow="2026-08-30T02:03:00.000Z"
+        initialNotifications={[notification]}
+        today="2026-08-30"
+      />,
+    );
+    fireEvent.click(screen.getByRole("link", { name: /Vaccination Due/ }));
+    await act(async () => {
+      finishRefresh(
+        new Response(
+          JSON.stringify({ notifications: [notification], unreadCount: 1 }),
+        ),
+      );
+    });
+    expect(screen.queryByText("Unread")).not.toBeInTheDocument();
   });
 
   it("shows the empty state", () => {
+    vi.mocked(globalThis.fetch).mockResolvedValue(
+      new Response(JSON.stringify({ notifications: [], unreadCount: 0 })),
+    );
     render(
       <NotificationInbox
         initialNow="2026-08-30T02:03:00.000Z"
