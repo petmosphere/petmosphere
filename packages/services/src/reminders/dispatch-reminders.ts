@@ -14,7 +14,7 @@ export type OverdueRecurringReminder = {
   id: string;
   repeatRule: ReminderRepeatRule;
   seriesStartDate: string;
-  timezone: "Australia/Melbourne";
+  timezone: string;
 };
 
 export type ReminderDeliveryRepository = {

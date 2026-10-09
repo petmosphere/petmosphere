@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { deriveLocalDate, deriveLocalTime } from "@petmosphere/domain";
+import { deriveLocalDate } from "@petmosphere/domain";
 
 import { EmptyPetsHome } from "@/components/features/pets/empty-pets-home";
 import { PetsHome } from "@/components/features/pets/pets-home";
@@ -50,7 +50,6 @@ export default async function AppHomePage({
   const currentPet = pets.find((pet) => pet.id === selectedPetId) ?? pets[0]!;
   const now = new Date();
   const today = deriveLocalDate(now, "Australia/Melbourne");
-  const localTime = deriveLocalTime(now, "Australia/Melbourne");
 
   const [photoUrls, healthLogs, careReminders, weightEntries, notifications] =
     await Promise.all([
@@ -62,12 +61,7 @@ export default async function AppHomePage({
         localDateDaysAgo(today, 6),
         today,
       ),
-      createReminderRepository(supabase).list(
-        user.id,
-        "upcoming",
-        today,
-        localTime,
-      ),
+      createReminderRepository(supabase).list(user.id, "upcoming", now),
       listWeights(
         user.id,
         currentPet.id,

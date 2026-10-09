@@ -19,7 +19,11 @@ type PushStatus =
   "checking" | "enabled" | "disabled" | "blocked" | "unsupported";
 type Sheet = "frequency" | "time" | null;
 type PetSettings = {
-  healthReminder: { enabled: boolean; localTime: string } | null;
+  healthReminder: {
+    enabled: boolean;
+    localTime: string;
+    timezone: string;
+  } | null;
   id: string;
   name: string;
   weightReminder: {
@@ -27,6 +31,7 @@ type PetSettings = {
     frequency: WeightReminderFrequency;
     localTime: string;
     scheduleDay: number;
+    timezone: string;
   } | null;
 };
 
@@ -402,12 +407,14 @@ export function NotificationSettings({
     setMessage("");
     try {
       const responses = await Promise.all(
-        pets.map(({ id }) =>
+        pets.map(({ healthReminder, id }) =>
           fetch("/api/v1/health-log-reminders", {
             body: JSON.stringify({
               ...next,
               petId: id,
-              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+              timezone:
+                healthReminder?.timezone ??
+                Intl.DateTimeFormat().resolvedOptions().timeZone,
             }),
             headers: { "Content-Type": "application/json" },
             method: "PUT",
@@ -453,24 +460,26 @@ export function NotificationSettings({
     setBusy(true);
     setMessage("");
     const deviceTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const localDate = deriveLocalDate(new Date(), deviceTz);
-    const today = new Date(`${localDate}T12:00:00Z`);
-    const weekly =
-      next.frequency === "weekly" || next.frequency === "fortnightly";
-    const scheduleDay = weekly ? today.getUTCDay() : today.getUTCDate();
     try {
       const responses = await Promise.all(
-        pets.map(({ id }) =>
-          fetch(`/api/v1/pets/${id}/weight-reminder`, {
-            body: JSON.stringify({
-              ...next,
-              scheduleDay,
-              timezone: deviceTz,
-            }),
+        pets.map(({ id, weightReminder }) => {
+          const timezone = weightReminder?.timezone ?? deviceTz;
+          const localDate = deriveLocalDate(new Date(), timezone);
+          const today = new Date(`${localDate}T12:00:00Z`);
+          const weekly =
+            next.frequency === "weekly" || next.frequency === "fortnightly";
+          const scheduleDay =
+            weightReminder?.frequency === next.frequency
+              ? weightReminder.scheduleDay
+              : weekly
+                ? today.getUTCDay()
+                : today.getUTCDate();
+          return fetch(`/api/v1/pets/${id}/weight-reminder`, {
+            body: JSON.stringify({ ...next, scheduleDay, timezone }),
             headers: { "Content-Type": "application/json" },
             method: "PUT",
-          }),
-        ),
+          });
+        }),
       );
       if (responses.some((response) => !response.ok)) throw new Error();
       setWeightConfigured(true);

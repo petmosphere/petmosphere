@@ -69,7 +69,7 @@ describe("health log contracts", () => {
     expect(deriveLocalDate(instant, "Australia/Perth")).toBe("2026-08-15");
   });
 
-  it("accepts Melbourne reminder time and rejects insecure push endpoints", () => {
+  it("accepts IANA reminder time zones and rejects insecure push endpoints", () => {
     expect(
       healthLogReminderSchema.safeParse({
         enabled: true,
@@ -78,6 +78,22 @@ describe("health log contracts", () => {
         timezone: "Australia/Melbourne",
       }).success,
     ).toBe(true);
+    expect(
+      healthLogReminderSchema.safeParse({
+        enabled: true,
+        localTime: "19:00",
+        petId: existingHealthLog.petId,
+        timezone: "Australia/Perth",
+      }).success,
+    ).toBe(true);
+    expect(
+      healthLogReminderSchema.safeParse({
+        enabled: true,
+        localTime: "19:00",
+        petId: existingHealthLog.petId,
+        timezone: "Mars/Olympus",
+      }).success,
+    ).toBe(false);
     expect(
       webPushSubscriptionSchema.safeParse({
         auth: "auth",

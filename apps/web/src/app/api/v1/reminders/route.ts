@@ -3,7 +3,6 @@ import {
   createReminderSchema,
   reminderStatusSchema,
 } from "@petmosphere/api-contracts";
-import { deriveLocalDate, deriveLocalTime } from "@petmosphere/domain";
 import {
   createReminder,
   ReminderPastDateError,
@@ -40,13 +39,10 @@ export async function GET(request: Request) {
     );
   try {
     const now = new Date();
-    const localDate = deriveLocalDate(now, "Australia/Melbourne");
-    const localTime = deriveLocalTime(now, "Australia/Melbourne");
     const reminders = await createReminderRepository(supabase).list(
       user.id,
       parsed.data,
-      localDate,
-      localTime,
+      now,
     );
     return NextResponse.json(reminders.map(toReminderResponse));
   } catch {

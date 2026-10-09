@@ -56,14 +56,14 @@ export async function listWeights(
 
 export async function saveWeight(
   ownerId: string,
-  input: { petId: string; weightKg: number },
+  input: { petId: string; timezone: string; weightKg: number },
   repository: WeightRepository,
   now = new Date(),
 ) {
   await requirePet(ownerId, input.petId, repository);
   return repository.save({
-    derivationTimezone: "Australia/Melbourne",
-    localDate: deriveLocalDate(now, "Australia/Melbourne"),
+    derivationTimezone: input.timezone,
+    localDate: deriveLocalDate(now, input.timezone),
     ownerId,
     petId: input.petId,
     source: "web",
@@ -89,7 +89,7 @@ export async function saveWeightReminder(
     localTime: string;
     petId: string;
     scheduleDay: number;
-    timezone: "Australia/Melbourne";
+    timezone: string;
   },
   weights: WeightRepository,
   reminders: WeightReminderRepository,

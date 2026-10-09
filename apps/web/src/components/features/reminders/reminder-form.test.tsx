@@ -41,6 +41,8 @@ const pet = {
 
 describe("ReminderForm", () => {
   beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-08-22T05:00:00.000Z"));
     push.mockReset();
     refresh.mockReset();
     vi.unstubAllGlobals();
@@ -48,9 +50,7 @@ describe("ReminderForm", () => {
   });
 
   it("keeps save disabled until required fields are valid", () => {
-    render(
-      <ReminderForm pets={[{ pet, photoUrl: null }]} today="2026-08-22" />,
-    );
+    render(<ReminderForm pets={[{ pet, photoUrl: null }]} />);
     const save = screen.getByRole("button", { name: "Save" });
     expect(save).toBeDisabled();
 
@@ -75,16 +75,14 @@ describe("ReminderForm", () => {
     expect(save).toBeEnabled();
     expect(
       screen.getByRole("button", {
-        name: /Date: 22 Aug 2026\. Tap to change\./,
+        name: /Date: Today, 22 Aug\. Tap to change\./,
       }),
     ).toBeVisible();
     expect(screen.getByRole("button", { name: "Time: 7:00 pm" })).toBeVisible();
   });
 
   it("selects a date from the picker sheet", () => {
-    render(
-      <ReminderForm pets={[{ pet, photoUrl: null }]} today="2026-08-22" />,
-    );
+    render(<ReminderForm pets={[{ pet, photoUrl: null }]} />);
 
     // Open the DatePicker sheet
     fireEvent.click(
@@ -99,7 +97,7 @@ describe("ReminderForm", () => {
     // Trigger now shows the selected date
     expect(
       screen.getByRole("button", {
-        name: /Date: 22 Aug 2026\. Tap to change\./,
+        name: /Date: Today, 22 Aug\. Tap to change\./,
       }),
     ).toBeVisible();
   });
@@ -118,9 +116,7 @@ describe("ReminderForm", () => {
           .fn()
           .mockResolvedValue({ json: vi.fn().mockResolvedValue({}), ok: true }),
       );
-      render(
-        <ReminderForm pets={[{ pet, photoUrl: null }]} today="2026-08-22" />,
-      );
+      render(<ReminderForm pets={[{ pet, photoUrl: null }]} />);
       fireEvent.change(screen.getByLabelText(/Title/), {
         target: { value: "Flea treatment" },
       });

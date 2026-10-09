@@ -1,5 +1,6 @@
 import { weightReminderFrequencies } from "@petmosphere/domain";
 import { z } from "zod";
+import { timezoneSchema } from "./health-logs";
 
 const weightSchema = z
   .number()
@@ -11,12 +12,16 @@ const weightSchema = z
   );
 
 export const saveWeightSchema = z
-  .object({ petId: z.uuid(), weightKg: weightSchema })
+  .object({
+    petId: z.uuid(),
+    timezone: timezoneSchema.default("Australia/Melbourne"),
+    weightKg: weightSchema,
+  })
   .strict();
 
 export const weightEntryResponseSchema = z.object({
   createdAt: z.iso.datetime({ offset: true }),
-  derivationTimezone: z.literal("Australia/Melbourne"),
+  derivationTimezone: timezoneSchema,
   id: z.uuid(),
   localDate: z.iso.date(),
   petId: z.uuid(),
@@ -32,7 +37,7 @@ export const weightReminderSchema = z
     localTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
     petId: z.uuid(),
     scheduleDay: z.number().int().min(0).max(31),
-    timezone: z.literal("Australia/Melbourne"),
+    timezone: timezoneSchema,
   })
   .superRefine((value, context) => {
     const weekly =
@@ -59,7 +64,7 @@ export const weightReminderResponseSchema = z.object({
   localTime: z.string(),
   petId: z.uuid(),
   scheduleDay: z.number().int().min(0).max(31),
-  timezone: z.literal("Australia/Melbourne"),
+  timezone: timezoneSchema,
   updatedAt: z.iso.datetime({ offset: true }),
 });
 

@@ -43,7 +43,11 @@ export async function dispatchHealthLogReminders(
     const subscriptions = await repository.listSubscriptions(reminder.ownerId);
     for (const subscription of subscriptions) {
       try {
-        const outcome = await sender.send(subscription);
+        const outcome = await sender.send(subscription, {
+          body: "It’s time for today’s pet check-in.",
+          tag: `petmosphere-daily-check-in-${reminder.petId}-${reminder.localDate}`,
+          url: `/pets/${reminder.petId}/health-logs/today`,
+        });
         if (outcome === "expired") {
           await repository.removeSubscription(subscription.id);
           result.expired += 1;

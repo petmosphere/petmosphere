@@ -8,7 +8,11 @@ vi.mock("@/lib/health-logs/push-notifications", () => ({
   pushSetupErrorMessages: {},
 }));
 
-const savedReminder = { enabled: true, localTime: "20:00" };
+const savedReminder = {
+  enabled: true,
+  localTime: "20:00",
+  timezone: "Australia/Melbourne",
+};
 
 afterEach(() => {
   vi.unstubAllGlobals();

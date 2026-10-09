@@ -2,6 +2,7 @@
 
 import type { ReminderResponse } from "@petmosphere/api-contracts";
 import {
+  deriveLocalDate,
   reminderCategories,
   reminderRepeatRules,
   type Pet,
@@ -26,19 +27,16 @@ import {
   repeatLabels,
 } from "./reminder-ui";
 import { RequiredMark } from "@/components/ui/required-mark";
-
-const timezone = "Australia/Melbourne" as const;
+import { useDeviceTimezone } from "@/lib/use-device-timezone";
 
 export type ReminderPetOption = { pet: Pet; photoUrl: string | null };
 
 export function ReminderForm({
   pets,
   reminder,
-  today,
 }: {
   pets: ReminderPetOption[];
   reminder?: ReminderResponse;
-  today: string;
 }) {
   const router = useRouter();
   const [category, setCategory] = useState(reminder?.category ?? "vaccination");
@@ -51,11 +49,18 @@ export function ReminderForm({
   >(reminder ? reminder.notificationLeadMinutes : 0);
   const [repeatRule, setRepeatRule] = useState(reminder?.repeatRule ?? "never");
   const [note, setNote] = useState(reminder?.note ?? "");
+  const [timezoneOverride, setTimezoneOverride] = useState<string | null>(null);
+  const deviceTimezone = useDeviceTimezone();
+  const timezone =
+    timezoneOverride ??
+    reminder?.timezone ??
+    (deviceTimezone || "Australia/Melbourne");
   const [state, setState] = useState<"idle" | "saving" | "saved" | "error">(
     "idle",
   );
   const [message, setMessage] = useState("");
   const requestId = useMemo(() => crypto.randomUUID(), []);
+  const today = deriveLocalDate(new Date(), timezone);
   const valid = Boolean(petId && title.trim() && dueDate >= today && localTime);
 
   async function save(event: FormEvent) {
@@ -222,6 +227,18 @@ export function ReminderForm({
               value={localTime || undefined}
             />
           </div>
+          <p className="mt-2 text-sm text-[#7a7a7a]">
+            Scheduled in {timezone.replaceAll("_", " ")} time.
+          </p>
+          {reminder && deviceTimezone && deviceTimezone !== timezone ? (
+            <button
+              className="mt-2 min-h-11 text-sm font-semibold text-[#a96225] underline"
+              onClick={() => setTimezoneOverride(deviceTimezone)}
+              type="button"
+            >
+              Use this device&apos;s time zone ({deviceTimezone})
+            </button>
+          ) : null}
         </div>
 
         <div>

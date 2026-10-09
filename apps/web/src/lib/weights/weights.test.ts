@@ -1,3 +1,4 @@
+import { saveWeightSchema } from "@petmosphere/api-contracts";
 import {
   nextWeightReminderDate,
   weightTrendWindow,
@@ -51,16 +52,35 @@ function repositories() {
 }
 
 describe("weight tracking", () => {
+  it("keeps older weight-save clients compatible", () => {
+    expect(
+      saveWeightSchema.parse({
+        petId: "a2000000-0000-4000-8000-000000000002",
+        weightKg: 8.65,
+      }).timezone,
+    ).toBe("Australia/Melbourne");
+  });
   it("derives Melbourne today on the server", async () => {
     const { weights } = repositories();
     const saved = await saveWeight(
       "owner",
-      { petId: "pet", weightKg: 8.65 },
+      { petId: "pet", timezone: "Australia/Melbourne", weightKg: 8.65 },
       weights,
       new Date("2026-08-25T14:30:00.000Z"),
     );
     expect(saved.localDate).toBe("2026-08-26");
     expect(saved.weightKg).toBe(8.65);
+  });
+
+  it("derives the entry date in Perth when the owner is in Perth", async () => {
+    const { weights } = repositories();
+    const saved = await saveWeight(
+      "owner",
+      { petId: "pet", timezone: "Australia/Perth", weightKg: 8.65 },
+      weights,
+      new Date("2026-08-25T14:30:00.000Z"),
+    );
+    expect(saved.localDate).toBe("2026-08-25");
   });
 
   it("uses 30, 90 and 180 day trend windows", () => {

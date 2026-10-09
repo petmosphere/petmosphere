@@ -10,7 +10,7 @@ export type WeightReminderFrequency =
 
 export type WeightEntry = {
   createdAt: string;
-  derivationTimezone: "Australia/Melbourne";
+  derivationTimezone: string;
   id: string;
   localDate: string;
   ownerId: string;
@@ -27,7 +27,7 @@ export type WeightReminder = {
   ownerId: string;
   petId: string;
   scheduleDay: number;
-  timezone: "Australia/Melbourne";
+  timezone: string;
   updatedAt: string;
 };
 

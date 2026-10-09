@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { deriveLocalDate } from "@petmosphere/domain";
 import { redirect } from "next/navigation";
 
 import { ReminderForm } from "@/components/features/reminders/reminder-form";
@@ -20,10 +19,5 @@ export default async function NewReminderPage() {
     pet,
     photoUrl: photoUrls.get(pet.id) ?? null,
   }));
-  return (
-    <ReminderForm
-      pets={petOptions}
-      today={deriveLocalDate(new Date(), "Australia/Melbourne")}
-    />
-  );
+  return <ReminderForm pets={petOptions} />;
 }
