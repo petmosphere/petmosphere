@@ -1,5 +1,5 @@
 begin;
-select plan(9);
+select plan(10);
 
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password, raw_user_meta_data,
@@ -84,6 +84,12 @@ select throws_ok(
   $$update public.reminders set timezone = 'Mars/Olympus'
     where id = 'a4000000-0000-4000-8000-000000000004'$$,
   '23514', null, 'invalid time zones cannot be stored directly'
+);
+
+select throws_ok(
+  $$update public.health_log_reminders set timezone = 'Mars/Olympus'
+    where pet_id = 'a2000000-0000-4000-8000-000000000002'$$,
+  '23514', null, 'daily check-ins reject invalid time zones'
 );
 
 select * from finish();

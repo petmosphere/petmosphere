@@ -1,6 +1,6 @@
 -- Preserve existing Melbourne schedules; new and edited schedules may use the
 -- device's IANA time zone so wall-clock reminder times work outside Melbourne.
-create function public.is_valid_time_zone(p_name text)
+create or replace function public.is_valid_time_zone(p_name text)
 returns boolean
 language sql stable
 set search_path = ''
@@ -18,6 +18,7 @@ alter table public.reminders
 
 alter table public.health_log_reminders
   drop constraint health_log_reminders_timezone_melbourne,
+  drop constraint health_log_reminders_timezone_check,
   add constraint health_log_reminders_timezone_check
     check (public.is_valid_time_zone(timezone));
 
