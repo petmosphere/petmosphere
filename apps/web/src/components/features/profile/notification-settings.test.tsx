@@ -26,7 +26,11 @@ vi.mock("@/lib/health-logs/push-notifications", () => ({
 
 const pets = [
   {
-    healthReminder: { enabled: true, localTime: "19:00" },
+    healthReminder: {
+      enabled: true,
+      localTime: "19:00",
+      timezone: "Australia/Melbourne",
+    },
     id: "10000000-0000-4000-8000-000000000001",
     name: "Max",
     weightReminder: {
@@ -34,6 +38,7 @@ const pets = [
       frequency: "fortnightly" as const,
       localTime: "20:00",
       scheduleDay: 0,
+      timezone: "Australia/Melbourne",
     },
   },
 ];

@@ -25,12 +25,7 @@ export type ReminderRepository = {
   ): Promise<{ created: boolean; reminder: Reminder }>;
   findById(ownerId: string, reminderId: string): Promise<Reminder | null>;
   findByRequest(ownerId: string, requestId: string): Promise<Reminder | null>;
-  list(
-    ownerId: string,
-    status: ReminderStatus,
-    localDate: string,
-    localTime: string,
-  ): Promise<Reminder[]>;
+  list(ownerId: string, status: ReminderStatus, now: Date): Promise<Reminder[]>;
   ownerHasPet(ownerId: string, petId: string): Promise<boolean>;
   softDelete(ownerId: string, reminderId: string): Promise<Reminder>;
   update(input: {
@@ -55,7 +50,7 @@ type ReminderFields = {
   notificationLeadMinutes: ReminderNotificationLeadMinutes | null;
   petId: string;
   repeatRule: ReminderRepeatRule;
-  timezone: "Australia/Melbourne";
+  timezone: string;
   title: string;
 };
 

@@ -23,6 +23,7 @@ import { TimePicker } from "@/components/ui/time-picker";
 
 import { DaySelector } from "@/components/ui/day-selector";
 import { RepeatSelector } from "@/components/ui/repeat-selector";
+import { useDeviceTimezone } from "@/lib/use-device-timezone";
 
 import { WeightTrendChart } from "./weight-trend-chart";
 
@@ -79,7 +80,13 @@ export function LogWeight({
     frequency: savedReminder?.frequency ?? ("weekly" as const),
     localTime: savedReminder?.localTime ?? "20:00",
     scheduleDay: savedReminder?.scheduleDay ?? 0,
+    timezone: savedReminder?.timezone ?? "Australia/Melbourne",
   });
+  const [timezoneOverride, setTimezoneOverride] = useState<string | null>(null);
+  const deviceTimezone = useDeviceTimezone();
+  const reminderTimezone =
+    timezoneOverride ??
+    (savedReminder ? reminder.timezone : deviceTimezone || reminder.timezone);
   const [reminderConfigured, setReminderConfigured] = useState(
     savedReminder !== null,
   );
@@ -122,6 +129,7 @@ export function LogWeight({
         weightDirty
           ? fetch(`/api/v1/pets/${pet.id}/weights`, {
               body: JSON.stringify({
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                 weightKg: Number(weightKg.toFixed(2)),
               }),
               headers: { "Content-Type": "application/json" },
@@ -132,7 +140,7 @@ export function LogWeight({
           ? fetch(`/api/v1/pets/${pet.id}/weight-reminder`, {
               body: JSON.stringify({
                 ...reminder,
-                timezone: "Australia/Melbourne",
+                timezone: reminderTimezone,
               }),
               headers: { "Content-Type": "application/json" },
               method: "PUT",
@@ -412,9 +420,21 @@ export function LogWeight({
                   </div>
                 </div>
               )}
-              <p className="mt-1 text-[11px] text-[#7a7a7a]">
-                Melbourne time; daylight saving adjusts automatically.
+              <p className="mt-2 text-xs text-[#7a7a7a]">
+                Scheduled in {reminderTimezone.replaceAll("_", " ")} time.
               </p>
+              {deviceTimezone && reminderTimezone !== deviceTimezone ? (
+                <button
+                  className="min-h-11 text-xs font-semibold text-[#a96225] underline"
+                  onClick={() => {
+                    setTimezoneOverride(deviceTimezone);
+                    setReminderDirty(true);
+                  }}
+                  type="button"
+                >
+                  Use this device&apos;s time zone ({deviceTimezone})
+                </button>
+              ) : null}
             </div>
           ) : null}
         </section>

@@ -9,13 +9,13 @@ import {
   pushSetupErrorMessages,
 } from "@/lib/health-logs/push-notifications";
 import { TimePicker, formatTimeLabel } from "@/components/ui/time-picker";
-
-const MELBOURNE_TIMEZONE = "Australia/Melbourne";
+import { useDeviceTimezone } from "@/lib/use-device-timezone";
 
 export function HealthLogReminderSettings({ petId }: { petId: string }) {
   const [reminder, setReminder] = useState<
-    Pick<HealthLogReminder, "enabled" | "localTime">
-  >({ enabled: false, localTime: "19:00" });
+    Pick<HealthLogReminder, "enabled" | "localTime" | "timezone">
+  >({ enabled: false, localTime: "19:00", timezone: "Australia/Melbourne" });
+  const deviceTimezone = useDeviceTimezone();
   const [state, setState] = useState<"loading" | "idle" | "saving" | "error">(
     "loading",
   );
@@ -26,6 +26,7 @@ export function HealthLogReminderSettings({ petId }: { petId: string }) {
   );
 
   useEffect(() => {
+    const device = Intl.DateTimeFormat().resolvedOptions().timeZone;
     void fetch("/api/v1/health-log-reminders", {
       body: JSON.stringify({ petId }),
       headers: { "Content-Type": "application/json" },
@@ -37,6 +38,8 @@ export function HealthLogReminderSettings({ petId }: { petId: string }) {
         if (saved) {
           setReminder(saved);
           setConfigured(true);
+        } else {
+          setReminder((current) => ({ ...current, timezone: device }));
         }
         setState("idle");
       })
@@ -58,7 +61,6 @@ export function HealthLogReminderSettings({ petId }: { petId: string }) {
         body: JSON.stringify({
           ...reminder,
           petId,
-          timezone: MELBOURNE_TIMEZONE,
         }),
         headers: { "Content-Type": "application/json" },
         method: "PUT",
@@ -127,7 +129,7 @@ export function HealthLogReminderSettings({ petId }: { petId: string }) {
             Daily check-in notification
           </h2>
           <p className="mt-1 text-sm leading-5 text-stone-500">
-            Get a generic notification at your chosen Melbourne time. It never
+            Get a generic notification at your chosen local time. It never
             includes health details, and we skip it when today&apos;s log
             already exists.
           </p>
@@ -161,9 +163,23 @@ export function HealthLogReminderSettings({ petId }: { petId: string }) {
             }}
             value={reminder.localTime}
           />
-          <p className="sr-only">
-            Melbourne time; daylight saving adjusts automatically.
+          <p className="mt-2 text-sm text-stone-500">
+            Scheduled in {reminder.timezone.replaceAll("_", " ")} time.
           </p>
+          {deviceTimezone && reminder.timezone !== deviceTimezone ? (
+            <button
+              className="mt-1 min-h-11 text-sm font-semibold text-[#a96225] underline"
+              onClick={() =>
+                setReminder((current) => ({
+                  ...current,
+                  timezone: deviceTimezone,
+                }))
+              }
+              type="button"
+            >
+              Use this device&apos;s time zone ({deviceTimezone})
+            </button>
+          ) : null}
         </div>
       ) : null}
       <button

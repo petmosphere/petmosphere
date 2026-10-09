@@ -4,6 +4,7 @@ import type {
   ReminderCategory,
   ReminderRepeatRule,
 } from "@petmosphere/domain";
+import { isReminderOverdue } from "@petmosphere/domain";
 import type { ReminderRepository } from "@petmosphere/services";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -27,7 +28,7 @@ type ReminderRow = {
   repeat_rule: ReminderRepeatRule;
   series_id: string;
   series_start_date: string;
-  timezone: "Australia/Melbourne";
+  timezone: string;
   title: string;
   updated_at: string;
 };
@@ -152,7 +153,7 @@ export function createReminderRepository(
           .maybeSingle(),
       ),
     findByRequest,
-    async list(ownerId, status, localDate, localTime) {
+    async list(ownerId, status, now) {
       let query = supabase
         .from("reminders")
         .select(columns)
@@ -164,19 +165,17 @@ export function createReminderRepository(
           .order("completed_at", { ascending: false });
       } else {
         query = query.is("completed_at", null);
-        query =
-          status === "overdue"
-            ? query.or(
-                `due_local_date.lt.${localDate},and(due_local_date.eq.${localDate},local_time.lt.${localTime})`,
-              )
-            : query.or(
-                `due_local_date.gt.${localDate},and(due_local_date.eq.${localDate},local_time.gte.${localTime})`,
-              );
         query = query.order("due_local_date").order("local_time");
       }
       const { data, error } = await query;
       if (error) throw error;
-      return (data as ReminderRow[]).map(toReminder);
+      const reminders = (data as ReminderRow[]).map(toReminder);
+      return status === "completed"
+        ? reminders
+        : reminders.filter(
+            (reminder) =>
+              isReminderOverdue(reminder, now) === (status === "overdue"),
+          );
     },
     async ownerHasPet(ownerId, petId) {
       const { data, error } = await supabase

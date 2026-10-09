@@ -4,6 +4,7 @@ import {
   reminderRepeatRules,
 } from "@petmosphere/domain";
 import { z } from "zod";
+import { timezoneSchema } from "./health-logs";
 
 export const reminderStatusSchema = z.enum([
   "upcoming",
@@ -45,7 +46,7 @@ const reminderFields = {
   note: noteSchema,
   petId: z.uuid(),
   repeatRule: z.enum(reminderRepeatRules),
-  timezone: z.literal("Australia/Melbourne"),
+  timezone: timezoneSchema,
   title: z
     .string()
     .trim()
@@ -79,7 +80,7 @@ export const reminderResponseSchema = z.object({
   petId: z.uuid(),
   repeatRule: z.enum(reminderRepeatRules),
   seriesId: z.uuid(),
-  timezone: z.literal("Australia/Melbourne"),
+  timezone: timezoneSchema,
   title: z.string(),
   updatedAt: z.iso.datetime({ offset: true }),
 });

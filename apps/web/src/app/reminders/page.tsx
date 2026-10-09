@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { deriveLocalDate, deriveLocalTime } from "@petmosphere/domain";
 import { redirect } from "next/navigation";
 
 import { RemindersHome } from "@/components/features/reminders/reminders-home";
@@ -28,13 +27,11 @@ export default async function RemindersPage({
   if (pets.length === 0) redirect("/onboarding");
   const repository = createReminderRepository(supabase);
   const now = new Date();
-  const localDate = deriveLocalDate(now, "Australia/Melbourne");
-  const localTime = deriveLocalTime(now, "Australia/Melbourne");
   const [photoUrls, upcoming, completed, overdue] = await Promise.all([
     getPetPhotoUrls(supabase, pets),
-    repository.list(user.id, "upcoming", localDate, localTime),
-    repository.list(user.id, "completed", localDate, localTime),
-    repository.list(user.id, "overdue", localDate, localTime),
+    repository.list(user.id, "upcoming", now),
+    repository.list(user.id, "completed", now),
+    repository.list(user.id, "overdue", now),
   ]);
   const petOptions = pets.map((pet) => ({
     pet,

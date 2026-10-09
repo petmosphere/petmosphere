@@ -109,6 +109,7 @@ describe("LogWeight", () => {
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
     expect(JSON.parse(fetchMock.mock.calls[0]![1]!.body as string)).toEqual({
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       weightKg: 10,
     });
   });

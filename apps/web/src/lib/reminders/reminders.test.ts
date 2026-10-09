@@ -17,6 +17,21 @@ describe("reminder recurrence", () => {
     );
   });
 
+  it("uses Perth local time for a Perth reminder", () => {
+    const reminder = {
+      dueDate: "2026-10-10",
+      localTime: "09:00",
+      timezone: "Australia/Perth",
+    };
+
+    expect(isReminderOverdue(reminder, new Date("2026-10-10T00:59:59Z"))).toBe(
+      false,
+    );
+    expect(isReminderOverdue(reminder, new Date("2026-10-10T01:00:01Z"))).toBe(
+      true,
+    );
+  });
+
   it("skips overdue daily occurrences", () => {
     expect(nextReminderDate("2026-08-01", "daily", "2026-08-22")).toBe(
       "2026-08-23",

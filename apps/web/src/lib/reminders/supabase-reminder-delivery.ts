@@ -34,7 +34,7 @@ export function createReminderDeliveryRepository(
           repeat_rule:
             "daily" | "weekly" | "fortnightly" | "monthly" | "yearly";
           series_start_date: string;
-          timezone: "Australia/Melbourne";
+          timezone: string;
         }[]
       ).map((row) => ({
         id: row.reminder_id,

@@ -40,7 +40,7 @@ export type Reminder = {
   repeatRule: ReminderRepeatRule;
   seriesId: string;
   seriesStartDate: string;
-  timezone: "Australia/Melbourne";
+  timezone: string;
   title: string;
   category: ReminderCategory;
   updatedAt: string;
