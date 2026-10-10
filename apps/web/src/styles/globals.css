@@ -9,6 +9,17 @@
   box-sizing: border-box;
 }
 
+/* Tailwind v4 removed the browser default pointer cursor on interactive
+   elements — restore it so clickable things look clickable on desktop. */
+button:not(:disabled),
+[role="button"]:not(:disabled),
+[role="option"],
+a[href],
+label:has(> input[type="checkbox"]),
+label:has(> input[type="radio"]) {
+  cursor: pointer;
+}
+
 html {
   background: #fdf8f2;
 }
