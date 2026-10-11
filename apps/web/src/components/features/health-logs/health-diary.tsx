@@ -175,7 +175,7 @@ export function HealthDiary({
 
   if (loadingEntry) {
     return (
-      <main className="mx-auto min-h-dvh w-full max-w-[393px] bg-[#fdf8f2] px-6 py-8 text-[#2d2d2d]">
+      <main className="app-shell px-6 py-8">
         <div
           aria-label="Loading health log"
           className="animate-pulse space-y-5"
@@ -192,7 +192,7 @@ export function HealthDiary({
 
   if (view === "saved" && selectedLog) {
     return (
-      <main className="mx-auto min-h-dvh w-full max-w-[393px] bg-[#fdf8f2] px-6 py-8 text-[#2d2d2d]">
+      <main className="app-shell px-6 py-8">
         <HealthLogSaved
           healthLog={selectedLog}
           onBackHome={() => router.push("/home")}
@@ -205,7 +205,7 @@ export function HealthDiary({
 
   if (view === "detail" && selectedLog) {
     return (
-      <main className="mx-auto min-h-dvh w-full max-w-[393px] bg-[#fdf8f2] px-6 py-8 text-[#2d2d2d]">
+      <main className="app-shell px-6 py-8">
         <HealthLogDetail
           healthLog={selectedLog}
           onBack={showCalendar}
@@ -220,7 +220,7 @@ export function HealthDiary({
 
   if (view === "form") {
     return (
-      <main className="relative mx-auto min-h-dvh w-full max-w-[393px] bg-[#fdf8f2] px-6 py-8 text-[#2d2d2d] sm:my-4 sm:min-h-[852px] sm:rounded-[40px] sm:border sm:border-[#f0e6d8] sm:shadow-[0_8px_24px_rgba(205,146,85,0.08)]">
+      <main className="app-shell relative px-6 py-8">
         <header>
           <button
             aria-label="Cancel health log"
@@ -277,7 +277,7 @@ export function HealthDiary({
   );
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-[393px] flex-col bg-[#fdf8f2] px-6 pt-8 pb-[max(6rem,env(safe-area-inset-bottom))] text-[#2d2d2d] shadow-xl shadow-stone-900/5">
+    <main className="app-shell flex flex-col px-6 pt-8 pb-[max(6rem,env(safe-area-inset-bottom))]">
       {loadError ? (
         <div
           className="rounded-3xl border border-[#efb3ae] bg-[#fff0ef] p-6 text-center"

@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* Shared page shell: every main screen uses this on its <main> so width,
+   background, and the md+ centered-column treatment are configured once. */
+@utility app-shell {
+  @apply mx-auto min-h-dvh w-full bg-[#fdf8f2] text-[#2d2d2d] shadow-xl shadow-stone-900/5 md:max-w-[393px];
+}
+
 :root {
   color-scheme: light;
   font-synthesis: none;

@@ -118,7 +118,7 @@ export function ReminderForm({
   }
 
   return (
-    <main className="mx-auto min-h-dvh w-full max-w-[393px] overflow-x-hidden bg-[#fdf8f2] px-6 pb-[calc(env(safe-area-inset-bottom)+2rem)] text-[#2d2d2d] shadow-xl shadow-stone-900/5">
+    <main className="app-shell overflow-x-hidden px-6 pb-[calc(env(safe-area-inset-bottom)+2rem)]">
       <header className="pt-[calc(env(safe-area-inset-top)+1.5rem)]">
         <Link
           className="inline-flex min-h-11 items-center text-base text-[#7a7a7a] focus-visible:rounded-lg focus-visible:outline-2 focus-visible:outline-[#ed802a]"

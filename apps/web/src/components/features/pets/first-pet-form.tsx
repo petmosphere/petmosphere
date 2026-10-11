@@ -169,7 +169,7 @@ export function FirstPetForm({
   const inputClassNoIcon = inputClass.replace("px-12", "px-4");
 
   return (
-    <main className="mx-auto min-h-dvh w-full max-w-md bg-[#fdf8f2] px-6 pt-7 pb-10 text-[#2d2d2d] shadow-xl shadow-stone-900/5">
+    <main className="app-shell px-6 pt-7 pb-10">
       <form className="mt-3" noValidate onSubmit={submit}>
         <section aria-labelledby="pet-basics-heading">
           <h1 className="text-2xl font-bold" id="pet-basics-heading">
