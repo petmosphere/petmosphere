@@ -120,12 +120,21 @@ export function ReminderForm({
   return (
     <main className="app-shell overflow-x-hidden px-6 pb-[calc(env(safe-area-inset-bottom)+2rem)]">
       <header className="pt-[calc(env(safe-area-inset-top)+1.5rem)]">
-        <Link
-          className="inline-flex min-h-11 items-center text-base text-[#7a7a7a] focus-visible:rounded-lg focus-visible:outline-2 focus-visible:outline-[#ed802a]"
-          href={reminder ? `/reminders/${reminder.id}` : "/reminders"}
+        <button
+          className="inline-flex min-h-11 cursor-pointer items-center text-base text-[#7a7a7a] focus-visible:rounded-lg focus-visible:outline-2 focus-visible:outline-[#ed802a]"
+          onClick={() => {
+            // Go back rather than push a second detail/list entry — pushing
+            // here made the detail page's Back land on the edit page again.
+            if (window.history.length > 1) router.back();
+            else
+              router.replace(
+                reminder ? `/reminders/${reminder.id}` : "/reminders",
+              );
+          }}
+          type="button"
         >
           Cancel
-        </Link>
+        </button>
         <h1 className="mt-6 text-[2rem] leading-tight font-bold tracking-[-0.02em]">
           {reminder ? "Edit Reminder" : "New Reminder"}
         </h1>
