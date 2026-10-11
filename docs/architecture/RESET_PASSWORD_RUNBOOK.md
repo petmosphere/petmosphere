@@ -59,6 +59,26 @@ project migration inventory.
 - Test signup too: OTP expiry is shared. Verify mobile layout, paste and keyboard.
 - Never log codes, passwords, email bodies or session cookies.
 
+## Local verification
+
+1. Start local Supabase (`supabase start`) and confirm Auth and the email
+   inbox are running. In `apps/web/.env.local`, use that project's URL and
+   publishable key, with `NEXT_PUBLIC_APP_URL` set to the exact web origin
+   (including its port).
+2. Restart the web server after changing `.env.local` or `supabase/config.toml`.
+   Open the email inbox at `http://127.0.0.1:54324`, request a fresh recovery
+   code, and enter it in the same browser where the request began.
+3. Run the local-only test below. It creates a disposable account in the
+   **local** DB.
+
+   ```sh
+   E2E_LOCAL_AUTH=true pnpm --filter @petmosphere/web exec playwright test -g 'completes account and password recovery against local Supabase' --project=iPhone
+   ```
+
+For a local production-mode build, keep `NEXT_PUBLIC_APP_URL` on its actual
+localhost origin. The app only substitutes the canonical Vercel production URL
+when Vercel provides `VERCEL_PROJECT_PRODUCTION_URL`.
+
 ## Troubleshooting
 
 - **Email contains a link:** update the target project's Reset Password template

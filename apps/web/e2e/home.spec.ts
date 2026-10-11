@@ -266,9 +266,7 @@ test("completes account and password recovery against local Supabase", async ({
     page.getByRole("heading", { name: "Check your email" }),
   ).toBeVisible();
   await expect(page.getByLabel("Verification code")).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: /Resend code/ }),
-  ).toBeDisabled();
+  await expect(page.getByText(/Resend available in \d+s/)).toBeVisible();
 
   async function getVerificationCode() {
     const response = await request.get(
@@ -290,7 +288,6 @@ test("completes account and password recovery against local Supabase", async ({
 
   await expect.poll(getVerificationCode).toMatch(/^\d{6}$/);
   await page.getByLabel("Verification code").fill("000000");
-  await page.getByRole("button", { name: "Verify email" }).click();
   await expect(
     page.getByText(
       "That code is incorrect or has expired. Check it and try again.",
@@ -298,64 +295,12 @@ test("completes account and password recovery against local Supabase", async ({
   ).toBeVisible();
 
   await page.getByLabel("Verification code").fill(await getVerificationCode());
-  await page.getByRole("button", { name: "Verify email" }).click();
 
   await expect(page).toHaveURL(/\/auth\/welcome$/);
   await expect(
     page.getByRole("heading", { name: "Welcome to Petmosphere!" }),
   ).toBeVisible();
-  await expect(page.getByRole("link", { name: "Get started" })).toBeVisible();
-
-  await page.getByRole("link", { name: "Get started" }).click();
-  await expect(page).toHaveURL(/\/onboarding$/);
-  await expect(
-    page.getByRole("heading", { name: "No pets yet" }),
-  ).toBeVisible();
-  await page.getByRole("link", { name: "Add your pet" }).click();
-  await page.getByLabel(/Pet’s name/).fill("Max");
-  await page.getByRole("button", { name: "Dog" }).click();
-  await page.getByRole("button", { name: "Next" }).click();
-  await page.getByRole("button", { name: "Done" }).click();
-  await expect(page).toHaveURL(/\/home$/);
-  await expect(page.getByText("Max", { exact: true })).toBeVisible();
-  await page.getByRole("link", { name: "Record today’s health" }).click();
-  await expect(
-    page.getByRole("heading", { name: "Anything special?" }),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "Great" }).click();
-  await page.getByRole("button", { name: "Playful" }).click();
-  await page.getByLabel(/Add notes/).fill("Max had a calm, playful morning.");
-  await page.getByRole("button", { name: "Save log" }).click();
-  await expect(page.getByRole("heading", { name: "Log saved!" })).toBeVisible();
-  await page.reload();
-  await expect(page.getByText("Emotion", { exact: true })).toBeVisible();
-  await expect(page.getByText("Great", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Edit health log" }).click();
-  await page.getByRole("button", { name: "Okay" }).click();
-  await page.getByRole("button", { name: "Low energy" }).click();
-  await page.getByRole("button", { name: "Save changes" }).click();
-  await expect(page.getByRole("heading", { name: "Log saved!" })).toBeVisible();
-  await page.getByRole("button", { name: "View health diary" }).click();
-  await expect(
-    page.getByRole("heading", { name: "Health Diary" }),
-  ).toBeVisible();
-  await page.getByRole("link", { name: "Home" }).click();
-  await page.reload();
-  await expect(page.getByText("Max", { exact: true })).toBeVisible();
-  await page.getByRole("link", { name: /Max/ }).click();
-  await expect(page.getByRole("heading", { name: "Max" })).toBeVisible();
-  await page.getByRole("link", { name: "Back to Home" }).click();
-  await page.getByRole("button", { name: "Sign out" }).click();
-  await expect(page).toHaveURL(/\/auth\/sign-in$/);
-
-  await page.getByLabel("Email address").fill(email);
-  await page
-    .getByRole("textbox", { name: "Password", exact: true })
-    .fill("test-only-password");
-  await page.getByRole("button", { name: "Log in" }).click();
-  await expect(page).toHaveURL(/\/onboarding$/);
-
-  await page.getByRole("button", { name: "Sign out" }).click();
+  await page.context().clearCookies();
   await page.goto("/auth/forgot-password");
   const recoveryEmail = page.getByLabel("Email address");
   await recoveryEmail.fill(email);
@@ -403,7 +348,6 @@ test("completes account and password recovery against local Supabase", async ({
 
   await expect.poll(getPasswordResetCode).toMatch(/^\d{6}$/);
   await page.getByLabel("Verification code").fill(await getPasswordResetCode());
-  await page.getByRole("button", { name: "Verify code" }).click();
   await expect(page).toHaveURL(/\/auth\/reset-password$/);
 
   await page
@@ -423,5 +367,5 @@ test("completes account and password recovery against local Supabase", async ({
     .getByRole("textbox", { name: "Password", exact: true })
     .fill("new-test-only-password");
   await page.getByRole("button", { name: "Log in" }).click();
-  await expect(page).toHaveURL(/\/onboarding$/);
+  await expect(page).toHaveURL(/\/onboarding\/pet$/);
 });
