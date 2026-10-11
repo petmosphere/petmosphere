@@ -4,6 +4,8 @@ export default function RemindersLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative isolate min-h-dvh bg-[#FDF8F2]">{children}</div>
+    // No background here: the page's own <main> paints its color, and an
+    // opaque wrapper would hide the md+ backdrop gradient from globals.css.
+    <div className="relative isolate min-h-dvh">{children}</div>
   );
 }

@@ -175,7 +175,7 @@ export function HealthDiary({
 
   if (loadingEntry) {
     return (
-      <main className="mx-auto min-h-dvh w-full max-w-md bg-[#fdf8f2] px-6 py-8 text-[#2d2d2d]">
+      <main className="mx-auto min-h-dvh w-full max-w-[393px] bg-[#fdf8f2] px-6 py-8 text-[#2d2d2d]">
         <div
           aria-label="Loading health log"
           className="animate-pulse space-y-5"
@@ -192,7 +192,7 @@ export function HealthDiary({
 
   if (view === "saved" && selectedLog) {
     return (
-      <main className="mx-auto min-h-dvh w-full max-w-md bg-[#fdf8f2] px-6 py-8 text-[#2d2d2d]">
+      <main className="mx-auto min-h-dvh w-full max-w-[393px] bg-[#fdf8f2] px-6 py-8 text-[#2d2d2d]">
         <HealthLogSaved
           healthLog={selectedLog}
           onBackHome={() => router.push("/home")}
@@ -205,7 +205,7 @@ export function HealthDiary({
 
   if (view === "detail" && selectedLog) {
     return (
-      <main className="mx-auto min-h-dvh w-full max-w-md bg-[#fdf8f2] px-6 py-8 text-[#2d2d2d]">
+      <main className="mx-auto min-h-dvh w-full max-w-[393px] bg-[#fdf8f2] px-6 py-8 text-[#2d2d2d]">
         <HealthLogDetail
           healthLog={selectedLog}
           onBack={showCalendar}
@@ -277,7 +277,7 @@ export function HealthDiary({
   );
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-[#fdf8f2] px-6 pt-8 pb-[max(6rem,env(safe-area-inset-bottom))] text-[#2d2d2d] shadow-xl shadow-stone-900/5">
+    <main className="mx-auto flex min-h-dvh w-full max-w-[393px] flex-col bg-[#fdf8f2] px-6 pt-8 pb-[max(6rem,env(safe-area-inset-bottom))] text-[#2d2d2d] shadow-xl shadow-stone-900/5">
       {loadError ? (
         <div
           className="rounded-3xl border border-[#efb3ae] bg-[#fff0ef] p-6 text-center"
