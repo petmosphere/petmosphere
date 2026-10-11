@@ -31,7 +31,7 @@ describe("reminder delivery", () => {
     );
   });
 
-  it("sends a generic notification and removes expired subscriptions", async () => {
+  it("sends the pet-specific inbox message and removes expired subscriptions", async () => {
     const send = vi.fn(async () => "expired" as const);
     const removeSubscription = vi.fn(async () => undefined);
     const result = await dispatchReminders(
@@ -39,6 +39,7 @@ describe("reminder delivery", () => {
         claimDue: async () => [
           {
             id: "77000000-0000-4000-8000-000000000007",
+            message: "A reminder for Cookie is coming up.",
             ownerId: "71000000-0000-4000-8000-000000000001",
           },
         ],
@@ -59,7 +60,7 @@ describe("reminder delivery", () => {
 
     expect(result).toEqual({ claimed: 1, expired: 1, failed: 0, sent: 0 });
     expect(send).toHaveBeenCalledWith(expect.any(Object), {
-      body: "A pet care reminder is due.",
+      body: "A reminder for Cookie is coming up.",
       tag: "petmosphere-reminder-77000000-0000-4000-8000-000000000007",
       url: "/reminders/77000000-0000-4000-8000-000000000007",
     });

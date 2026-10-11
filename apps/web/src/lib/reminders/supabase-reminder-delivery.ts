@@ -11,9 +11,17 @@ export function createReminderDeliveryRepository(
         p_now: now.toISOString(),
       });
       if (error) throw error;
-      return ((data ?? []) as { owner_id: string; reminder_id: string }[]).map(
-        (row) => ({ id: row.reminder_id, ownerId: row.owner_id }),
-      );
+      return (
+        (data ?? []) as {
+          message?: string;
+          owner_id: string;
+          reminder_id: string;
+        }[]
+      ).map((row) => ({
+        id: row.reminder_id,
+        message: row.message || "A pet care reminder is coming up.",
+        ownerId: row.owner_id,
+      }));
     },
     async createNextOccurrence(reminderId, nextDueDate) {
       const { error } = await supabase.rpc("create_next_reminder_occurrence", {

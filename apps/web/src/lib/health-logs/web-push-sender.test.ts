@@ -95,6 +95,7 @@ it.each([
   const claimDue = vi.fn(async () => [
     {
       id: "reminder",
+      message: "A reminder for Cookie is coming up.",
       ownerId: "owner",
       petId: "pet",
       localDate: "2026-10-04",
