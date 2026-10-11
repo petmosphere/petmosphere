@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const localAuth = process.env.E2E_LOCAL_AUTH === "true";
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
@@ -37,7 +39,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "pnpm start --port 3100",
+    command: localAuth ? "pnpm dev --port 3100" : "pnpm start --port 3100",
+    env: localAuth ? { NEXT_PUBLIC_APP_URL: "http://localhost:3100" } : {},
     url: "http://localhost:3100",
     reuseExistingServer: false,
     timeout: 120_000,

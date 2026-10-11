@@ -27,6 +27,7 @@ export function getAppUrl() {
   if (
     normalizedConfiguredUrl &&
     (process.env.NODE_ENV === "development" ||
+      (!process.env.VERCEL && !vercelProductionUrl) ||
       !/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(
         normalizedConfiguredUrl,
       ))

@@ -5,10 +5,20 @@ import { getAppUrl } from "./config";
 afterEach(() => vi.unstubAllEnvs());
 
 describe("getAppUrl", () => {
+  it("uses the configured localhost origin outside Vercel", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "http://localhost:3100");
+    vi.stubEnv("VERCEL_PROJECT_PRODUCTION_URL", "");
+    vi.stubEnv("VERCEL", "");
+
+    expect(getAppUrl()).toBe("http://localhost:3100");
+  });
+
   it("never uses a localhost reset URL in a Vercel production deployment", () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "http://localhost:3000");
     vi.stubEnv("VERCEL_PROJECT_PRODUCTION_URL", "www.petmosphere.com.au");
+    vi.stubEnv("VERCEL", "1");
 
     expect(getAppUrl()).toBe("https://www.petmosphere.com.au");
   });
