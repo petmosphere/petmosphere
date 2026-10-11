@@ -10,6 +10,7 @@ export type Profile = {
   displayName: string;
   isSubscribed: boolean;
   reminderNotificationsEnabled: boolean;
+  preferredTimezone: string | null;
   weightUnit: "kg" | "lb";
 };
 
@@ -18,6 +19,7 @@ type ProfileRow = {
   display_name: string | null;
   is_subscribed: boolean;
   reminder_notifications_enabled: boolean;
+  preferred_timezone: string | null;
   weight_unit: "kg" | "lb";
 };
 
@@ -27,12 +29,13 @@ function toProfile(row: ProfileRow): Profile {
     displayName: row.display_name ?? "Pet parent",
     isSubscribed: row.is_subscribed,
     reminderNotificationsEnabled: row.reminder_notifications_enabled,
+    preferredTimezone: row.preferred_timezone,
     weightUnit: row.weight_unit,
   };
 }
 
 const columns =
-  "display_name, avatar_path, weight_unit, reminder_notifications_enabled, is_subscribed";
+  "display_name, avatar_path, weight_unit, preferred_timezone, reminder_notifications_enabled, is_subscribed";
 
 export async function getProfile(supabase: SupabaseClient, ownerId: string) {
   const { data, error } = await supabase
@@ -128,6 +131,21 @@ export async function updateProfileUnits(
   const { data, error } = await supabase
     .from("profiles")
     .update({ weight_unit: units.weightUnit })
+    .eq("id", ownerId)
+    .select("id")
+    .maybeSingle();
+  if (error) throw error;
+  return Boolean(data);
+}
+
+export async function updateProfileTimezone(
+  supabase: SupabaseClient,
+  ownerId: string,
+  timezone: string | null,
+) {
+  const { data, error } = await supabase
+    .from("profiles")
+    .update({ preferred_timezone: timezone })
     .eq("id", ownerId)
     .select("id")
     .maybeSingle();

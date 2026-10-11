@@ -20,6 +20,7 @@ import { HealthDiaryCalendar } from "./health-diary-calendar";
 import { HealthLogDetail } from "./health-log-detail";
 import { HealthLogForm } from "./health-log-form";
 import { HealthLogReminderSettings } from "./health-log-reminder-settings";
+import { getDeviceTimezone } from "@/lib/use-device-timezone";
 import { HealthLogSaved } from "./health-log-saved";
 
 type View = "calendar" | "detail" | "form" | "saved";
@@ -30,17 +31,20 @@ export function HealthDiary({
   pet,
   petOptions,
   photoUrl,
+  preferredTimezone = null,
 }: {
   initialStatus?: HealthLogStatus;
   initialView?: "calendar" | "today";
   pet: Pet;
   petOptions: { pet: Pet; photoUrl: string | null }[];
   photoUrl: string | null;
+  preferredTimezone?: string | null;
 }) {
   const router = useRouter();
-  const timezone =
-    Intl.DateTimeFormat().resolvedOptions().timeZone || "Australia/Melbourne";
-  const today = deriveLocalDate(new Date(), timezone);
+  const timezone = preferredTimezone ?? getDeviceTimezone();
+  const today = timezone
+    ? deriveLocalDate(new Date(), timezone)
+    : new Date().toISOString().slice(0, 10);
   const [month, setMonth] = useState(today.slice(0, 7));
   const [summaries, setSummaries] = useState<HealthLogSummary[]>();
   const [view, setView] = useState<View>("calendar");
@@ -250,6 +254,7 @@ export function HealthDiary({
               window.scrollTo({ top: 0 });
             }}
             petOptions={petOptions}
+            preferredTimezone={preferredTimezone}
             selectedPetId={formPetId}
           />
         </section>
@@ -310,7 +315,10 @@ export function HealthDiary({
             petSwitcher={petSwitcher}
             today={today}
           />
-          <HealthLogReminderSettings petId={pet.id} />
+          <HealthLogReminderSettings
+            petId={pet.id}
+            preferredTimezone={preferredTimezone}
+          />
         </>
       ) : (
         <div

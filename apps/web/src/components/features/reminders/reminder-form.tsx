@@ -16,6 +16,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { NotificationLeadSelector } from "@/components/ui/notification-lead-selector";
 import { RepeatSelector } from "@/components/ui/repeat-selector";
 import { TimePicker } from "@/components/ui/time-picker";
+import { TimezonePicker } from "@/components/ui/timezone-picker";
 import { PetSelector } from "@/components/ui/pet-selector";
 import {
   enablePushNotifications,
@@ -33,9 +34,11 @@ export type ReminderPetOption = { pet: Pet; photoUrl: string | null };
 
 export function ReminderForm({
   pets,
+  preferredTimezone = null,
   reminder,
 }: {
   pets: ReminderPetOption[];
+  preferredTimezone?: string | null;
   reminder?: ReminderResponse;
 }) {
   const router = useRouter();
@@ -54,14 +57,19 @@ export function ReminderForm({
   const timezone =
     timezoneOverride ??
     reminder?.timezone ??
-    (deviceTimezone || "Australia/Melbourne");
+    preferredTimezone ??
+    deviceTimezone;
   const [state, setState] = useState<"idle" | "saving" | "saved" | "error">(
     "idle",
   );
   const [message, setMessage] = useState("");
   const requestId = useMemo(() => crypto.randomUUID(), []);
-  const today = deriveLocalDate(new Date(), timezone);
-  const valid = Boolean(petId && title.trim() && dueDate >= today && localTime);
+  const today = timezone
+    ? deriveLocalDate(new Date(), timezone)
+    : new Date().toISOString().slice(0, 10);
+  const valid = Boolean(
+    petId && title.trim() && dueDate >= today && localTime && timezone,
+  );
 
   async function save(event: FormEvent) {
     event.preventDefault();
@@ -228,8 +236,13 @@ export function ReminderForm({
             />
           </div>
           <p className="mt-2 text-sm text-[#7a7a7a]">
-            Scheduled in {timezone.replaceAll("_", " ")} time.
+            {timezone
+              ? `Scheduled in ${timezone.replaceAll("_", " ")} time.`
+              : "Choose a time zone before saving this reminder."}
           </p>
+          <div className="mt-3">
+            <TimezonePicker onChange={setTimezoneOverride} value={timezone} />
+          </div>
           {reminder && deviceTimezone && deviceTimezone !== timezone ? (
             <button
               className="mt-2 min-h-11 text-sm font-semibold text-[#a96225] underline"

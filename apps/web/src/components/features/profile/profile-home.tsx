@@ -3,6 +3,7 @@ import {
   ChevronRight,
   CircleHelp,
   FileText,
+  Globe2,
   Mail,
   Pencil,
   Plus,
@@ -48,12 +49,14 @@ export function ProfileHome({
   displayName,
   email,
   pets,
+  preferredTimezone,
   weightUnit,
 }: {
   avatarUrl: string | null;
   displayName: string;
   email: string;
   pets: ProfilePet[];
+  preferredTimezone: string | null;
   weightUnit: "kg" | "lb";
 }) {
   return (
@@ -166,6 +169,15 @@ export function ProfileHome({
               icon={Scale}
               label="Units"
               value={weightUnit}
+            />
+            <MenuLink
+              href="/profile/timezone"
+              icon={Globe2}
+              label="Time zone"
+              value={
+                preferredTimezone?.split("/").at(-1)?.replaceAll("_", " ") ??
+                "Automatic"
+              }
             />
           </div>
         </section>

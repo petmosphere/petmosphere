@@ -9,12 +9,22 @@ import {
   pushSetupErrorMessages,
 } from "@/lib/health-logs/push-notifications";
 import { TimePicker, formatTimeLabel } from "@/components/ui/time-picker";
-import { useDeviceTimezone } from "@/lib/use-device-timezone";
+import { TimezonePicker } from "@/components/ui/timezone-picker";
+import {
+  getDeviceTimezone,
+  useDeviceTimezone,
+} from "@/lib/use-device-timezone";
 
-export function HealthLogReminderSettings({ petId }: { petId: string }) {
+export function HealthLogReminderSettings({
+  petId,
+  preferredTimezone = null,
+}: {
+  petId: string;
+  preferredTimezone?: string | null;
+}) {
   const [reminder, setReminder] = useState<
     Pick<HealthLogReminder, "enabled" | "localTime" | "timezone">
-  >({ enabled: false, localTime: "19:00", timezone: "Australia/Melbourne" });
+  >({ enabled: false, localTime: "19:00", timezone: preferredTimezone ?? "" });
   const deviceTimezone = useDeviceTimezone();
   const [state, setState] = useState<"loading" | "idle" | "saving" | "error">(
     "loading",
@@ -26,7 +36,7 @@ export function HealthLogReminderSettings({ petId }: { petId: string }) {
   );
 
   useEffect(() => {
-    const device = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const device = getDeviceTimezone();
     void fetch("/api/v1/health-log-reminders", {
       body: JSON.stringify({ petId }),
       headers: { "Content-Type": "application/json" },
@@ -39,14 +49,22 @@ export function HealthLogReminderSettings({ petId }: { petId: string }) {
           setReminder(saved);
           setConfigured(true);
         } else {
-          setReminder((current) => ({ ...current, timezone: device }));
+          setReminder((current) => ({
+            ...current,
+            timezone: preferredTimezone ?? device,
+          }));
         }
         setState("idle");
       })
       .catch(() => setState("error"));
-  }, [petId]);
+  }, [petId, preferredTimezone]);
 
   async function save() {
+    if (reminder.enabled && !reminder.timezone) {
+      setErrorMessage("Choose a time zone before saving this notification.");
+      setState("error");
+      return;
+    }
     setState("saving");
     try {
       if (reminder.enabled) {
@@ -164,8 +182,19 @@ export function HealthLogReminderSettings({ petId }: { petId: string }) {
             value={reminder.localTime}
           />
           <p className="mt-2 text-sm text-stone-500">
-            Scheduled in {reminder.timezone.replaceAll("_", " ")} time.
+            {reminder.timezone
+              ? `Scheduled in ${reminder.timezone.replaceAll("_", " ")} time.`
+              : "Choose a time zone before saving this notification."}
           </p>
+          <div className="mt-3">
+            <TimezonePicker
+              onChange={(timezone) => {
+                setReminder((current) => ({ ...current, timezone }));
+                setState("idle");
+              }}
+              value={reminder.timezone}
+            />
+          </div>
           {deviceTimezone && reminder.timezone !== deviceTimezone ? (
             <button
               className="mt-1 min-h-11 text-sm font-semibold text-[#a96225] underline"

@@ -1,6 +1,6 @@
 begin;
 
-select plan(9);
+select plan(11);
 
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password, raw_user_meta_data,
@@ -32,7 +32,8 @@ select lives_ok(
     set display_name = 'Updated Owner', weight_unit = 'lb',
         avatar_path = '91000000-0000-4000-8000-000000000001/avatar.webp',
         reminder_notifications_enabled = false,
-        reminder_alert_lead_days = 2
+        reminder_alert_lead_days = 2,
+        preferred_timezone = 'Europe/London'
     where id = '91000000-0000-4000-8000-000000000001'$$,
   'owner updates their profile and preferences'
 );
@@ -40,6 +41,15 @@ select is(
   (select weight_unit from public.profiles),
   'lb',
   'owner reads their saved weight unit'
+);
+select is(
+  (select preferred_timezone from public.profiles),
+  'Europe/London',
+  'owner reads their saved worldwide timezone'
+);
+select throws_ok(
+  $$update public.profiles set preferred_timezone = 'Mars/Olympus'$$,
+  '23514', null, 'invalid timezone is rejected'
 );
 select throws_ok(
   $$update public.profiles set weight_unit = 'stone'$$,

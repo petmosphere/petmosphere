@@ -14,6 +14,7 @@ import {
   isCurrentPushSubscription,
   pushSetupErrorMessages,
 } from "@/lib/health-logs/push-notifications";
+import { useDeviceTimezone } from "@/lib/use-device-timezone";
 
 type PushStatus =
   "checking" | "enabled" | "disabled" | "blocked" | "unsupported";
@@ -313,12 +314,16 @@ function TimeSheet({
 export function NotificationSettings({
   backHref = "/profile",
   pets,
+  preferredTimezone = null,
   reminderNotificationsEnabled,
 }: {
   backHref?: string;
   pets: PetSettings[];
+  preferredTimezone?: string | null;
   reminderNotificationsEnabled: boolean;
 }) {
+  const deviceTimezone = useDeviceTimezone();
+  const defaultTimezone = preferredTimezone ?? deviceTimezone;
   const firstHealth = pets.find(
     ({ healthReminder }) => healthReminder,
   )?.healthReminder;
@@ -401,6 +406,15 @@ export function NotificationSettings({
 
   async function saveDaily(next: typeof daily) {
     if (pets.length === 0) return;
+    if (
+      !defaultTimezone &&
+      pets.some(({ healthReminder }) => !healthReminder)
+    ) {
+      setMessage(
+        "Choose a time zone in Profile before scheduling notifications.",
+      );
+      return;
+    }
     const previous = daily;
     setDaily(next);
     setBusy(true);
@@ -412,9 +426,7 @@ export function NotificationSettings({
             body: JSON.stringify({
               ...next,
               petId: id,
-              timezone:
-                healthReminder?.timezone ??
-                Intl.DateTimeFormat().resolvedOptions().timeZone,
+              timezone: healthReminder?.timezone ?? defaultTimezone,
             }),
             headers: { "Content-Type": "application/json" },
             method: "PUT",
@@ -455,15 +467,23 @@ export function NotificationSettings({
 
   async function saveWeight(next: typeof weight) {
     if (pets.length === 0) return;
+    if (
+      !defaultTimezone &&
+      pets.some(({ weightReminder }) => !weightReminder)
+    ) {
+      setMessage(
+        "Choose a time zone in Profile before scheduling notifications.",
+      );
+      return;
+    }
     const previous = weight;
     setWeight(next);
     setBusy(true);
     setMessage("");
-    const deviceTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     try {
       const responses = await Promise.all(
         pets.map(({ id, weightReminder }) => {
-          const timezone = weightReminder?.timezone ?? deviceTz;
+          const timezone = weightReminder?.timezone ?? defaultTimezone;
           const localDate = deriveLocalDate(new Date(), timezone);
           const today = new Date(`${localDate}T12:00:00Z`);
           const weekly =
@@ -492,7 +512,8 @@ export function NotificationSettings({
     }
   }
 
-  const scheduleControlsDisabled = busy || pets.length === 0;
+  const scheduleControlsDisabled =
+    busy || pets.length === 0 || !defaultTimezone;
   return (
     <main className="mx-auto min-h-dvh w-full max-w-[393px] bg-[#fdf8f2] px-6 pt-[max(1.5rem,env(safe-area-inset-top))] pb-10 text-[#2d2d2d]">
       <header>
@@ -593,6 +614,19 @@ export function NotificationSettings({
           />
         )}
       </div>
+
+      {!defaultTimezone && pets.length > 0 ? (
+        <p className="mt-5 text-center text-sm text-[#7a7a7a]">
+          We could not detect this device’s time zone. Choose one in{" "}
+          <Link
+            className="font-semibold text-[#a96225] underline"
+            href="/profile/timezone"
+          >
+            Profile settings
+          </Link>{" "}
+          before setting up notifications.
+        </p>
+      ) : null}
 
       {!masterEnabled && pushStatus !== "checking" ? (
         <p className="mt-7 text-center text-sm leading-5 text-[#7a7a7a]">

@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { timezoneSchema } from "./health-logs";
+
 export const PROFILE_PHOTO_TYPES = [
   "image/jpeg",
   "image/png",
@@ -22,6 +24,10 @@ export const updateProfileSchema = z.object({ displayName });
 
 export const updateUnitsSchema = z.object({
   weightUnit: z.enum(["kg", "lb"]),
+});
+
+export const updateTimezoneSchema = z.object({
+  timezone: timezoneSchema.nullable(),
 });
 
 export const updateReminderNotificationPreferencesSchema = z.object({
@@ -52,6 +58,7 @@ export const deleteAccountSchema = z.object({
 
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 export type UpdateUnitsInput = z.infer<typeof updateUnitsSchema>;
+export type UpdateTimezoneInput = z.infer<typeof updateTimezoneSchema>;
 export type UpdateReminderNotificationPreferencesInput = z.infer<
   typeof updateReminderNotificationPreferencesSchema
 >;
