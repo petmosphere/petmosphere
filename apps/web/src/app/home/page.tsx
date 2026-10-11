@@ -49,7 +49,10 @@ export default async function AppHomePage({
   const { pet: selectedPetId } = await searchParams;
   const currentPet = pets.find((pet) => pet.id === selectedPetId) ?? pets[0]!;
   const now = new Date();
-  const today = deriveLocalDate(now, "Australia/Melbourne");
+  const today = deriveLocalDate(
+    now,
+    profile.preferredTimezone ?? "Australia/Melbourne",
+  );
 
   const [photoUrls, healthLogs, careReminders, weightEntries, notifications] =
     await Promise.all([

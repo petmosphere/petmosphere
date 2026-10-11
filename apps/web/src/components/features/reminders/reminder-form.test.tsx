@@ -116,7 +116,12 @@ describe("ReminderForm", () => {
           .fn()
           .mockResolvedValue({ json: vi.fn().mockResolvedValue({}), ok: true }),
       );
-      render(<ReminderForm pets={[{ pet, photoUrl: null }]} />);
+      render(
+        <ReminderForm
+          pets={[{ pet, photoUrl: null }]}
+          preferredTimezone="Europe/London"
+        />,
+      );
       fireEvent.change(screen.getByLabelText(/Title/), {
         target: { value: "Flea treatment" },
       });
@@ -135,6 +140,15 @@ describe("ReminderForm", () => {
       });
 
       fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      await waitFor(() =>
+        expect(fetch).toHaveBeenCalledWith(
+          "/api/v1/reminders",
+          expect.objectContaining({
+            body: expect.stringContaining('"timezone":"Europe/London"'),
+          }),
+        ),
+      );
 
       if (pushEnabled) {
         await waitFor(() => expect(push).toHaveBeenCalledWith("/reminders"));

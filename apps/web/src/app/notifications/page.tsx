@@ -9,6 +9,7 @@ import {
   toNotificationResponse,
 } from "@/lib/notifications/supabase-notifications";
 import { listOwnedPets } from "@/lib/pets/supabase-pets";
+import { getProfile } from "@/lib/profile/supabase-profile";
 
 export const metadata: Metadata = {
   title: "Notifications",
@@ -17,18 +18,21 @@ export const metadata: Metadata = {
 
 export default async function NotificationsPage() {
   const { supabase, user } = await requireUser("/notifications");
-  const [result, pets] = await Promise.all([
+  const [result, pets, profile] = await Promise.all([
     listNotifications(user.id, createNotificationRepository(supabase)),
     listOwnedPets(supabase, user.id),
+    getProfile(supabase, user.id),
   ]);
   const firstPet = pets[0];
+  const timezone = profile.preferredTimezone ?? "Australia/Melbourne";
   return (
     <NotificationInbox
       diaryHref={firstPet ? `/pets/${firstPet.id}/health-logs` : undefined}
       initialNow={new Date().toISOString()}
       initialNotifications={result.notifications.map(toNotificationResponse)}
       reminderHref={firstPet ? "/reminders" : undefined}
-      today={deriveLocalDate(new Date(), "Australia/Melbourne")}
+      today={deriveLocalDate(new Date(), timezone)}
+      timezone={timezone}
     />
   );
 }

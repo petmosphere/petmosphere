@@ -28,6 +28,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
 import { DatePicker } from "@/components/ui/date-picker";
+import { TimezonePicker } from "@/components/ui/timezone-picker";
+import { useDeviceTimezone } from "@/lib/use-device-timezone";
 import { PetSelector } from "@/components/ui/pet-selector";
 import { trackHealthLogEvent } from "@/lib/health-logs/analytics";
 import { optimizeHealthLogImage } from "@/lib/health-logs/optimize-image";
@@ -46,6 +48,7 @@ export function HealthLogForm({
   onPetChange,
   onSaved,
   petOptions,
+  preferredTimezone = null,
   selectedPetId,
 }: {
   existing: HealthLogResponse | null;
@@ -55,6 +58,7 @@ export function HealthLogForm({
   onPetChange: (petId: string) => void;
   onSaved: (healthLog: HealthLogResponse) => void;
   petOptions: { pet: Pet; photoUrl: string | null }[];
+  preferredTimezone?: string | null;
   selectedPetId: string;
 }) {
   const router = useRouter();
@@ -70,8 +74,13 @@ export function HealthLogForm({
     null,
   );
   const [isOverwriting, setIsOverwriting] = useState(false);
+  const deviceTimezone = useDeviceTimezone();
+  const [timezoneOverride, setTimezoneOverride] = useState<string | null>(null);
   const timezone =
-    Intl.DateTimeFormat().resolvedOptions().timeZone || "Australia/Melbourne";
+    timezoneOverride ??
+    existing?.derivationTimezone ??
+    preferredTimezone ??
+    deviceTimezone;
   const {
     clearErrors,
     control,
@@ -102,6 +111,10 @@ export function HealthLogForm({
   });
   const selectedPet =
     petOptions.find(({ pet }) => pet.id === selectedPetId) ?? petOptions[0];
+
+  useEffect(() => {
+    setValue("timezone", timezone, { shouldValidate: true });
+  }, [setValue, timezone]);
 
   useEffect(() => {
     trackHealthLogEvent({ event: "health_log_started" });
@@ -325,6 +338,10 @@ export function HealthLogForm({
             </p>
           ) : null}
         </div>
+
+        {!timezone ? (
+          <TimezonePicker onChange={setTimezoneOverride} value={timezone} />
+        ) : null}
 
         {/* mood-section */}
         <div className="flex flex-col gap-0">

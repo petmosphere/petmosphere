@@ -24,6 +24,7 @@ import { TimePicker } from "@/components/ui/time-picker";
 import { DaySelector } from "@/components/ui/day-selector";
 import { RepeatSelector } from "@/components/ui/repeat-selector";
 import { useDeviceTimezone } from "@/lib/use-device-timezone";
+import { TimezonePicker } from "@/components/ui/timezone-picker";
 
 import { WeightTrendChart } from "./weight-trend-chart";
 
@@ -62,11 +63,13 @@ export function LogWeight({
   entries: initialEntries,
   pet,
   reminder: savedReminder,
+  preferredTimezone = null,
   weightUnit = "kg",
 }: {
   entries: WeightEntry[];
   pet: Pet;
   reminder: WeightReminderResponse | null;
+  preferredTimezone?: string | null;
   weightUnit?: WeightUnit;
 }) {
   const router = useRouter();
@@ -80,13 +83,17 @@ export function LogWeight({
     frequency: savedReminder?.frequency ?? ("weekly" as const),
     localTime: savedReminder?.localTime ?? "20:00",
     scheduleDay: savedReminder?.scheduleDay ?? 0,
-    timezone: savedReminder?.timezone ?? "Australia/Melbourne",
+    timezone: savedReminder?.timezone ?? "",
   });
   const [timezoneOverride, setTimezoneOverride] = useState<string | null>(null);
   const deviceTimezone = useDeviceTimezone();
+  const entryTimezone =
+    timezoneOverride ??
+    preferredTimezone ??
+    (deviceTimezone || savedReminder?.timezone || "");
   const reminderTimezone =
     timezoneOverride ??
-    (savedReminder ? reminder.timezone : deviceTimezone || reminder.timezone);
+    (savedReminder ? reminder.timezone : (preferredTimezone ?? deviceTimezone));
   const [reminderConfigured, setReminderConfigured] = useState(
     savedReminder !== null,
   );
@@ -117,6 +124,14 @@ export function LogWeight({
   async function save() {
     if ((!weightDirty && !reminderDirty) || (weightDirty && !validWeight))
       return;
+    if (
+      (weightDirty && !entryTimezone) ||
+      (reminderDirty && reminder.enabled && !reminderTimezone)
+    ) {
+      setState("error");
+      setMessage("Choose a time zone before saving.");
+      return;
+    }
     setState("saving");
     setMessage("");
     try {
@@ -129,7 +144,7 @@ export function LogWeight({
         weightDirty
           ? fetch(`/api/v1/pets/${pet.id}/weights`, {
               body: JSON.stringify({
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                timezone: entryTimezone,
                 weightKg: Number(weightKg.toFixed(2)),
               }),
               headers: { "Content-Type": "application/json" },
@@ -421,8 +436,19 @@ export function LogWeight({
                 </div>
               )}
               <p className="mt-2 text-xs text-[#7a7a7a]">
-                Scheduled in {reminderTimezone.replaceAll("_", " ")} time.
+                {reminderTimezone
+                  ? `Scheduled in ${reminderTimezone.replaceAll("_", " ")} time.`
+                  : "Choose a time zone before saving this reminder."}
               </p>
+              <div className="mt-2">
+                <TimezonePicker
+                  onChange={(timezone) => {
+                    setTimezoneOverride(timezone);
+                    setReminderDirty(true);
+                  }}
+                  value={reminderTimezone}
+                />
+              </div>
               {deviceTimezone && reminderTimezone !== deviceTimezone ? (
                 <button
                   className="min-h-11 text-xs font-semibold text-[#a96225] underline"
@@ -439,6 +465,16 @@ export function LogWeight({
           ) : null}
         </section>
       )}
+
+      {!entryTimezone &&
+      (!reminder.enabled || (reminderConfigured && !editingReminder)) ? (
+        <div className="mx-6 mt-4">
+          <TimezonePicker
+            onChange={setTimezoneOverride}
+            value={entryTimezone}
+          />
+        </div>
+      ) : null}
 
       {message ? (
         <p

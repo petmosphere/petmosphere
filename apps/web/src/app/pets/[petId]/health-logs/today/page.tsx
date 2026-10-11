@@ -5,6 +5,7 @@ import { HealthDiary } from "@/components/features/health-logs/health-diary";
 import { healthLogStatuses } from "@petmosphere/domain";
 import { requireUser } from "@/lib/auth/require-user";
 import { getPetPhotoUrls, listOwnedPets } from "@/lib/pets/supabase-pets";
+import { getProfile } from "@/lib/profile/supabase-profile";
 
 export const metadata: Metadata = {
   title: "Today’s health log",
@@ -25,7 +26,10 @@ export default async function TodayHealthLogPage({
   const { supabase, user } = await requireUser(
     `/pets/${petId}/health-logs/today`,
   );
-  const pets = await listOwnedPets(supabase, user.id);
+  const [pets, profile] = await Promise.all([
+    listOwnedPets(supabase, user.id),
+    getProfile(supabase, user.id),
+  ]);
   const pet = pets.find((candidate) => candidate.id === petId);
   if (!pet) notFound();
   const photoUrls = await getPetPhotoUrls(supabase, pets);
@@ -42,6 +46,7 @@ export default async function TodayHealthLogPage({
       pet={pet}
       petOptions={petOptions}
       photoUrl={photoUrl}
+      preferredTimezone={profile.preferredTimezone}
     />
   );
 }

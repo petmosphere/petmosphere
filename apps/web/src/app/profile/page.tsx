@@ -29,6 +29,7 @@ export default async function ProfilePage() {
     <ProfileHome
       avatarUrl={avatarUrl}
       displayName={profile.displayName}
+      preferredTimezone={profile.preferredTimezone}
       email={user.email ?? ""}
       pets={petsWithPhotos}
       weightUnit={profile.weightUnit}

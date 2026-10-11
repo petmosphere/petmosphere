@@ -52,6 +52,7 @@ export function NotificationInbox({
   initialNotifications,
   reminderHref,
   today,
+  timezone = "Australia/Melbourne",
 }: {
   backHref?: string;
   diaryHref?: string | undefined;
@@ -59,6 +60,7 @@ export function NotificationInbox({
   initialNotifications: NotificationResponse[];
   reminderHref?: string | undefined;
   today: string;
+  timezone?: string;
 }) {
   const [notifications, setNotifications] = useState(initialNotifications);
   const [now, setNow] = useState(() => new Date(initialNow));
@@ -101,12 +103,10 @@ export function NotificationInbox({
     };
   }, []);
   const todayNotifications = notifications.filter(
-    ({ createdAt }) =>
-      deriveLocalDate(new Date(createdAt), "Australia/Melbourne") === today,
+    ({ createdAt }) => deriveLocalDate(new Date(createdAt), timezone) === today,
   );
   const earlierNotifications = notifications.filter(
-    ({ createdAt }) =>
-      deriveLocalDate(new Date(createdAt), "Australia/Melbourne") !== today,
+    ({ createdAt }) => deriveLocalDate(new Date(createdAt), timezone) !== today,
   );
   const hasUnread = notifications.some(({ readAt }) => !readAt);
 

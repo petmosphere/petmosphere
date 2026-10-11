@@ -31,6 +31,7 @@ describe("ProfileHome", () => {
         displayName="Sarah Chen"
         email="sarah@example.com"
         pets={[{ pet, photoUrl: null }]}
+        preferredTimezone={null}
         weightUnit="kg"
       />,
     );
@@ -44,6 +45,10 @@ describe("ProfileHome", () => {
     expect(
       screen.getByRole("link", { name: "Notification Settings" }),
     ).toHaveAttribute("href", "/profile/notifications");
+    expect(screen.getByRole("link", { name: /Time zone/ })).toHaveAttribute(
+      "href",
+      "/profile/timezone",
+    );
     expect(screen.getByRole("link", { name: "Help & FAQ" })).toHaveAttribute(
       "href",
       "/profile/help",
@@ -67,6 +72,7 @@ describe("ProfileHome", () => {
         displayName="Sarah Chen"
         email="sarah@example.com"
         pets={[]}
+        preferredTimezone={null}
         weightUnit="kg"
       />,
     );

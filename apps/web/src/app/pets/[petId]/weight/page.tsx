@@ -38,6 +38,7 @@ export default async function LogWeightPage({
       entries={entries}
       pet={pet}
       reminder={reminder ? toWeightReminderResponse(reminder) : null}
+      preferredTimezone={profile.preferredTimezone}
       weightUnit={profile.weightUnit}
     />
   );

@@ -39,6 +39,7 @@ export default async function NotificationsPage({
   return (
     <NotificationSettings
       pets={reminderSettings}
+      preferredTimezone={profile.preferredTimezone}
       reminderNotificationsEnabled={profile.reminderNotificationsEnabled}
       backHref={backHref}
     />
