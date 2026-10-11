@@ -39,6 +39,9 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   themeColor: "#ED802A",
   colorScheme: "light",
+  // Required for env(safe-area-inset-*) to work in standalone PWA mode on
+  // notched iPhones — the app's layouts pad with those insets.
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

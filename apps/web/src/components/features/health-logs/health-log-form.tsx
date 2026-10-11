@@ -386,7 +386,7 @@ export function HealthLogForm({
                   />
                   <button
                     aria-label={`Remove saved photo ${index + 1}`}
-                    className="absolute top-1 right-1 grid size-9 place-items-center rounded-full bg-stone-950/70 text-white"
+                    className="absolute top-1 right-1 grid size-6 cursor-pointer place-items-center rounded-full bg-stone-950/70 text-white"
                     onClick={() =>
                       setRetainedImageIndexes((current) =>
                         current.filter((item) => item !== index),
@@ -394,7 +394,7 @@ export function HealthLogForm({
                     }
                     type="button"
                   >
-                    <X aria-hidden="true" className="size-4" />
+                    <X aria-hidden="true" className="size-3" />
                   </button>
                 </div>
               ) : null,
@@ -414,7 +414,7 @@ export function HealthLogForm({
                 />
                 <button
                   aria-label={`Remove selected photo ${index + 1}`}
-                  className="absolute top-1 right-1 grid size-9 place-items-center rounded-full bg-stone-950/70 text-white"
+                  className="absolute top-1 right-1 grid size-6 cursor-pointer place-items-center rounded-full bg-stone-950/70 text-white"
                   onClick={() =>
                     setImages((current) =>
                       current.filter((_, imageIndex) => imageIndex !== index),
@@ -422,7 +422,7 @@ export function HealthLogForm({
                   }
                   type="button"
                 >
-                  <X aria-hidden="true" className="size-4" />
+                  <X aria-hidden="true" className="size-3" />
                 </button>
               </div>
             ))}

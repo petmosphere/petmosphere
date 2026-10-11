@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* Shared page shell: every main screen uses this on its <main> so width,
+   background, and the md+ centered-column treatment are configured once. */
+@utility app-shell {
+  @apply mx-auto min-h-dvh w-full bg-[#fdf8f2] text-[#2d2d2d] shadow-xl shadow-stone-900/5 md:max-w-[393px];
+}
+
 :root {
   color-scheme: light;
   font-synthesis: none;
@@ -22,6 +28,27 @@ label:has(> input[type="radio"]) {
 
 html {
   background: #fdf8f2;
+}
+
+/* Phone-width app shells are centered on large screens (tablet/desktop);
+   give the surrounding backdrop a soft brand gradient so the column reads
+   as an intentional card, not a broken layout. */
+@media (min-width: 768px) {
+  body {
+    background:
+      radial-gradient(
+        60rem 40rem at 15% -10%,
+        rgba(101, 188, 181, 0.13),
+        transparent 60%
+      ),
+      radial-gradient(
+        50rem 36rem at 110% 30%,
+        rgba(237, 128, 42, 0.12),
+        transparent 60%
+      ),
+      linear-gradient(180deg, #fdf8f2 0%, #f6ede0 100%);
+    background-attachment: fixed;
+  }
 }
 
 body {

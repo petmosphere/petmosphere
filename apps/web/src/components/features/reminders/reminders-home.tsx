@@ -156,7 +156,7 @@ export function RemindersHome({
   const effectiveDiaryPetId =
     selectedPetId !== "all" ? selectedPetId : pets[0]?.pet.id;
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-[393px] flex-col bg-[#fdf8f2] pb-3 text-[#2d2d2d] shadow-xl shadow-stone-900/5">
+    <main className="app-shell flex flex-col pb-3">
       <header className="flex items-center justify-between px-6 pt-[calc(env(safe-area-inset-top)+1.5rem)]">
         <h1 className="text-[2rem] leading-tight font-bold tracking-[-0.02em]">
           Reminders
