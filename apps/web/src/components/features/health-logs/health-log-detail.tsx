@@ -58,10 +58,10 @@ export function HealthLogDetail({
   return (
     <section className="flex flex-col gap-4 px-6 pt-2 pb-20">
       {/* top-nav-row: back | date | edit + trash */}
-      <header className="flex items-center justify-between">
+      <header className="flex min-h-20 items-center justify-between">
         <button
           aria-label="Back to health diary"
-          className="grid size-6 place-items-center active:scale-[0.97]"
+          className="grid size-11 place-items-center rounded-full focus-visible:outline-2 focus-visible:outline-[#ed802a] active:scale-[0.97]"
           onClick={onBack}
           type="button"
         >
@@ -74,22 +74,22 @@ export function HealthLogDetail({
           )}
         </p>
 
-        <div className="flex gap-4">
+        <div className="flex gap-1">
           <button
             aria-label="Edit health log"
-            className="grid size-4 place-items-center text-[#7A7A7A] active:scale-[0.97]"
+            className="grid size-11 place-items-center rounded-full text-[#d86f1d] focus-visible:outline-2 focus-visible:outline-[#ed802a] active:scale-[0.97]"
             onClick={onEdit}
             type="button"
           >
-            <Pencil aria-hidden="true" className="size-4" />
+            <Pencil aria-hidden="true" className="size-5" />
           </button>
           <button
             aria-label="Delete health log"
-            className="grid size-4 place-items-center text-[#7A7A7A] active:scale-[0.97]"
+            className="grid size-11 place-items-center rounded-full text-red-600 focus-visible:outline-2 focus-visible:outline-red-500 active:scale-[0.97]"
             onClick={() => setConfirmDelete(true)}
             type="button"
           >
-            <Trash2 aria-hidden="true" className="size-4" />
+            <Trash2 aria-hidden="true" className="size-5" />
           </button>
         </div>
       </header>
