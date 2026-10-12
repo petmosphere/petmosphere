@@ -121,21 +121,22 @@ export function LandingOnboarding() {
           <div className="mx-auto size-30 overflow-hidden rounded-[22%]">
             <Image
               alt="Petmosphere"
-              className="size-full object-cover"
+              className="splash-logo size-full object-cover"
               height={120}
               src="/app-icon.svg"
               width={120}
             />
           </div>
-          <p className="mt-8 text-3xl font-bold tracking-[-0.025em]">
+          <div className="splash-line mx-auto mt-6 h-0.5 w-32 rounded-full bg-[#ed802a]" />
+          <p className="splash-title mt-6 text-3xl font-bold tracking-[-0.025em]">
             Petmosphere
           </p>
-          <p className="mt-2 text-[#7e7a77]">Your pet’s health companion</p>
-        </div>
-        <div className="absolute bottom-[max(4.5rem,env(safe-area-inset-bottom))] flex gap-2">
-          <span className="size-2 rounded-full bg-[#f2bd8e]" />
-          <span className="size-2 rounded-full bg-[#ed802a]" />
-          <span className="size-2 rounded-full bg-[#f2bd8e]" />
+          <p
+            className="splash-title mt-2 text-[#7e7a77]"
+            style={{ animationDelay: "420ms" }}
+          >
+            Your pet’s wellness companion
+          </p>
         </div>
       </div>
     </main>

@@ -70,13 +70,76 @@ body {
 }
 
 .petmosphere-splash {
-  animation: petmosphere-splash-exit 1.4s ease-out forwards;
+  animation: petmosphere-splash-exit 2.8s ease-out forwards;
   pointer-events: none;
+}
+
+/* Splash choreography (runs once, inside the exiting splash overlay):
+   logo pops in → orange line draws → title/tagline rise in after. */
+.splash-logo {
+  animation:
+    splash-spin 2s cubic-bezier(0.33, 0, 0.2, 1) both,
+    splash-fade 400ms ease-out both;
+}
+
+@keyframes splash-spin {
+  from {
+    transform: rotate(0deg) scale(0.85);
+  }
+  to {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+.splash-line {
+  animation: splash-draw 600ms cubic-bezier(0.23, 1, 0.32, 1) 260ms both;
+}
+
+.splash-title {
+  animation: splash-rise 400ms cubic-bezier(0.23, 1, 0.32, 1) 400ms both;
+}
+
+@keyframes splash-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes splash-draw {
+  from {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes splash-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .petmosphere-splash {
     animation-duration: 0.01ms;
+  }
+
+  .splash-logo,
+  .splash-line,
+  .splash-title {
+    animation-duration: 0.01ms;
+    animation-delay: 0ms;
   }
 }
 
