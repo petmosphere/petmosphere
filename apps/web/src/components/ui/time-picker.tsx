@@ -9,6 +9,9 @@ const PERIODS = ["AM", "PM"] as const;
 
 // Scroll-snap slot height (px). Selected pill is 38px per Figma; 46 adds breathing room.
 const ITEM_HEIGHT = 46;
+// Virtual repetitions rendered above/below the real list so the minutes wheel
+// can scroll 59 → 00 → 59 in an endless cycle (iOS wheel-picker behaviour).
+const MINUTE_CYCLES = 3;
 
 export function formatTimeLabel(time: string): string {
   const [h24 = 0, m = 0] = time.split(":").map(Number);
@@ -187,8 +190,9 @@ export function TimePicker({
           >
             :
           </span>
-          {/* minute column */}
+          {/* minute column — cycles 59 → 00 → 59 endlessly */}
           <Wheel
+            cycling
             items={MINUTES}
             onSelect={(mn) => commit(hour12, mn, period)}
             renderItem={(mn) => String(mn).padStart(2, "0")}
@@ -219,13 +223,19 @@ export function TimePicker({
 /**
  * Snap-scrolling wheel column. CSS scroll-snap-mandatory keeps the settled
  * position exact; we read scrollTop on scroll to update draft state.
+ *
+ * `cycling` renders the item list repeated (MINUTE_CYCLES×) and silently
+ * re-centres the scroll when the user crosses a repetition boundary, so
+ * scrolling 59 → 00 → 59 never hits an end — iOS wheel-picker behaviour.
  */
 function Wheel<T extends number | string>({
+  cycling = false,
   items,
   onSelect,
   renderItem,
   value,
 }: {
+  cycling?: boolean;
   items: readonly T[];
   onSelect: (value: T) => void;
   renderItem: (value: T) => string;
@@ -233,17 +243,30 @@ function Wheel<T extends number | string>({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const index = Math.max(0, items.indexOf(value));
+  const cycles = cycling ? MINUTE_CYCLES : 1;
+  const midStart = cycling ? ((cycles - 1) / 2) * items.length : 0;
 
   // Sync scroll position when value changes externally (e.g. sheet open).
   useEffect(() => {
-    ref.current?.scrollTo?.({ top: index * ITEM_HEIGHT, behavior: "auto" });
-  }, [index]);
+    ref.current?.scrollTo?.({
+      top: (midStart + index) * ITEM_HEIGHT,
+      behavior: "auto",
+    });
+  }, [index, midStart]);
 
   function handleScroll() {
     const el = ref.current;
     if (!el) return;
-    const i = Math.round(el.scrollTop / ITEM_HEIGHT);
-    const next = items[Math.max(0, Math.min(items.length - 1, i))];
+    const raw = Math.round(el.scrollTop / ITEM_HEIGHT);
+    const local =
+      (((raw - midStart) % items.length) + items.length) % items.length;
+    const next = items[local];
+
+    // Crossed into an outer repetition: jump silently to the same item in the
+    // middle cycle so scrolling can continue endlessly in either direction.
+    if (raw < midStart || raw >= midStart + items.length) {
+      el.scrollTo({ top: (midStart + local) * ITEM_HEIGHT, behavior: "auto" });
+    }
     if (next !== undefined && next !== value) onSelect(next);
   }
 
@@ -269,29 +292,32 @@ function Wheel<T extends number | string>({
         style={{ scrollbarWidth: "none" }}
       >
         <div style={{ height: PAD }} />
-        {items.map((item) => {
-          const selected = item === value;
-          return (
-            <div
-              aria-selected={selected}
-              className="grid snap-center place-items-center"
-              key={String(item)}
-              role="option"
-              style={{ height: ITEM_HEIGHT }}
-            >
-              {/* selected: Manrope 700 22px #2d2d2d; unselected: 400 18px #7a7a7a */}
-              <span
-                className={
-                  selected
-                    ? "z-10 text-[22px] font-bold text-[#2d2d2d]"
-                    : "text-[18px] font-normal text-[#7a7a7a]"
-                }
+        {Array.from({ length: cycles }, (_, cycle) =>
+          items.map((item) => {
+            const selected =
+              cycle === midStart / items.length && item === value;
+            return (
+              <div
+                aria-selected={selected}
+                className="grid snap-center place-items-center"
+                key={`${cycle}-${String(item)}`}
+                role="option"
+                style={{ height: ITEM_HEIGHT }}
               >
-                {renderItem(item)}
-              </span>
-            </div>
-          );
-        })}
+                {/* selected: Manrope 700 22px #2d2d2d; unselected: 400 18px #7a7a7a */}
+                <span
+                  className={
+                    selected
+                      ? "z-10 text-[22px] font-bold text-[#2d2d2d]"
+                      : "text-[18px] font-normal text-[#7a7a7a]"
+                  }
+                >
+                  {renderItem(item)}
+                </span>
+              </div>
+            );
+          }),
+        )}
         <div style={{ height: PAD }} />
       </div>
     </div>

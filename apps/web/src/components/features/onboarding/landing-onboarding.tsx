@@ -9,18 +9,18 @@ import Link from "next/link";
 const slides = [
   {
     description: "A simple daily check-in helps you spot changes early",
-    image: "/illustrations/onboarding-wellness.svg",
+    image: "/illustrations/illustration-1.svg",
     title: "Track your pet’s wellness in 10 seconds a day",
   },
   {
     description: "Smart reminders for medications, vaccines, and appointments",
-    image: "/illustrations/onboarding-reminders.svg",
+    image: "/illustrations/illustration-2.svg",
     title: "Never miss a vaccination or vet visit",
   },
   {
     description:
       "Tick season alerts, C3/C5 vaccine schedules, and local health advice",
-    image: "/illustrations/onboarding-australia.svg",
+    image: "/illustrations/illustration-3.svg",
     title: "Made for Aussie pets",
   },
 ] as const;
@@ -48,7 +48,7 @@ export function LandingOnboarding() {
         <div className="grid place-items-center px-8 py-10">
           <Image
             alt=""
-            className="h-auto w-full max-w-70"
+            className="h-auto w-[min(75vw,320px)] md:w-[min(50vw,400px)]"
             height={280}
             priority
             src={slide.image}
